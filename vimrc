@@ -1,3 +1,6 @@
+" http://objectmix.com/editors/394885-how-do-you-parameterize-your-vimrc-different-machines.html
+" https://github.com/bronson/vim-update-bundles 
+
 " This must be first, because it changes other options as side effect
 set nocompatible
 
@@ -15,7 +18,7 @@ let g:pathogen_disabled = []
 if !has('gui_running')
     call add(g:pathogen_disabled, 'csscolor')
 	" csapprox needs vim to be compiled with GUI support
-	call add(g:pathogen_disabled, 'csapprox')
+	call add(g:pathogen_disabled, 'csapproc')
 endif
 
 " Gundo requires at least vim 7.3
@@ -51,7 +54,8 @@ endif
 "Bundle: https://github.com/scrooloose/nerdtree
 "Bundle: https://github.com/godlygeek/csapprox.git
 "Bundle: https://github.com/slack/vim-bufexplorer.git
-"
+"Bundle: https://github.com/vim-scripts/Gundo.git
+"Bundle: https://github.com/vim-scripts/snipMate.git
 ""
 "" COMMAND-T
 "" remove comment the 'static' entry for a first install
@@ -68,8 +72,6 @@ endif
 " STATUS BAR
 "------------------------------------------------------------------------------
 "Bundle: https://github.com/dickeytk/status.vim.git
-
-
 
 
 
@@ -161,6 +163,13 @@ set pastetoggle=<F2>
 vmap Q gq
 nmap Q gqap
 
+" learn the bloody keys, don't use arrows
+map <up> <nop>
+map <down> <nop>
+map <left> <nop>
+map <right> <nop>
+
+
 " Easy window navigation
 map <C-h> <C-w>h
 map <C-j> <C-w>j
@@ -173,3 +182,12 @@ nmap <silent> ,/ :nohlsearch<CR>
 
 " Forgot to sudo : save with w!!
 cmap w!! w !sudo tee % >/dev/null
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" KEY REMAPING
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" PLUGINS
+"------------------------------------------------------------------------------
+
+nnoremap <F5>:GundoToggle<CR>
