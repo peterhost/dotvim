@@ -1,0 +1,17 @@
+#!/bin/bash
+
+pathToHere=$(cd "$(dirname "$0")"; pwd)
+
+# DESTRUCTIVE !
+echo "deleting .vimrc symlink"
+rm -f "$HOME/.vimrc"
+echo "making new symlink"
+ln -s $pathToHere/../vimrc $HOME/.vimrc
+
+echo "deleting .gvimrc symlink"
+rm -f "$HOME/.gvimrc"
+echo "making new symlink"
+ln -s $pathToHere/../gvimrc $HOME/.gvimrc
+
+. $pathToHere/update
+          

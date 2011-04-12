@@ -11,3 +11,7 @@ call pathogen#runtime_append_all_bundles()
 if has("gui_macvim") 
     " set macvim specific stuff 
 endif
+
+
+" BUNDLES
+"Bundle: https://github.com/tpope/vim-fugitive.git

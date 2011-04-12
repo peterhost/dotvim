@@ -1,0 +1,12 @@
+#!/bin/bash
+
+pathToHere=$(cd "$(dirname "$0")"; pwd)
+
+# update the pathogen script
+echo -e "Updating vim-pathogen"
+curl -s https://github.com/tpope/vim-pathogen/raw/master/autoload/pathogen.vim > ../autoload/pathogen.vim
+echo -e "Done"
+
+# update bundles
+ruby $pathToHere/vim-update-bundles
+

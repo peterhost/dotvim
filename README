@@ -1,1 +1,4 @@
 Custom vim config
+Based on :
+- Pathogen : 
+- vim-update-bundles : https://github.com/bronson/vim-update-bundles
