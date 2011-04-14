@@ -1,5 +1,10 @@
+"web resources {{{1
 " http://objectmix.com/editors/394885-how-do-you-parameterize-your-vimrc-different-machines.html
 " https://github.com/bronson/vim-update-bundles 
+" LustyJuggler	screencast: 	http://lococast.net/archives/185
+" Command-T 	screencast:		https://wincent.com/products/command-t
+"
+
 
 " This must be first, because it changes other options as side effect
 set nocompatible
@@ -18,13 +23,15 @@ let g:pathogen_disabled = []
 if !has('gui_running')
     call add(g:pathogen_disabled, 'csscolor')
 	" csapprox needs vim to be compiled with GUI support
-	call add(g:pathogen_disabled, 'csapproc')
+	call add(g:pathogen_disabled, 'csapprox')
+	call add(g:pathogen_disabled, 'LustyJuggler')
 endif
 
 " Gundo requires at least vim 7.3
 if v:version < '703' || !has('python')
-    call add(g:pathogen_disabled, 'gundo')
+    call add(g:pathogen_disabled, 'Gundo')
 endif
+
 
 if v:version < '702'
     call add(g:pathogen_disabled, 'autocomplpop')
@@ -55,7 +62,14 @@ endif
 "Bundle: https://github.com/godlygeek/csapprox.git
 "Bundle: https://github.com/slack/vim-bufexplorer.git
 "Bundle: https://github.com/vim-scripts/Gundo.git
+"Bundle: https://github.com/vim-scripts/LustyJuggler.git
+"Bundle: http://github.com/scrooloose/syntastic.git
+"
 "Bundle: https://github.com/vim-scripts/snipMate.git
+""" Replacement snippets for snipmate
+"" Bundle: https://github.com/scrooloose/snipmate-snippets.git
+"" Bundle-Command rake deploy_local
+
 ""
 "" COMMAND-T
 "" remove comment the 'static' entry for a first install
@@ -68,15 +82,11 @@ endif
 " Static:  command-t
 "" Bundle: git://git.wincent.com/command-t.git
 "" Bundle-Command: rake make
-"------------------------------------------------------------------------------
-" STATUS BAR
-"------------------------------------------------------------------------------
-"Bundle: https://github.com/dickeytk/status.vim.git
 
 
 
-
-
+" UTF8 by default
+set encoding=utf-8
 
 "---------------------------------------------------------
 " FROM : http://nvie.com/posts/how-i-boosted-my-vim/
@@ -184,10 +194,38 @@ nmap <silent> ,/ :nohlsearch<CR>
 cmap w!! w !sudo tee % >/dev/null
 
 
+
+
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " KEY REMAPING
+" 				(MODE)?		(NO-RECURSIVE)?	(MAP)
+" nmap		=	[n]ormal					[map]
+" noremap	= 				[nore]cursive 	[map]
+" nnoremap 	= 	[n]ormal	[nore]cursive 	[map]
+" vnoremap	=	[v]isual	[nore]cursive	[map]
+"
+" ... etc
+"
+" (http://stackoverflow.com/q/3776117) difference-between-the-remap-noremap...)
+"
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " PLUGINS
 "------------------------------------------------------------------------------
 
-nnoremap <F5>:GundoToggle<CR>
+if v:version < '703' || !has('python')
+	nnoremap <F5>:GundoToggle<CR>
+endif
+
+
+
+source lib/statusbar.vim
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" HELP
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" PLUGINS
+"------------------------------------------------------------------------------
+" LustyBuffers : ,lj   -> asdfg... or -> 12345...
+
