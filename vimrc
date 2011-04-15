@@ -70,7 +70,10 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: https://github.com/slack/vim-bufexplorer.git
 "Bundle: https://github.com/vim-scripts/Gundo.git
 "Bundle: https://github.com/vim-scripts/LustyJuggler.git
-"Bundle: http://github.com/scrooloose/syntastic.git
+"Bundle: https://github.com/scrooloose/syntastic.git
+"Bundle: https://github.com/vim-scripts/Gist.vim.git
+"Bundle: https://github.com/mhz/vim-matchit.git
+"Bundle: https://github.com/vim-scripts/taglist.vim.git
 
 
 "Bundle: https://github.com/vim-scripts/snipMate.git
@@ -250,7 +253,7 @@ cmap w!! w !sudo tee % >/dev/null
 "
 "
 "               (MODE)?     (NO-RECURSIVE)?     (MAP)
-" nmap      =    [n]ormal                        [map]
+" nmap      =   [n]ormal                        [map]
 " noremap   =               [nore]cursive       [map]
 " nnoremap  =   [n]ormal    [nore]cursive       [map]
 " vnoremap  =   [v]isual    [n,svore]cursive    [map]
@@ -273,14 +276,25 @@ nmap <leader>G   :ToggleGitMenu<CR>
 nmap <leader>l   :LustyJuggler<CR>
 
 
+" taglist to ,T
+nmap <leader>T   :TlistToggle<CR>
 
-
+" GIT (fugitive)
+nmap <leader>Gs  :Gstatus<CR>
+nmap <leader>Gc  :Gcommit<CR>
+nmap <leader>Gg  :Ggrep
+nmap <leader>Ga  :Gwrite<CR>           " git add
+nmap <leader>Gl  :Glog
+nmap <leader>Gdc :Gdiff --cached<CR>
+nmap <leader>Gdh :Gdiff HEAD<CR>
+nmap <leader>Gdo :Gdiff ORIG_HEAD<CR>
+nmap <leader>Gb  :Gbrowse<CR>
 
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "						MACVIM SPECIFIC STUFF
-"
+"                   (that you wouldn't put in gvimrc)
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 if has("gui_macvim") 
@@ -289,6 +303,19 @@ endif
 
 
 
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"						USERS' LOCAL CONFIG
+"
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+
+
+" Include user's local vim config
+if filereadable(expand("~/.vimrc.local"))
+  source ~/.vimrc.local
+endif
 
 
 
@@ -301,3 +328,5 @@ endif
 "		BUFFER NAVIGATION
 " LustyBuffers : ,lj   -> asdfg... or -> 12345...
 " Bufexplorer  : ,be
+" TagList      : ,T
+" command-T    : ,t
