@@ -13,5 +13,16 @@ rm -f "$HOME/.gvimrc"
 echo "making new symlink"
 ln -s $pathToHere/../gvimrc $HOME/.gvimrc
 
+echo "deleting .vimrc.local symlink"
+rm -f "$HOME/.vimrc.local"
+echo "making new symlink"
+ln -s $pathToHere/../vimrc.local $HOME/.vimrc.local
+
+echo "deleting .gvimrc.local symlink"
+rm -f "$HOME/.gvimrc.local"
+echo "making new symlink"
+ln -s $pathToHere/../gvimrc.local $HOME/.gvimrc.local
+
+
 . $pathToHere/update
           

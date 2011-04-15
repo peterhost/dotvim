@@ -71,7 +71,8 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: https://github.com/vim-scripts/Gundo.git
 "Bundle: https://github.com/vim-scripts/LustyJuggler.git
 "Bundle: http://github.com/scrooloose/syntastic.git
-"
+
+
 "Bundle: https://github.com/vim-scripts/snipMate.git
 """ Replacement snippets for snipmate
 "" Bundle: https://github.com/scrooloose/snipmate-snippets.git
@@ -90,9 +91,6 @@ call pathogen#runtime_append_all_bundles()
 	" Static:  command-t
 	"" Bundle: git://git.wincent.com/command-t.git
 	"" Bundle-Command: rake make
-
-
-
 
 
 
