@@ -1,4 +1,13 @@
 source $HOME/.vimrc
 
 "dqsdq qqqqqqqqqqqqqqqqq qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq qqdfgggggggggggggggggggggg dfgdfgggggggggggggggg 
-set guifont=Century\ Schoolbook\ Monospace\ BT:h16
+
+
+
+
+
+" Include user's local vim config
+if filereadable(expand("~/.gvimrc.local"))
+  source ~/.gvimrc.local
+endif
+
