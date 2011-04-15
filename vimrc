@@ -1,9 +1,22 @@
-"web resources {{{1
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"								web resources
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " http://objectmix.com/editors/394885-how-do-you-parameterize-your-vimrc-different-machines.html
 " https://github.com/bronson/vim-update-bundles 
-" LustyJuggler	screencast: 	http://lococast.net/archives/185
-" Command-T 	screencast:		https://wincent.com/products/command-t
+" LustyJuggler  screencast:     http://lococast.net/archives/185
+" Command-T     screencast:     https://wincent.com/products/command-t
 "
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"								PATHOGEN
+"								
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"							Pathogen SETUP
+"------------------------------------------------------------------------------
 
 
 " This must be first, because it changes other options as side effect
@@ -46,17 +59,11 @@ endif
 call pathogen#helptags()
 call pathogen#runtime_append_all_bundles()
 
-" MACVIM Specific STUFF
-if has("gui_macvim") 
-   " set macvim specific stuff 
-endif
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" PATHOGEN BUNDLES
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" PLUGINS
+"------------------------------------------------------------------------------
+"							Pathogen BUNDLES
 "------------------------------------------------------------------------------
 "Bundle: https://github.com/tpope/vim-fugitive.git
+"Bundle: https://github.com/taq/vim-git-branch-info.git
 "Bundle: https://github.com/wookiehangover/jshint.vim.git
 "Bundle: https://github.com/scrooloose/nerdtree
 "Bundle: https://github.com/godlygeek/csapprox.git
@@ -70,19 +77,32 @@ endif
 "" Bundle: https://github.com/scrooloose/snipmate-snippets.git
 "" Bundle-Command rake deploy_local
 
-""
-"" COMMAND-T
-"" remove comment the 'static' entry for a first install
-""	-->MACOS :
-""		Download the bundle, then :
-""		$ cd ~/.vim/bundle/command-t/ruby/command-t/
-""		Compile it with RUBY 1.8 !! (not homebrew's ruby)
-""		$ /System/Library/Frameworks/Ruby.framework/Versions/Current/usr/bin/ruby extconf.rb
-""		$ make
-" Static:  command-t
-"" Bundle: git://git.wincent.com/command-t.git
-"" Bundle-Command: rake make
 
+
+"" COMMAND-T
+
+	"" MACOS : conflict native Ruby / homebrew Ruby -> do this Manually
+	""	 Download the bundle, then :
+	""	 $ cd ~/.vim/bundle/command-t/ruby/command-t/
+	""	 Compile it with RUBY 1.8 !! (not homebrew's ruby)
+	""	 $ /System/Library/Frameworks/Ruby.framework/Versions/Current/usr/bin/ruby extconf.rb
+	""	 $ make
+	" Static:  command-t
+	"" Bundle: git://git.wincent.com/command-t.git
+	"" Bundle-Command: rake make
+
+
+
+
+
+
+
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"								GENERAL SETTINGS
+"
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 
 " UTF8 by default
@@ -106,6 +126,8 @@ set nowrap        " don't wrap lines
 set tabstop=4     " a tab is four spaces
 set backspace=indent,eol,start
                   " allow backspacing over everything in insert mode
+                  " (needed on some linux systems - 
+                  "  cf. http://vim.wikia.com/wiki/Backspace_and_delete_problems)
 set autoindent    " always set autoindenting on
 set copyindent    " copy the previous indentation on autoindenting
 set number        " always show line numbers
@@ -122,7 +144,7 @@ set incsearch     " show search matches as you type
 
 
 " and some more
-set history=1000         " remember more commands and search history
+set history=10000         " remember more commands and search history
 set undolevels=1000      " use many muchos levels of undo
 set wildignore=*.swp,*.bak,*.pyc,*.class
 set title                " change the terminal's title
@@ -141,6 +163,20 @@ filetype plugin indent on
 "endif
 
 
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"								STATUS-LINE
+"------------------------------------------------------------------------------
+source $HOME/.vim/lib/statusbar.vim
+" set statusline=%#StatusLineNC#\ Git\ %#ErrorMsg#\ %{GitBranchInfoTokens()[0]}\ %#StatusLine#
+
+
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"								COLORING
+"------------------------------------------------------------------------------
+
+
 " Syntax Highlightning
 if &t_Co >= 256 || has("gui_running")
 	colorscheme mustang
@@ -150,6 +186,20 @@ if &t_Co > 2 || has("gui_running")
 	" switch syntax highlighting on, when the terminal has colors
 	syntax on
 endif
+
+
+
+" discrete marking of long lines (> 80)
+" (http://stackoverflow.com/questions/235439/vim-80-column-layout-concerns#answer-235970)
+highlight OverLength ctermbg=red ctermfg=white guibg=#592929
+match OverLength /\%81v.\+/
+
+
+" mark non-indent tabs, except on commented lines
+match errorMsg /[^"\t]\zs\t\+/
+
+
+
 
 
 " Whitespaces, line-end
@@ -197,35 +247,59 @@ cmap w!! w !sudo tee % >/dev/null
 
 
 
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" KEY REMAPING
-" 				(MODE)?		(NO-RECURSIVE)?	(MAP)
-" nmap		=	[n]ormal					[map]
-" noremap	= 				[nore]cursive 	[map]
-" nnoremap 	= 	[n]ormal	[nore]cursive 	[map]
-" vnoremap	=	[v]isual	[nore]cursive	[map]
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"							KEY REMAPING
+"
+"
+"               (MODE)?     (NO-RECURSIVE)?     (MAP)
+" nmap      =    [n]ormal                        [map]
+" noremap   =               [nore]cursive       [map]
+" nnoremap  =   [n]ormal    [nore]cursive       [map]
+" vnoremap  =   [v]isual    [n,svore]cursive    [map]
 "
 " ... etc
 "
 " (http://stackoverflow.com/q/3776117) difference-between-the-remap-noremap...)
 "
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" PLUGINS
+"							PLUGINS
 "------------------------------------------------------------------------------
 
 if v:version < '703' || !has('python')
 	nnoremap <F5>:GundoToggle<CR>
 endif
 
+nmap <leader>G   :ToggleGitMenu<CR>
+
+" shorter than default ,lj
+nmap <leader>l   :LustyJuggler<CR>
 
 
-source lib/statusbar.vim
+
+
+
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" HELP
+"						MACVIM SPECIFIC STUFF
+"
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" PLUGINS
+
+if has("gui_macvim") 
+   " set macvim specific stuff 
+endif
+
+
+
+
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"								MEMO
+"
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"								PLUGINS
 "------------------------------------------------------------------------------
+"		BUFFER NAVIGATION
 " LustyBuffers : ,lj   -> asdfg... or -> 12345...
-
+" Bufexplorer  : ,be
