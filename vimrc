@@ -84,7 +84,8 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: https://github.com/vim-scripts/Gist.vim.git
 "Bundle: https://github.com/mhz/vim-matchit.git
 "Bundle: https://github.com/vim-scripts/taglist.vim.git
-"Bundle: https://github.com/vim-scripts/ToggleComment.git
+""Bundle: https://github.com/vim-scripts/ToggleComment.git
+"Bundle: https://github.com/scrooloose/nerdcommenter.git
 
 
 "Bundle: https://github.com/vim-scripts/snipMate.git
@@ -294,7 +295,11 @@ nmap <silent> <leader>/ :nohlsearch<CR>
 cmap w!! w !sudo tee % >/dev/null
 
 " hide buffer/split
-cmap <leader>c   :clo<CR>
+nmap <leader>x   :clo<CR>
+
+
+" map control-backspace to delete the previous word in edit mode
+imap <C-BS> <C-W>
 
 "------------------------------------------------------------------------------
 "							HELP
@@ -307,11 +312,12 @@ cmap <leader>c   :clo<CR>
 "							PLUGINS
 "------------------------------------------------------------------------------
 
+"--------------Gundo-------------------
 if ! v:version < '703' || !has('python')
 	nnoremap <leader>u :GundoToggle<CR>
 endif
 
-
+"-------------LustyJugler--------------
 " ,l (shorter than default ,lj )
 " unmap first to remove the 1 second delay
 if hasmapto(":LustyJuggler")
@@ -320,9 +326,12 @@ endif
 nmap <leader>l   :LustyJuggler<CR>
 
 
-" taglist to ,TA
+"-------------TagList------------------
+" taglist to ,T
 nmap <leader>T   :TlistToggle<CR>
 
+
+"-------------FuGITive-----------------
 " GIT (fugitive)
 nmap <leader>gs  :Gstatus<CR>
 nmap <leader>gc  :Gcommit<CR>
@@ -333,11 +342,6 @@ nmap <leader>gdc :Gdiff --cached<CR>
 nmap <leader>gdh :Gdiff HEAD<CR>
 nmap <leader>gdo :Gdiff ORIG_HEAD<CR>
 nmap <leader>gb  :Gbrowse<CR>
-
-
-
-
-
 
 
 
