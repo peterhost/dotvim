@@ -27,6 +27,10 @@ set nocompatible
 "" see http://www.adamlowe.me/2009/12/vim-destroys-all-other-rails-editors.html
 "filetype off
 
+
+"------------------------------------------------------------------------------
+"                  Load/Unload plugins (VIM specificities)
+"------------------------------------------------------------------------------
 " CUSTOM logic
 " To disable a plugin, add it's bundle name to the following list
 let g:pathogen_disabled = []
@@ -319,15 +323,15 @@ nmap <leader>l   :LustyJuggler<CR>
 nmap <leader>T   :TlistToggle<CR>
 
 " GIT (fugitive)
-nmap <leader>Gs  :Gstatus<CR>
-nmap <leader>Gc  :Gcommit<CR>
-nmap <leader>Gg  :Ggrep
-nmap <leader>Ga  :Gwrite<CR>           " git add
-nmap <leader>Gl  :Glog
-nmap <leader>Gdc :Gdiff --cached<CR>
-nmap <leader>Gdh :Gdiff HEAD<CR>
-nmap <leader>Gdo :Gdiff ORIG_HEAD<CR>
-nmap <leader>Gb  :Gbrowse<CR>
+nmap <leader>gs  :Gstatus<CR>
+nmap <leader>gc  :Gcommit<CR>
+nmap <leader>gg  :Ggrep
+nmap <leader>ga  :Gwrite<CR>           " git add
+nmap <leader>gl  :Glog
+nmap <leader>gdc :Gdiff --cached<CR>
+nmap <leader>gdh :Gdiff HEAD<CR>
+nmap <leader>gdo :Gdiff ORIG_HEAD<CR>
+nmap <leader>gb  :Gbrowse<CR>
 
 
 
