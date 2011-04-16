@@ -36,7 +36,13 @@ let g:pathogen_disabled = []
 if !has('gui_running')
     call add(g:pathogen_disabled, 'csscolor')
 	" csapprox needs vim to be compiled with GUI support
+endif
+	
+if !has('gui') "need vim compiled with gui support to work
 	call add(g:pathogen_disabled, 'csapprox')
+endif
+	
+if  !has('ruby')
 	call add(g:pathogen_disabled, 'LustyJuggler')
 endif
 
@@ -86,6 +92,7 @@ call pathogen#runtime_append_all_bundles()
 "" COMMAND-T
 
 	"" MACOS : conflict native Ruby / homebrew Ruby -> do this Manually
+	"" (https://wincent.com/forums/command-t/topics/425#comment_6536)
 	""	 Download the bundle, then :
 	""	 $ cd ~/.vim/bundle/command-t/ruby/command-t/
 	""	 Compile it with RUBY 1.8 !! (not homebrew's ruby)
@@ -118,6 +125,8 @@ let mapleader=","
 " Quickly edit/reload the vimrc file
 nmap <silent> <leader>ev :e $MYVIMRC<CR>
 nmap <silent> <leader>sv :so $MYVIMRC<CR>
+" Same for the statusLine
+nmap <silent> <leader>ss :so $HOME/.vim/lib/statusbar.vim<CR>
 
 " hide bufers instead of closing them
 set hidden
@@ -164,21 +173,21 @@ filetype plugin indent on
 "endif
 
 
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"								STATUS-LINE
-"------------------------------------------------------------------------------
-source $HOME/.vim/lib/statusbar.vim
-" set statusline=%#StatusLineNC#\ Git\ %#ErrorMsg#\ %{GitBranchInfoTokens()[0]}\ %#StatusLine#
-
-
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "								COLORING
 "------------------------------------------------------------------------------
+"
+" GOTCHA : carefull to always do 'colorscheme'ing before declaring custom 
+"          highlight groups, as the colorscheme directive resets them
+"          (ex: status bar construction)
+"
+"------------------------------------------------------------------------------
 
 
-" Syntax Highlightning
+" -------Syntax Highlightning----------
+
 if &t_Co >= 256 || has("gui_running")
 	colorscheme mustang
 endif
@@ -189,20 +198,24 @@ if &t_Co > 2 || has("gui_running")
 endif
 
 
-
+" ----------Long-Lines-Suck------------
+"
 " discrete marking of long lines (> 80)
 " (http://stackoverflow.com/questions/235439/vim-80-column-layout-concerns#answer-235970)
 highlight OverLength ctermbg=red ctermfg=white guibg=#592929
 match OverLength /\%81v.\+/
 
 
+" -----------TAB Detection-------------
+"
 " mark non-indent tabs, except on commented lines
 match errorMsg /[^"\t]\zs\t\+/
 
 
 
 
-
+"--------non-printable-characters------
+"
 " Whitespaces, line-end
 " more : h listchars
 set nolist
@@ -220,29 +233,12 @@ set pastetoggle=<F2>
 
 
 
-" Use Q for formatting the current paragraph (or selection)
-vmap Q gq
-nmap Q gqap
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"								STATUS-LINE
+"------------------------------------------------------------------------------
 
-" learn the bloody keys, don't use arrows
-map <up> <nop>
-map <down> <nop>
-map <left> <nop>
-map <right> <nop>
+source $HOME/.vim/lib/statusbar.vim
 
-
-" Easy window navigation
-map <C-h> <C-w>h
-map <C-j> <C-w>j
-map <C-k> <C-w>k
-map <C-l> <C-w>l
-
-" Easy clear search : ,/
-nmap <silent> ,/ :nohlsearch<CR>
-
-
-" Forgot to sudo : save with w!!
-cmap w!! w !sudo tee % >/dev/null
 
 
 
@@ -262,21 +258,64 @@ cmap w!! w !sudo tee % >/dev/null
 "
 " (http://stackoverflow.com/q/3776117) difference-between-the-remap-noremap...)
 "
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+"------------------------------------------------------------------------------
+"							GENERAL
+"------------------------------------------------------------------------------
+
+" Use Q for formatting the current paragraph (or selection)
+vmap Q gq
+nmap Q gqap
+
+" learn the bloody keys, don't use arrows
+map <up> <nop>
+map <down> <nop>
+map <left> <nop>
+map <right> <nop>
+
+
+" Easy window navigation
+map <C-h> <C-w>h
+map <C-j> <C-w>j
+map <C-k> <C-w>k
+map <C-l> <C-w>l
+
+" Easy clear search : ,/
+nmap <silent> <leader>/ :nohlsearch<CR>
+
+
+" Forgot to sudo : save with w!!
+cmap w!! w !sudo tee % >/dev/null
+
+" hide buffer/split
+cmap <leader>c   :clo<CR>
+
+"------------------------------------------------------------------------------
+"							HELP
+"------------------------------------------------------------------------------
+
+" this section has been moved to $VIMHOME/ftplugin/help.vim
+
+
+"------------------------------------------------------------------------------
 "							PLUGINS
 "------------------------------------------------------------------------------
 
-if v:version < '703' || !has('python')
-	nnoremap <F5>:GundoToggle<CR>
+if ! v:version < '703' || !has('python')
+	nnoremap <leader>u :GundoToggle<CR>
 endif
 
-nmap <leader>G   :ToggleGitMenu<CR>
 
-" shorter than default ,lj
+" ,l (shorter than default ,lj )
+" unmap first to remove the 1 second delay
+if hasmapto(":LustyJuggler")
+	nunmap <leader>lj
+endif
 nmap <leader>l   :LustyJuggler<CR>
 
 
-" taglist to ,T
+" taglist to ,TA
 nmap <leader>T   :TlistToggle<CR>
 
 " GIT (fugitive)
@@ -289,6 +328,13 @@ nmap <leader>Gdc :Gdiff --cached<CR>
 nmap <leader>Gdh :Gdiff HEAD<CR>
 nmap <leader>Gdo :Gdiff ORIG_HEAD<CR>
 nmap <leader>Gb  :Gbrowse<CR>
+
+
+
+
+
+
+
 
 
 
@@ -326,7 +372,25 @@ endif
 "								PLUGINS
 "------------------------------------------------------------------------------
 "		BUFFER NAVIGATION
+"
 " LustyBuffers : ,lj   -> asdfg... or -> 12345...
 " Bufexplorer  : ,be
 " TagList      : ,T
 " command-T    : ,t
+" GundoToggle  : ,u
+"
+"
+"		MACOS KeyRemap4Macbook
+"
+" EJECT     -> forward delete
+" CAPS LOCK -> ESC
+"
+"
+"------------------------------------------------------------------------------
+"								MISC
+"------------------------------------------------------------------------------
+"
+"		VIM DIFF MODE
+"
+" do : diff obtain --> Modify the current buffer to undo difference with another buffer
+" dp : diff put    --> Modify another buffer to undo differences with th ecurrent buffer

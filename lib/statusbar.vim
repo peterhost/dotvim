@@ -1,14 +1,31 @@
 "------------------------------------------------------------------------------
 " STATUS BAR
 "------------------------------------------------------------------------------
-"" don't use it anymore
-""Bundle: https://github.com/dickeytk/status.vim.git
-" instead :
-" (http://www.reddit.com/r/vim/comments/e19bu/whats_your_status_line/)
+" http://got-ravings.blogspot.com/2008/08/vim-pr0n-making-statuslines-that-own.html
+" http://got-ravings.blogspot.com/2008/10/vim-pr0n-statusline-whitespace-flags.html
+" http://www.reddit.com/r/vim/comments/e19bu/whats_your_status_line/
+
+
+" First, define some colors
+
+"define (up to 9) custom highlight groups (mandatory name : UserN)
+hi User1 ctermbg=green ctermfg=red   guibg=green guifg=red
+hi User2 ctermbg=darkgrey   ctermfg=yellow  guibg=darkgrey guifg=darkblue
+hi User3 ctermbg=blue  ctermfg=green guibg=blue  guifg=green
+
+" use them with %N* : %1*, %2*,...
+set statusline+=%1*  "switch to User1 highlight
+
+
+
+
+
+
 
 " {{{ Nice statusbar
 "statusline setup
-set statusline=%f       "tail of the filename
+set statusline=
+set statusline+=%f       "tail of the filename
 
 "display a warning if fileformat isnt unix
 set statusline+=%#warningmsg#
@@ -26,7 +43,9 @@ set statusline+=%r      "read only flag
 set statusline+=%m      "modified flag
 
 " display current git branch
+set statusline+=%2*
 set statusline+=%{fugitive#statusline()}
+set statusline+=%*
 
 "display a warning if &et is wrong, or we have mixed-indenting
 set statusline+=%#error#
