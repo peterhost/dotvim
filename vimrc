@@ -84,6 +84,7 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: https://github.com/vim-scripts/Gist.vim.git
 "Bundle: https://github.com/mhz/vim-matchit.git
 "Bundle: https://github.com/vim-scripts/taglist.vim.git
+"Bundle: https://github.com/vim-scripts/ToggleComment.git
 
 
 "Bundle: https://github.com/vim-scripts/snipMate.git
@@ -326,7 +327,7 @@ nmap <leader>T   :TlistToggle<CR>
 nmap <leader>gs  :Gstatus<CR>
 nmap <leader>gc  :Gcommit<CR>
 nmap <leader>gg  :Ggrep
-nmap <leader>ga  :Gwrite<CR>           " git add
+nmap <leader>ga  :Gwrite<CR>           " git add current file
 nmap <leader>gl  :Glog
 nmap <leader>gdc :Gdiff --cached<CR>
 nmap <leader>gdh :Gdiff HEAD<CR>
