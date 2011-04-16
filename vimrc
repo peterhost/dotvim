@@ -75,6 +75,7 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: https://github.com/tpope/vim-fugitive.git
 "Bundle: https://github.com/taq/vim-git-branch-info.git
 "Bundle: https://github.com/wookiehangover/jshint.vim.git
+"Bundle-command: rake
 "Bundle: https://github.com/scrooloose/nerdtree
 "Bundle: https://github.com/godlygeek/csapprox.git
 "Bundle: https://github.com/slack/vim-bufexplorer.git
@@ -88,10 +89,17 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: https://github.com/scrooloose/nerdcommenter.git
 
 
+"Bundle: https://github.com/ervandew/supertab.git
+"Bundle: https://github.com/vim-scripts/SearchComplete.git
+"Bundle: https://github.com/vim-scripts/ShowMarks.git
+"Bundle: https://github.com/vim-scripts/buftabs.git
+"Bundle: https://github.com/robgleeson/vim-markdown-preview.git
+"Bundle: https://github.com/tpope/vim-markdown.git
+
 "Bundle: https://github.com/vim-scripts/snipMate.git
 """ Replacement snippets for snipmate
 "" Bundle: https://github.com/scrooloose/snipmate-snippets.git
-"" Bundle-Command rake deploy_local
+"" Bundle-Command: rake deploy_local
 
 
 
@@ -202,6 +210,11 @@ if &t_Co > 2 || has("gui_running")
 	" switch syntax highlighting on, when the terminal has colors
 	syntax on
 endif
+
+" ----------Additional Syntax----------
+
+" JSON : js syntax suffices
+autocmd BufNewFile,BufRead *.json set ft=javascript
 
 
 " ----------Long-Lines-Suck------------

@@ -2,3 +2,5 @@ bundle/*
 doc/*
 Trashed-Bundles/*
 logfile
+ftplugin/*
+!ftplugin/help.vim
