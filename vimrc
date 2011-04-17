@@ -406,7 +406,7 @@ endif
 " TagList      : ,T
 " command-T    : ,t
 " GundoToggle  : ,u
-"
+" ShowMarks    : ,mt  -> toggle ShowMarks
 "
 "		MACOS KeyRemap4Macbook
 "
