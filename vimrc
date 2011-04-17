@@ -75,7 +75,7 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: https://github.com/tpope/vim-fugitive.git
 "Bundle: https://github.com/taq/vim-git-branch-info.git
 "Bundle: https://github.com/wookiehangover/jshint.vim.git
-"Bundle-command: rake
+""Bundle-command: rake
 "Bundle: https://github.com/scrooloose/nerdtree
 "Bundle: https://github.com/godlygeek/csapprox.git
 "Bundle: https://github.com/slack/vim-bufexplorer.git
@@ -87,14 +87,19 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: https://github.com/vim-scripts/taglist.vim.git
 ""Bundle: https://github.com/vim-scripts/ToggleComment.git
 "Bundle: https://github.com/scrooloose/nerdcommenter.git
+"Bundle: https://github.com/robgleeson/vim-markdown-preview.git
 
+" ----------NOT SURE-------------------
 
 "Bundle: https://github.com/ervandew/supertab.git
 "Bundle: https://github.com/vim-scripts/SearchComplete.git
 "Bundle: https://github.com/vim-scripts/ShowMarks.git
 "Bundle: https://github.com/vim-scripts/buftabs.git
-"Bundle: https://github.com/robgleeson/vim-markdown-preview.git
 "Bundle: https://github.com/tpope/vim-markdown.git
+"Bundle: https://github.com/vim-scripts/YankRing.vim.git
+
+
+
 
 "Bundle: https://github.com/vim-scripts/snipMate.git
 """ Replacement snippets for snipmate
@@ -179,9 +184,10 @@ set noerrorbells         " don't beep
 set nobackup
 set noswapfile
 
-" filetype plugins
+" filetype detection, plugin and indent : ON
 filetype plugin indent on
 "ex :
+
 "if has('autocmd') "this is for compatibility with older vim versions
 "	autocmd filetype python set expandtab
 "endif
