@@ -27,8 +27,9 @@ ln -s $pathToHere/../gvimrc.local $HOME/.gvimrc.local
 . $pathToHere/update
 
 
-if [ ! which node >/dev/null 2>&1 ] || [ ! which jsctags >/dev/null 2>&1 ];then
+if  ! which node >/dev/null 2>&1  ||  ! which jsctags >/dev/null 2>&1 ;then
 	echo "
 	WARN : either node.js or jsctags (jsdoctor) seems to be missing on your
-	       system. vim-taglist-plus will use CTAGS instead of JSCTAGS for js"
+	       system. vim-taglist-plus will use CTAGS instead of JSCTAGS for js
+		   (https://github.com/pcwalton/doctorjs.git)"
 fi
