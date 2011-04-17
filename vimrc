@@ -15,8 +15,6 @@
 "								PATHOGEN
 "								
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"							Pathogen SETUP
-"------------------------------------------------------------------------------
 
 
 " This must be first, because it changes other options as side effect
@@ -29,7 +27,7 @@ set nocompatible
 
 
 "------------------------------------------------------------------------------
-"                  Load/Unload plugins (VIM specificities)
+"                      Load/Unload plugins RULES
 "------------------------------------------------------------------------------
 " CUSTOM logic
 " To disable a plugin, add it's bundle name to the following list
@@ -84,20 +82,22 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: https://github.com/scrooloose/syntastic.git
 "Bundle: https://github.com/vim-scripts/Gist.vim.git
 "Bundle: https://github.com/mhz/vim-matchit.git
-"Bundle: https://github.com/vim-scripts/taglist.vim.git
-""Bundle: https://github.com/vim-scripts/ToggleComment.git
 "Bundle: https://github.com/scrooloose/nerdcommenter.git
 "Bundle: https://github.com/robgleeson/vim-markdown-preview.git
 
-" ----------NOT SURE-------------------
+" ----------TAGLIST-PLUS----------------
+"  for JS goodness, you also need node.js & jsdoctor
+"  installed on your system (jsdoctor = jsctags)
+""Bundle: https://github.com/vim-scripts/taglist.vim.git
+"Bundle: https://github.com/int3/vim-taglist-plus.git
 
+" ----------NOT SURE-------------------
 "Bundle: https://github.com/ervandew/supertab.git
 "Bundle: https://github.com/vim-scripts/SearchComplete.git
 "Bundle: https://github.com/vim-scripts/ShowMarks.git
 "Bundle: https://github.com/vim-scripts/buftabs.git
 "Bundle: https://github.com/tpope/vim-markdown.git
 "Bundle: https://github.com/vim-scripts/YankRing.vim.git
-
 
 
 
@@ -179,6 +179,7 @@ set wildignore=*.swp,*.bak,*.pyc,*.class
 set title                " change the terminal's title
 set visualbell           " don't beep
 set noerrorbells         " don't beep
+set shortmess=t          " short messages in status line (filepath)
 
 " no backups please, use git
 set nobackup
@@ -191,6 +192,8 @@ filetype plugin indent on
 "if has('autocmd') "this is for compatibility with older vim versions
 "	autocmd filetype python set expandtab
 "endif
+
+
 
 
 
@@ -265,12 +268,15 @@ set pastetoggle=<F2>
 source $HOME/.vim/lib/statusbar.vim
 
 
-
-
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"							PLUGIN SPECIFIC CONFIGS
+"------------------------------------------------------------------------------
+let g:showmarks_enable=0       "ShowMarks - disable by default
+let g:Tlist_Use_SingleClick=1  "TagList   - single click to 'goto' tag
 
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"							KEY REMAPING
+"							--MAPING--
 "
 "
 "               (MODE)?     (NO-RECURSIVE)?     (MAP)
@@ -293,11 +299,6 @@ source $HOME/.vim/lib/statusbar.vim
 vmap Q gq
 nmap Q gqap
 
-" learn the bloody keys, don't use arrows
-map <up> <nop>
-map <down> <nop>
-map <left> <nop>
-map <right> <nop>
 
 
 " Easy window navigation
@@ -305,6 +306,22 @@ map <C-h> <C-w>h
 map <C-j> <C-w>j
 map <C-k> <C-w>k
 map <C-l> <C-w>l
+
+
+"" learn the bloody keys, don't use arrows
+"map <up> <nop>
+"map <down> <nop>
+"map <left> <nop>
+"map <right> <nop>
+
+
+" Easy window navigation 2 
+" -> map arrow keys to buffer navigation
+map <left> <C-w>h
+map <down> <C-w>j
+map <up> <C-w>k
+map <right> <C-w>l
+
 
 " Easy clear search : ,/
 nmap <silent> <leader>/ :nohlsearch<CR>
@@ -325,7 +342,7 @@ imap <C-BS> <C-W>
 "------------------------------------------------------------------------------
 
 " this section has been moved to $VIMHOME/ftplugin/help.vim
-
+" (mappings specific to help buffer for easy navigation)
 
 "------------------------------------------------------------------------------
 "							PLUGINS
@@ -363,6 +380,8 @@ nmap <leader>gdo :Gdiff ORIG_HEAD<CR>
 nmap <leader>gb  :Gbrowse<CR>
 
 
+"--------------YankRing----------------
+nmap <leader>y :YRShow<CR>
 
 
 
