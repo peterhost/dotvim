@@ -83,6 +83,7 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: https://github.com/vim-scripts/Gist.vim.git
 "Bundle: https://github.com/mhz/vim-matchit.git
 "Bundle: https://github.com/scrooloose/nerdcommenter.git
+"Bundle: https://github.com/plasticboy/vim-markdown.git
 "Bundle: https://github.com/robgleeson/vim-markdown-preview.git
 
 " ----------TAGLIST-PLUS----------------
@@ -91,38 +92,37 @@ call pathogen#runtime_append_all_bundles()
 ""Bundle: https://github.com/vim-scripts/taglist.vim.git
 "Bundle: https://github.com/int3/vim-taglist-plus.git
 
-" ----------NOT SURE-------------------
-"Bundle: https://github.com/ervandew/supertab.git
-"Bundle: https://github.com/vim-scripts/SearchComplete.git
-"Bundle: https://github.com/vim-scripts/ShowMarks.git
-"Bundle: https://github.com/vim-scripts/buftabs.git
-"Bundle: https://github.com/tpope/vim-markdown.git
-"Bundle: https://github.com/vim-scripts/YankRing.vim.git
 
-
-
+" ----------SNIPMATE-------------------
 "Bundle: https://github.com/vim-scripts/snipMate.git
 """ Replacement snippets for snipmate
 "" Bundle: https://github.com/scrooloose/snipmate-snippets.git
 "" Bundle-Command: rake deploy_local
 
 
-
-"" COMMAND-T
-
-	"" MACOS : conflict native Ruby / homebrew Ruby -> do this Manually
-	"" (https://wincent.com/forums/command-t/topics/425#comment_6536)
-	""	 Download the bundle, then :
-	""	 $ cd ~/.vim/bundle/command-t/ruby/command-t/
-	""	 Compile it with RUBY 1.8 !! (not homebrew's ruby)
-	""	 $ /System/Library/Frameworks/Ruby.framework/Versions/Current/usr/bin/ruby extconf.rb
-	""	 $ make
-	" Static:  command-t
-	"" Bundle: git://git.wincent.com/command-t.git
-	"" Bundle-Command: rake make
-
+" ----------COMMAND-T------------------
+"" MACOS : conflict native Ruby / homebrew Ruby -> do this Manually
+"" (https://wincent.com/forums/command-t/topics/425#comment_6536)
+""      Download the bundle, then :
+""	    $ cd ~/.vim/bundle/command-t/ruby/command-t/
+""	    Compile it with RUBY 1.8 !! (not homebrew's ruby)
+""	    $ /System/Library/Frameworks/Ruby.framework/Versions/Current/usr/bin/ruby extconf.rb
+""	    $ make
+""
+"" Bundle: git://git.wincent.com/command-t.git
+"" Bundle-Command: rake make
+" Static:  command-t
 
 
+" ----------NOT SURE-------------------
+"Bundle: https://github.com/ervandew/supertab.git
+"Bundle: https://github.com/vim-scripts/SearchComplete.git
+"Bundle: https://github.com/vim-scripts/ShowMarks.git
+"Bundle: https://github.com/vim-scripts/YankRing.vim.git
+
+
+" ----------(NOT NEEDED)---------------
+""Bundle: https://github.com/vim-scripts/buftabs.git
 
 
 
@@ -193,7 +193,7 @@ filetype plugin indent on
 "	autocmd filetype python set expandtab
 "endif
 
-
+set expandtab " tabs suck, no tabs
 
 
 
@@ -220,18 +220,13 @@ if &t_Co > 2 || has("gui_running")
 	syntax on
 endif
 
-" ----------Additional Syntax----------
 
+
+" ----------Additional Syntax----------
 " JSON : js syntax suffices
 autocmd BufNewFile,BufRead *.json set ft=javascript
 
 
-" ----------Long-Lines-Suck------------
-"
-" discrete marking of long lines (> 80)
-" (http://stackoverflow.com/questions/235439/vim-80-column-layout-concerns#answer-235970)
-highlight OverLength ctermbg=red ctermfg=white guibg=#592929
-match OverLength /\%81v.\+/
 
 
 " -----------TAB Detection-------------
@@ -241,6 +236,15 @@ match errorMsg /[^"\t]\zs\t\+/
 
 
 
+" ----------Long-Lines-Suck------------
+"
+" discrete marking of long lines (> 80)
+" (http://stackoverflow.com/questions/235439/vim-80-column-layout-concerns#answer-235970)
+highlight OverLength ctermbg=red ctermfg=white guibg=#592929
+match OverLength /\%81v.\+/
+" NB : warning : for some reason, put this AFTER the 'TAB Detection' one
+" otherwise it won't work
+
 
 "--------non-printable-characters------
 "
@@ -249,7 +253,7 @@ match errorMsg /[^"\t]\zs\t\+/
 set nolist
 set listchars=trail:.,extends:#,nbsp:.
 
-" show tabs for specific files
+" actually show tabs for specific files
 if has('autocmd')
 	autocmd filetype py set list
 	autocmd filetype py set listchars=tab:┊_,trail:.,extends:#,nbsp:.
@@ -261,8 +265,10 @@ set pastetoggle=<F2>
 
 
 
+
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"								STATUS-LINE
+"					     		STATUS LINE
 "------------------------------------------------------------------------------
 
 source $HOME/.vim/lib/statusbar.vim
@@ -382,7 +388,11 @@ nmap <leader>gb  :Gbrowse<CR>
 
 "--------------YankRing----------------
 nmap <leader>y :YRShow<CR>
-
+nmap <leader>Y :YRToggle<CR>
+" last one : yankring conflicts with lustyjuggler
+" (https://github.com/sjbach/lusty/issues/16)
+" to resolve the issue, issue <leader>Y two times to let
+" dd & such work again
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
