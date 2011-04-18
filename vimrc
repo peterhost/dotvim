@@ -1,8 +1,8 @@
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"								web resources
+"                               web resources
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " http://objectmix.com/editors/394885-how-do-you-parameterize-your-vimrc-different-machines.html
-" https://github.com/bronson/vim-update-bundles 
+" https://github.com/bronson/vim-update-bundles
 " LustyJuggler  screencast:     http://lococast.net/archives/185
 " Command-T     screencast:     https://wincent.com/products/command-t
 "
@@ -12,18 +12,16 @@
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"								PATHOGEN
-"								
+"                               PATHOGEN
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 
 " This must be first, because it changes other options as side effect
 set nocompatible
 
-" PATHOGEN
-"" Needed on some linux distros.
+"" Needed on some linux distros for proper pathogen loading
 "" see http://www.adamlowe.me/2009/12/vim-destroys-all-other-rails-editors.html
-"filetype off
+filetype off
 
 
 "------------------------------------------------------------------------------
@@ -33,31 +31,42 @@ set nocompatible
 " To disable a plugin, add it's bundle name to the following list
 let g:pathogen_disabled = []
 
-" for some reason the csscolor plugin is very slow when run on the terminal
-" but not in GVim, so disable it if no GUI is running
+
 if !has('gui_running')
-    call add(g:pathogen_disabled, 'csscolor')
-	" csapprox needs vim to be compiled with GUI support
-endif
-	
-if !has('gui') "need vim compiled with gui support to work
-	call add(g:pathogen_disabled, 'csapprox')
-endif
-	
-if  !has('ruby')
-	call add(g:pathogen_disabled, 'LustyJuggler')
+  call add(g:pathogen_disabled, 'css-color')
+  " for some reason the csscolor plugin is very slow when run on the terminal
+  " but not in GVim, so disable it if no GUI is running
 endif
 
-" Gundo requires at least vim 7.3
+
+if has('gui_running')
+  call add(g:pathogen_disabled, 'buftabs')
+  " we don't want tabs in statusbar when using GUI
+endif
+
+
+if !has('gui')
+  call add(g:pathogen_disabled, 'csapprox')
+  "csapprox need vim compiled with gui support to work
+endif
+
+
+if  !has('ruby')
+  call add(g:pathogen_disabled, 'LustyJuggler')
+  " All those need ruby support
+endif
+
+
 if v:version < '703' || !has('python')
-    call add(g:pathogen_disabled, 'Gundo')
+  call add(g:pathogen_disabled, 'Gundo')
+  " Gundo requires at least vim 7.3
 endif
 
 
 if v:version < '702'
-    call add(g:pathogen_disabled, 'autocomplpop')
-    call add(g:pathogen_disabled, 'fuzzyfinder')
-    call add(g:pathogen_disabled, 'l9')
+  call add(g:pathogen_disabled, 'autocomplpop')
+  call add(g:pathogen_disabled, 'fuzzyfinder')
+  call add(g:pathogen_disabled, 'l9')
 endif
 
 
@@ -68,7 +77,7 @@ call pathogen#helptags()
 call pathogen#runtime_append_all_bundles()
 
 "------------------------------------------------------------------------------
-"							Pathogen BUNDLES
+"                           Pathogen BUNDLES
 "------------------------------------------------------------------------------
 "Bundle: https://github.com/tpope/vim-fugitive.git
 "Bundle: https://github.com/taq/vim-git-branch-info.git
@@ -85,6 +94,10 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: https://github.com/scrooloose/nerdcommenter.git
 "Bundle: https://github.com/plasticboy/vim-markdown.git
 "Bundle: https://github.com/robgleeson/vim-markdown-preview.git
+"Bundle: https://github.com/tpope/vim-surround.git
+"Bundle: https://github.com/vim-scripts/repeat.vim.git
+"Bundle: https://github.com/skammer/vim-css-color.git
+"Bundle: https://github.com/Raimondi/delimitMate.git
 
 " ----------TAGLIST-PLUS----------------
 "  for JS goodness, you also need node.js & jsdoctor
@@ -104,14 +117,18 @@ call pathogen#runtime_append_all_bundles()
 "" MACOS : conflict native Ruby / homebrew Ruby -> do this Manually
 "" (https://wincent.com/forums/command-t/topics/425#comment_6536)
 ""      Download the bundle, then :
-""	    $ cd ~/.vim/bundle/command-t/ruby/command-t/
-""	    Compile it with RUBY 1.8 !! (not homebrew's ruby)
-""	    $ /System/Library/Frameworks/Ruby.framework/Versions/Current/usr/bin/ruby extconf.rb
-""	    $ make
+""      $ cd ~/.vim/bundle/command-t/ruby/command-t/
+""      Compile it with RUBY 1.8 !! (not homebrew's ruby)
+""      $ /System/Library/Frameworks/Ruby.framework/Versions/Current/usr/bin/ruby extconf.rb
+""      $ make
 ""
 "" Bundle: git://git.wincent.com/command-t.git
 "" Bundle-Command: rake make
 " Static:  command-t
+
+
+" --------(DISABLED in GUI mode)-------
+"Bundle: https://github.com/vim-scripts/buftabs.git
 
 
 " ----------NOT SURE-------------------
@@ -119,15 +136,14 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: https://github.com/vim-scripts/SearchComplete.git
 "Bundle: https://github.com/vim-scripts/ShowMarks.git
 "Bundle: https://github.com/vim-scripts/YankRing.vim.git
-
+"Bundle: https://github.com/vim-scripts/Conque-Shell.git
 
 " ----------(NOT NEEDED)---------------
-""Bundle: https://github.com/vim-scripts/buftabs.git
 
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"								GENERAL SETTINGS
+"                               GENERAL SETTINGS
 "
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
@@ -152,15 +168,15 @@ set hidden
 
 " usefull stuff
 set nowrap        " don't wrap lines
-set tabstop=4     " a tab is four spaces
+set tabstop=2     " a tab is four spaces
 set backspace=indent,eol,start
                   " allow backspacing over everything in insert mode
-                  " (needed on some linux systems - 
+                  " (needed on some linux systems -
                   "  cf. http://vim.wikia.com/wiki/Backspace_and_delete_problems)
 set autoindent    " always set autoindenting on
 set copyindent    " copy the previous indentation on autoindenting
 set number        " always show line numbers
-set shiftwidth=4  " number of spaces to use for autoindenting
+set shiftwidth=2  " number of spaces to use for autoindenting
 set shiftround    " use multiple of shiftwidth when indenting with '<' and '>'
 set showmatch     " set show matching varenthesis
 set ignorecase    " ignore case when searching
@@ -185,24 +201,15 @@ set shortmess=t          " short messages in status line (filepath)
 set nobackup
 set noswapfile
 
-" filetype detection, plugin and indent : ON
-filetype plugin indent on
-"ex :
-
-"if has('autocmd') "this is for compatibility with older vim versions
-"	autocmd filetype python set expandtab
-"endif
-
-set expandtab " tabs suck, no tabs
 
 
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"								COLORING
+"                               COLORING
 "------------------------------------------------------------------------------
 "
-" GOTCHA : carefull to always do 'colorscheme'ing before declaring custom 
+" GOTCHA : carefull to always do 'colorscheme'ing before declaring custom
 "          highlight groups, as the colorscheme directive resets them
 "          (ex: status bar construction)
 "
@@ -212,12 +219,12 @@ set expandtab " tabs suck, no tabs
 " -------Syntax Highlightning----------
 
 if &t_Co >= 256 || has("gui_running")
-	colorscheme mustang
+  colorscheme mustang
 endif
 
 if &t_Co > 2 || has("gui_running")
-	" switch syntax highlighting on, when the terminal has colors
-	syntax on
+  " switch syntax highlighting on, when the terminal has colors
+  syntax on
 endif
 
 
@@ -242,47 +249,91 @@ match errorMsg /[^"\t]\zs\t\+/
 " (http://stackoverflow.com/questions/235439/vim-80-column-layout-concerns#answer-235970)
 highlight OverLength ctermbg=red ctermfg=white guibg=#592929
 match OverLength /\%81v.\+/
-" NB : warning : for some reason, put this AFTER the 'TAB Detection' one
+" NB : warning : for some reason, put this BEFORE the 'set list' command
 " otherwise it won't work
 
 
-"--------non-printable-characters------
-"
-" Whitespaces, line-end
-" more : h listchars
-set nolist
-set listchars=trail:.,extends:#,nbsp:.
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"                              INDENTATION
+"------------------------------------------------------------------------------
+
+
+" filetype detection, plugin and indent : ON
+filetype plugin indent on
+
+
+set expandtab " tabs suck, no tabs, except for nazis like python
+
 
 " actually show tabs for specific files
 if has('autocmd')
-	autocmd filetype py set list
-	autocmd filetype py set listchars=tab:┊_,trail:.,extends:#,nbsp:.
+  " make and python use real tabs
+  autocmd FileType make        set noexpandtab
+  autocmd FileType python      set noexpandtab
+endif
+
+"--------non-printable-characters------
+"
+" help: h listchars
+
+set list
+"set nolist
+
+"set listchars=trail:.,extends:#,nbsp:.
+set listchars=tab:\ \ ,extends:#,trail:⋅,nbsp:⋅
+
+" show tabs more strongly for specific files
+if has('autocmd')
+  autocmd filetype py set list
+  autocmd filetype py set listchars=tab:▷⋅,trail:.,extends:#,nbsp:.
 endif
 
 
+"----------trailing-whitespaces--------
+
+" highlight trailing whitespaces so they are easier to spot
+match Todo /\s\+$/
+
+
+" delete all trailing whitespaces
+" * carefull with MarkDown or any file which
+"   have meaningful trailing whitespaces
+" * carefull with commits so as not to scramble diffs : do this
+"   only once in a while
+:map <S-F7> :%s/\s\+$//g<CR>
+
+
+
+" -----------Pase-in-insert-mode-------
 " disable AUTOindenting when doing big pastes
-set pastetoggle=<F2>
+set pastetoggle=<F10>
+
 
 
 
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"					     		STATUS LINE
+"                               STATUS LINE
 "------------------------------------------------------------------------------
 
 source $HOME/.vim/lib/statusbar.vim
 
 
+
+
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"							PLUGIN SPECIFIC CONFIGS
+"                           PLUGIN SPECIFIC CONFIGS
 "------------------------------------------------------------------------------
 let g:showmarks_enable=0       "ShowMarks - disable by default
 let g:Tlist_Use_SingleClick=1  "TagList   - single click to 'goto' tag
 
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"							--MAPING--
+"                           --MAPING--
 "
 "
 "               (MODE)?     (NO-RECURSIVE)?     (MAP)
@@ -298,7 +349,7 @@ let g:Tlist_Use_SingleClick=1  "TagList   - single click to 'goto' tag
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 "------------------------------------------------------------------------------
-"							GENERAL
+"                           GENERAL
 "------------------------------------------------------------------------------
 
 " Use Q for formatting the current paragraph (or selection)
@@ -321,7 +372,7 @@ map <C-l> <C-w>l
 "map <right> <nop>
 
 
-" Easy window navigation 2 
+" Easy window navigation 2
 " -> map arrow keys to buffer navigation
 map <left> <C-w>h
 map <down> <C-w>j
@@ -336,7 +387,7 @@ nmap <silent> <leader>/ :nohlsearch<CR>
 " Forgot to sudo : save with w!!
 cmap w!! w !sudo tee % >/dev/null
 
-" hide buffer/split
+" hide buffer/ close split
 nmap <leader>x   :clo<CR>
 
 
@@ -344,26 +395,26 @@ nmap <leader>x   :clo<CR>
 imap <C-BS> <C-W>
 
 "------------------------------------------------------------------------------
-"							HELP
+"                           HELP
 "------------------------------------------------------------------------------
 
 " this section has been moved to $VIMHOME/ftplugin/help.vim
 " (mappings specific to help buffer for easy navigation)
 
 "------------------------------------------------------------------------------
-"							PLUGINS
+"                           PLUGINS
 "------------------------------------------------------------------------------
 
 "--------------Gundo-------------------
 if ! v:version < '703' || !has('python')
-	nnoremap <leader>u :GundoToggle<CR>
+  nnoremap <leader>u :GundoToggle<CR>
 endif
 
 "-------------LustyJugler--------------
 " ,l (shorter than default ,lj )
 " unmap first to remove the 1 second delay
 if hasmapto(":LustyJuggler")
-	nunmap <leader>lj
+  nunmap <leader>lj
 endif
 nmap <leader>l   :LustyJuggler<CR>
 
@@ -396,12 +447,12 @@ nmap <leader>Y :YRToggle<CR>
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"						MACVIM SPECIFIC STUFF
+"                       MACVIM SPECIFIC STUFF
 "                   (that you wouldn't put in gvimrc)
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-if has("gui_macvim") 
-   " set macvim specific stuff 
+if has("gui_macvim")
+  " set macvim specific stuff
 endif
 
 
@@ -409,7 +460,7 @@ endif
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"						USERS' LOCAL CONFIG
+"                       USERS' LOCAL CONFIG
 "
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
@@ -423,12 +474,12 @@ endif
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"								MEMO
+"                               MEMO
 "
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"								PLUGINS
+"                               PLUGINS
 "------------------------------------------------------------------------------
-"		BUFFER NAVIGATION
+"       BUFFER NAVIGATION
 "
 " LustyBuffers : ,lj   -> asdfg... or -> 12345...
 " Bufexplorer  : ,be
@@ -437,17 +488,17 @@ endif
 " GundoToggle  : ,u
 " ShowMarks    : ,mt  -> toggle ShowMarks
 "
-"		MACOS KeyRemap4Macbook
+"       MACOS KeyRemap4Macbook
 "
 " EJECT     -> forward delete
 " CAPS LOCK -> ESC
 "
 "
 "------------------------------------------------------------------------------
-"								MISC
+"                               MISC
 "------------------------------------------------------------------------------
 "
-"		VIM DIFF MODE
+"       VIM DIFF MODE
 "
 " do : diff obtain --> Modify the current buffer to undo difference with another buffer
 " dp : diff put    --> Modify another buffer to undo differences with th ecurrent buffer
