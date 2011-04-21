@@ -1,4 +1,4 @@
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
 "                               web resources
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " http://objectmix.com/editors/394885-how-do-you-parameterize-your-vimrc-different-machines.html
@@ -29,7 +29,8 @@ filetype off
 "------------------------------------------------------------------------------
 " CUSTOM logic
 " To disable a plugin, add it's bundle name to the following list
-let g:pathogen_disabled = ['command-t']
+"let g:pathogen_disabled = ['command-t']
+let g:pathogen_disabled = ['']
 
 
 if !has('gui_running')
@@ -47,7 +48,7 @@ endif
 
 if !has('gui')
   call add(g:pathogen_disabled, 'csapprox')
-  "csapprox need vim compiled with gui support to work
+  "csapprox need Vim compiled with gui support to work
 endif
 
 
@@ -59,7 +60,7 @@ endif
 
 if v:version < '703' || !has('python')
   call add(g:pathogen_disabled, 'Gundo')
-  " Gundo requires at least vim 7.3
+  " Gundo requires at least Vim 7.3
 endif
 
 
@@ -140,6 +141,8 @@ call pathogen#runtime_append_all_bundles()
 
 "Bundle: https://github.com/vim-scripts/L9.git
 "Bundle: https://github.com/vim-scripts/FuzzyFinder.git
+
+"Bundle: https://github.com/vim-scripts/sessionman.vim.git
 
 " ------(NICE BUT PROBLEMATIC)---------
 
@@ -237,6 +240,7 @@ set wildmenu
 "------------------------------------------------------------------------------
 
 set foldenable
+nnoremap <space> za  "space to toggle FOLD
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -244,7 +248,7 @@ set foldenable
 "------------------------------------------------------------------------------
 
 "Vertical resizing to ,< AND ,>, and faster
-" (shoter than C-w C-<, C-w C->)
+" (shorter than C-w C-<, C-w C->)
 :nnoremap ,< <C-W><<C-W><<C-W><<C-W><
 :nnoremap ,> <C-W>><C-W>><C-W>><C-W>>
 
@@ -253,15 +257,11 @@ set foldenable
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"                               VIEW/SESSION
+"                               SPELLCHECK
 "------------------------------------------------------------------------------
 
-" Remember last location in file
-if has("autocmd")
-  au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
-    \| exe "normal g'\"" | endif
-endif
-
+set spell
+set spelllang=en
 
 
 
@@ -296,9 +296,11 @@ autocmd BufNewFile,BufRead *.json set ft=javascript
 
 
 " ----------------MISC-----------------
-
-"set cursorline!
-
+if has("gui_running") && has("autocmd")
+  autocmd WinEnter * setlocal cursorline
+  autocmd WinLeave * setlocal nocursorline
+  "set cursorline!
+endif
 
 " -----------TAB Detection-------------
 "
@@ -433,17 +435,19 @@ vmap Q gq
 nmap Q gqap
 
 
-" space to maximize current window
-"nmap <space>    <C-W>_
+" Quick window-size changers
+nmap <S-space>      <C-W>_      " space to maximize current window
+nmap <C-S-space>    <C-W>16_    " ctrl+shift+space to set current window to 16 lines
 
 
-" CTRL+space to quickly switch colorschemes
+" ALT+space to quickly switch colorschemes
 "requires set wildmode=full   and set wildmenu
-nmap <C-space> :colorscheme<space>
+nmap <A-space> :colorscheme<space>
 
 " automatically maximize active window
 set winminheight=0     "minimized window only shows title"
-set winheight=999
+
+set winheight=999     "hack to avoid <C-W>_
 
 
 " -----------NAVIGATION----------------
@@ -459,6 +463,17 @@ map <up> <C-w>k
 map <down> <C-w>j
 map <left> <C-w>h
 map <right> <C-w>l
+
+
+"nmap <C-h> <C-w>h<C-W>_
+"nmap <C-j> <C-w>j<C-W>_
+"nmap <C-k> <C-w>k<C-W>_
+"nmap <C-l> <C-w>l<C-W>_
+
+"map <up> <C-w>k<C-W>_
+"map <down> <C-w>j<C-W>_
+"map <left> <C-w>h<C-W>_
+"map <right> <C-w>l<C-W>_
 
 
 " COMMAND : jk navigate history - hl move cursor
@@ -637,7 +652,7 @@ endif
 " ,l (shorter than default ,lj )
 " unmap first to remove the 1 second delay
 if hasmapto(":LustyJuggler")
-  nunmap <leader>lj
+  silent! nunmap <leader>lj
 endif
 nmap <leader>l   :LustyJuggler<CR>
 
@@ -653,7 +668,8 @@ map <leader><C-t> :execute 'NERDTreeToggle ' . getcwd()<CR>
 
 "-------------FuGITive-----------------
 " GIT (fugitive)
-nmap <leader>gs  :Gstatus<CR>
+nmap <leader>gs  :Gstatus<CR><C-w>20_
+"nmap <leader>gs  :Gstatus<CR>
 nmap <leader>gc  :Gcommit<CR>
 nmap <leader>gg  :Ggrep
 nmap <leader>ga  :Gwrite<CR>           " git add current file
@@ -729,6 +745,45 @@ endif
 if filereadable(expand("~/.vimrc.local"))
   source ~/.vimrc.local
 endif
+
+
+
+
+
+
+
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"                               VIEW/SESSION
+"------------------------------------------------------------------------------
+
+" Remember last location in file
+if has("autocmd")
+  au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
+    \| exe "normal g'\"" | endif
+endif
+
+" store views/sessions
+set viewdir=$HOME/.vim/views
+
+if has ("autocmd")
+
+  "automatically save a view/load it when switching buffers
+  autocmd BufWinLeave * mkview
+  autocmd BufWinEnter * silent loadview
+
+
+  ""This session stuff conflicts with plugins --> disabled
+  ""Automatically save a session when exiting VIM
+  "autocmd VimLeavePre * silent mksession!
+endif
+
+"" if there's a session in the working dir, load it
+"silent! source Session.vim
+
+
+
 
 
 

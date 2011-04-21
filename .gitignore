@@ -1,6 +1,9 @@
 bundle/*
 doc/*
+sessions/*
+views/*
 Trashed-Bundles/*
+Session.vim
 logfile
 ftplugin/*
 !ftplugin/help.vim
