@@ -29,7 +29,7 @@ filetype off
 "------------------------------------------------------------------------------
 " CUSTOM logic
 " To disable a plugin, add it's bundle name to the following list
-let g:pathogen_disabled = []
+let g:pathogen_disabled = ['command-t']
 
 
 if !has('gui_running')
@@ -97,6 +97,7 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: https://github.com/tpope/vim-surround.git
 "Bundle: https://github.com/vim-scripts/repeat.vim.git
 "Bundle: https://github.com/skammer/vim-css-color.git
+"Bundle: http://github.com/pangloss/vim-javascript.git
 "Bundle: https://github.com/vim-scripts/Conque-Shell.git
 "Bundle: https://github.com/vim-scripts/YankRing.vim.git
 
@@ -136,7 +137,9 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: https://github.com/ervandew/supertab.git
 "Bundle: https://github.com/vim-scripts/SearchComplete.git
 "Bundle: https://github.com/vim-scripts/ShowMarks.git
-"Bundle: http://github.com/pangloss/vim-javascript.git 
+
+"Bundle: https://github.com/vim-scripts/L9.git
+"Bundle: https://github.com/vim-scripts/FuzzyFinder.git
 
 " ------(NICE BUT PROBLEMATIC)---------
 
@@ -209,6 +212,55 @@ set shortmess=t          " short messages in status line (filepath)
 set nobackup
 set noswapfile
 
+" See more context when scrolling
+:set scrolloff=3
+
+" Show position in lower right
+":set ruler
+
+
+" Make current file's dir the working dir
+if exists("+autochdir")
+  set autochdir
+endif
+
+
+" Awesome TAB completion for Command Mode
+"  ex :colorscheme TAB    to scroll through colorschemes
+"      map TAB            to scroll through mappings
+"      ...
+set wildmode=full
+set wildmenu
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"                               FOLDING
+"------------------------------------------------------------------------------
+
+set foldenable
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"                           WINDOW RESIZING
+"------------------------------------------------------------------------------
+
+"Vertical resizing to ,< AND ,>, and faster
+" (shoter than C-w C-<, C-w C->)
+:nnoremap ,< <C-W><<C-W><<C-W><<C-W><
+:nnoremap ,> <C-W>><C-W>><C-W>><C-W>>
+
+
+
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"                               VIEW/SESSION
+"------------------------------------------------------------------------------
+
+" Remember last location in file
+if has("autocmd")
+  au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
+    \| exe "normal g'\"" | endif
+endif
 
 
 
@@ -245,7 +297,7 @@ autocmd BufNewFile,BufRead *.json set ft=javascript
 
 " ----------------MISC-----------------
 
-set cursorline
+"set cursorline!
 
 
 " -----------TAB Detection-------------
@@ -384,6 +436,11 @@ nmap Q gqap
 " space to maximize current window
 "nmap <space>    <C-W>_
 
+
+" CTRL+space to quickly switch colorschemes
+"requires set wildmode=full   and set wildmenu
+nmap <C-space> :colorscheme<space>
+
 " automatically maximize active window
 set winminheight=0     "minimized window only shows title"
 set winheight=999
@@ -427,12 +484,37 @@ imap <C-l> <right>
 
 " QUICKFIX list navigation (helpgrep,...)
 ":nnoremap <S-F1>  :cc<CR>
-":nnoremap <S-Left>    :cnext<CR>
-":nnoremap <S-Right>  :cprev<CR>
-":nnoremap <F3>    :cnfile<CR>
-":nnoremap <S-F3>  :cpfile<CR>
-":nnoremap <F4>    :cfirst<CR>
-":nnoremap <S-F4>  :clast<CR>
+:nnoremap <leader><Left>    :cprev<CR>
+:nnoremap <leader><Right>   :cnext<CR>
+:nnoremap <leader><Up>      :cpfile<CR>
+:nnoremap <leader><Down>    :cnfile<CR>
+":nnoremap <leader><S-Up>    :cfirst<CR>
+":nnoremap <leader><S-Down>  :clast<CR>
+
+
+
+" this IS REALLY questionnable :
+" Replicate textmate shift arrow/movement in order to select stuff
+nmap <S-up> vk
+vmap <S-up> k
+nmap <S-k> vk
+vmap <S-k> k
+
+nmap <S-right> vl
+vmap <S-right> l
+nmap <S-l> vl
+vmap <S-l> l
+
+nmap <S-down> vj
+vmap <S-down> j
+nmap <S-j> vj
+vmap <S-j> j
+
+nmap <S-left> v
+vmap <S-left> h
+nmap <S-h> vh
+vmap <S-h> h
+
 
 
 
@@ -462,18 +544,18 @@ else
   cmap <C-Space> <C-c>
 endif
 
-" remap jj to ESC in modes that don't use the 'j' key for navigation
+" remap fj to ESC in modes that don't use the 'j' key for navigation
 " (insert, command, operator-pending)
-imap jj <C-c>
-cmap jj <C-c>
-
+imap fj <C-c>
+cmap fj <C-c>
 
 
 
 
 " Easy clear search : ,/
 nmap <silent> <leader>/ :nohlsearch<CR>
-nmap <silent> <leader>: :nohlsearch<CR>  " french keyboard : ,, easier than ,/
+" french keyboard : ,; easier than ,/
+nmap <silent> <leader>; :nohlsearch<CR>
 
 
 " Forgot to sudo : save with w!!
@@ -565,6 +647,10 @@ nmap <leader>l   :LustyJuggler<CR>
 nmap <leader>T   :TlistToggle<CR>
 
 
+"------------NERDTree-----------------
+map <leader><C-t> :execute 'NERDTreeToggle ' . getcwd()<CR>
+
+
 "-------------FuGITive-----------------
 " GIT (fugitive)
 nmap <leader>gs  :Gstatus<CR>
@@ -587,6 +673,38 @@ nmap <leader>Y :YRToggle<CR>
 " dd & such work again
 
 
+"-----------FuzzyFinder----------------
+  "Command           Mode ~
+ :nmap <leader>fb      :FufBuffer<CR>
+ :nmap <leader>ff      :FufFile<CR>
+":nmap <leader>fco     :FufCoverageFile<CR>
+ :nmap <leader>fd      :FufDir<CR>
+":nmap <leader>fmf     :FufMruFile<CR>
+":nmap <leader>fcc     :FufMruCmd<CR>
+":nmap <leader>fbf     :FufBookmarkFile<CR>
+":nmap <leader>fbd     :FufBookmarkDir<CR>
+ :nmap <leader>ft      :FufTag<CR>
+":nmap <leader>ftb     :FufBufferTag<CR>
+":nmap <leader>fft     :FufTaggedFile<CR>
+ :nmap <leader>fj      :FufJumpList<CR>
+ :nmap <leader>fc      :FufChangeList<CR>
+":nmap <leader>fq      :FufQuickfix<CR>
+":nmap <leader>fl      :FufLine<CR>
+ :nmap <leader>fh      :FufHelp<CR>
+
+let g:fuf_keyOpenSplit = '<C-j>'
+let g:fuf_keyOpenVsplit = '<C-k>'
+let g:fuf_keyOpenTabpage = '<C-l>'
+
+
+
+"----------ConqueTerm------------------
+"
+if has("win32") || has("win64")
+  nmap <leader>q  :ConqueTermTab Powershell.exe<CR>
+else
+  nmap <leader>q  :ConqueTermTab bash<CR>
+endif
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "                       MACVIM SPECIFIC STUFF
 "                   (that you wouldn't put in gvimrc)
@@ -620,16 +738,30 @@ endif
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "                               PLUGINS
 "------------------------------------------------------------------------------
-"       BUFFER NAVIGATION
 "
-" LustyBuffers : ,lj   -> asdfg... or -> 12345...
-" Bufexplorer  : ,be
+" --------------BUFFERS----------------
+" LustyBuffers  : ,lj   -> asdfg... or -> 12345...
+" Bufexplorer   : ,be
+" FuzzyFinder   : open=<CR>   Hsplit=<C-j>  Vsplit=<C-k>  newTab=<C-l>
+"                 ,ff=file    ,fd=dir   ,fb=bufer   ,ft=tag   ,fj=jumplist
+"                 ,fc=changelist        ,fh=help
+"
+"
+" -------------TOGGLE------------------
 " TagList      : ,T
 " command-T    : ,t
+" NERDTree     : ,CMD+t
+"
 " GundoToggle  : ,u
 " ShowMarks    : ,mt  -> toggle ShowMarks
 "
-"       MACOS KeyRemap4Macbook
+" YankRing     : ,y
+"
+"
+"----------SURROUND--------------------
+" cs("    -> change surrounding parne to quotes
+"
+" -------MACOS KeyRemap4Macbook--------
 "
 " EJECT     -> forward delete
 " CAPS LOCK -> ESC
