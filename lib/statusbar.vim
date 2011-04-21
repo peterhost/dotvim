@@ -9,12 +9,13 @@
 " First, define some colors
 
 "define (up to 9) custom highlight groups (mandatory name : UserN)
-hi User1 ctermbg=green ctermfg=red   guibg=green guifg=red
-hi User2 ctermbg=darkgrey   ctermfg=yellow  guibg=darkgrey guifg=darkblue
+hi User1 ctermbg=darkgreen ctermfg=darkred   guibg=green guifg=red
+"hi User1 ctermbg=green ctermfg=red   guibg=green guifg=red
+hi User2 ctermbg=darkgrey   ctermfg=darkblue guibg=darkgrey guifg=darkblue
 hi User3 ctermbg=blue  ctermfg=green guibg=blue  guifg=green
 
 " use them with %N* : %1*, %2*,...
-set statusline+=%1*  "switch to User1 highlight
+"set statusline+=%1*  "switch to User1 highlight
 
 
 
@@ -25,6 +26,12 @@ set statusline+=%1*  "switch to User1 highlight
 " {{{ Nice statusbar
 "statusline setup
 set statusline=
+
+"marker for minimized window
+set statusline+=%1*
+set statusline+=%{IsMinimized()}
+set statusline+=%*
+
 set statusline+=%f       "tail of the filename
 
 "display a warning if fileformat isnt unix
@@ -69,6 +76,16 @@ set statusline+=%c,     "cursor column
 set statusline+=%l/%L   "cursor line/total lines
 set statusline+=\ %P    "percent through file
 set laststatus=2        " Always show status line
+
+
+"visual marker if minimized window
+function! IsMinimized()
+  if winheight(0) <= 2
+    return '[↓]'
+  else
+    return ''
+  endif
+endfunction
 
 "return the syntax highlight group under the cursor ''
 function! StatuslineCurrentHighlight()

@@ -2,7 +2,7 @@
 "                               web resources
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " http://objectmix.com/editors/394885-how-do-you-parameterize-your-vimrc-different-machines.html
-" https://github.com/bronson/vim-update-bundles
+" https://github.com/bronson/vim-update-bundles 
 " LustyJuggler  screencast:     http://lococast.net/archives/185
 " Command-T     screencast:     https://wincent.com/products/command-t
 "
@@ -13,15 +13,17 @@
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "                               PATHOGEN
+"                               
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 
 " This must be first, because it changes other options as side effect
 set nocompatible
 
-"" Needed on some linux distros for proper pathogen loading
+" PATHOGEN
+"" Needed on some linux distros.
 "" see http://www.adamlowe.me/2009/12/vim-destroys-all-other-rails-editors.html
-filetype off
+"filetype off
 
 
 "------------------------------------------------------------------------------
@@ -31,42 +33,31 @@ filetype off
 " To disable a plugin, add it's bundle name to the following list
 let g:pathogen_disabled = []
 
-
+" for some reason the csscolor plugin is very slow when run on the terminal
+" but not in GVim, so disable it if no GUI is running
 if !has('gui_running')
-  call add(g:pathogen_disabled, 'css-color')
-  " for some reason the csscolor plugin is very slow when run on the terminal
-  " but not in GVim, so disable it if no GUI is running
+    call add(g:pathogen_disabled, 'csscolor')
+    " csapprox needs vim to be compiled with GUI support
 endif
-
-
-if has('gui_running')
-  call add(g:pathogen_disabled, 'buftabs')
-  " we don't want tabs in statusbar when using GUI
+    
+if !has('gui') "need vim compiled with gui support to work
+    call add(g:pathogen_disabled, 'csapprox')
 endif
-
-
-if !has('gui')
-  call add(g:pathogen_disabled, 'csapprox')
-  "csapprox need vim compiled with gui support to work
-endif
-
-
+    
 if  !has('ruby')
-  call add(g:pathogen_disabled, 'LustyJuggler')
-  " All those need ruby support
+    call add(g:pathogen_disabled, 'LustyJuggler')
 endif
 
-
+" Gundo requires at least vim 7.3
 if v:version < '703' || !has('python')
-  call add(g:pathogen_disabled, 'Gundo')
-  " Gundo requires at least vim 7.3
+    call add(g:pathogen_disabled, 'Gundo')
 endif
 
 
 if v:version < '702'
-  call add(g:pathogen_disabled, 'autocomplpop')
-  call add(g:pathogen_disabled, 'fuzzyfinder')
-  call add(g:pathogen_disabled, 'l9')
+    call add(g:pathogen_disabled, 'autocomplpop')
+    call add(g:pathogen_disabled, 'fuzzyfinder')
+    call add(g:pathogen_disabled, 'l9')
 endif
 
 
@@ -94,11 +85,6 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: https://github.com/scrooloose/nerdcommenter.git
 "Bundle: https://github.com/plasticboy/vim-markdown.git
 "Bundle: https://github.com/robgleeson/vim-markdown-preview.git
-"Bundle: https://github.com/tpope/vim-surround.git
-"Bundle: https://github.com/vim-scripts/repeat.vim.git
-"Bundle: https://github.com/skammer/vim-css-color.git
-"Bundle: https://github.com/vim-scripts/Conque-Shell.git
-"Bundle: https://github.com/vim-scripts/YankRing.vim.git
 
 " ----------TAGLIST-PLUS----------------
 "  for JS goodness, you also need node.js & jsdoctor
@@ -128,25 +114,15 @@ call pathogen#runtime_append_all_bundles()
 " Static:  command-t
 
 
-" --------(DISABLED in GUI mode)-------
-"Bundle: https://github.com/vim-scripts/buftabs.git
-
-
 " ----------NOT SURE-------------------
 "Bundle: https://github.com/ervandew/supertab.git
 "Bundle: https://github.com/vim-scripts/SearchComplete.git
 "Bundle: https://github.com/vim-scripts/ShowMarks.git
-"Bundle: http://github.com/pangloss/vim-javascript.git 
+"Bundle: https://github.com/vim-scripts/YankRing.vim.git
 
-" ------(NICE BUT PROBLEMATIC)---------
-
-""Bundle: https://github.com/Raimondi/delimitMate.git
-""Bundle: https://github.com/int3/vim-extradite.git           "extends fugitive
 
 " ----------(NOT NEEDED)---------------
-"" --------AUTOALIGN SUITE-------------
-""Bundle: https://github.com/vim-scripts/Align.git
-""Bundle: https://github.com/vim-scripts/AutoAlign.git
+""Bundle: https://github.com/vim-scripts/buftabs.git
 
 
 
@@ -176,15 +152,15 @@ set hidden
 
 " usefull stuff
 set nowrap        " don't wrap lines
-set tabstop=2     " a tab is four spaces
+set tabstop=4     " a tab is four spaces
 set backspace=indent,eol,start
                   " allow backspacing over everything in insert mode
-                  " (needed on some linux systems -
+                  " (needed on some linux systems - 
                   "  cf. http://vim.wikia.com/wiki/Backspace_and_delete_problems)
 set autoindent    " always set autoindenting on
 set copyindent    " copy the previous indentation on autoindenting
 set number        " always show line numbers
-set shiftwidth=2  " number of spaces to use for autoindenting
+set shiftwidth=4  " number of spaces to use for autoindenting
 set shiftround    " use multiple of shiftwidth when indenting with '<' and '>'
 set showmatch     " set show matching varenthesis
 set ignorecase    " ignore case when searching
@@ -209,6 +185,15 @@ set shortmess=t          " short messages in status line (filepath)
 set nobackup
 set noswapfile
 
+" filetype detection, plugin and indent : ON
+filetype plugin indent on
+"ex :
+
+"if has('autocmd') "this is for compatibility with older vim versions
+"   autocmd filetype python set expandtab
+"endif
+
+set expandtab " tabs suck, no tabs
 
 
 
@@ -217,7 +202,7 @@ set noswapfile
 "                               COLORING
 "------------------------------------------------------------------------------
 "
-" GOTCHA : carefull to always do 'colorscheme'ing before declaring custom
+" GOTCHA : carefull to always do 'colorscheme'ing before declaring custom 
 "          highlight groups, as the colorscheme directive resets them
 "          (ex: status bar construction)
 "
@@ -227,12 +212,12 @@ set noswapfile
 " -------Syntax Highlightning----------
 
 if &t_Co >= 256 || has("gui_running")
-  colorscheme mustang
+    colorscheme mustang
 endif
 
 if &t_Co > 2 || has("gui_running")
-  " switch syntax highlighting on, when the terminal has colors
-  syntax on
+    " switch syntax highlighting on, when the terminal has colors
+    syntax on
 endif
 
 
@@ -242,10 +227,6 @@ endif
 autocmd BufNewFile,BufRead *.json set ft=javascript
 
 
-
-" ----------------MISC-----------------
-
-set cursorline
 
 
 " -----------TAB Detection-------------
@@ -261,67 +242,26 @@ match errorMsg /[^"\t]\zs\t\+/
 " (http://stackoverflow.com/questions/235439/vim-80-column-layout-concerns#answer-235970)
 highlight OverLength ctermbg=red ctermfg=white guibg=#592929
 match OverLength /\%81v.\+/
-" NB : warning : for some reason, put this BEFORE the 'set list' command
+" NB : warning : for some reason, put this AFTER the 'TAB Detection' one
 " otherwise it won't work
 
 
-
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"                              INDENTATION
-"------------------------------------------------------------------------------
-
-
-" filetype detection, plugin and indent : ON
-filetype plugin indent on
-
-
-set expandtab " tabs suck, no tabs, except for nazis like python
-
+"--------non-printable-characters------
+"
+" Whitespaces, line-end
+" more : h listchars
+set nolist
+set listchars=trail:.,extends:#,nbsp:.
 
 " actually show tabs for specific files
 if has('autocmd')
-  " make and python use real tabs
-  autocmd FileType make        set noexpandtab
-  autocmd FileType python      set noexpandtab
-endif
-
-"--------non-printable-characters------
-"
-" help: h listchars
-
-set list
-"set nolist
-
-"set listchars=trail:.,extends:#,nbsp:.
-set listchars=tab:\ \ ,extends:#,trail:⋅,nbsp:⋅
-
-" show tabs more strongly for specific files
-if has('autocmd')
-  autocmd filetype py set list
-  autocmd filetype py set listchars=tab:▷⋅,trail:.,extends:#,nbsp:.
+    autocmd filetype py set list
+    autocmd filetype py set listchars=tab:┊_,trail:.,extends:#,nbsp:.
 endif
 
 
-"----------trailing-whitespaces--------
-
-" highlight trailing whitespaces so they are easier to spot
-match Todo /\s\+$/
-
-
-" delete all trailing whitespaces
-" * carefull with MarkDown or any file which
-"   have meaningful trailing whitespaces
-" * carefull with commits so as not to scramble diffs : do this
-"   only once in a while
-:map <S-F7> :%s/\s\+$//g<CR>
-
-
-
-" -----------Pase-in-insert-mode-------
 " disable AUTOindenting when doing big pastes
-set pastetoggle=<F10>
-
+set pastetoggle=<F2>
 
 
 
@@ -332,12 +272,6 @@ set pastetoggle=<F10>
 "------------------------------------------------------------------------------
 
 source $HOME/.vim/lib/statusbar.vim
-"au FocusLost * source $HOME/.vim/lib/statusbar.vim
-
-
-
-
-
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -345,15 +279,6 @@ source $HOME/.vim/lib/statusbar.vim
 "------------------------------------------------------------------------------
 let g:showmarks_enable=0       "ShowMarks - disable by default
 let g:Tlist_Use_SingleClick=1  "TagList   - single click to 'goto' tag
-
-"Command-T configuration
-let g:CommandTMaxHeight=20
-
-
-
-
-
-
 
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -381,41 +306,12 @@ vmap Q gq
 nmap Q gqap
 
 
-" space to maximize current window
-"nmap <space>    <C-W>_
 
-" automatically maximize active window
-set winminheight=0     "minimized window only shows title"
-set winheight=999
-
-
-" -----------NAVIGATION----------------
-" use CTRL hjkl to navigate in different modes
-
-" NORMAL : Window navigation
-nmap <C-h> <C-w>h
-nmap <C-j> <C-w>j
-nmap <C-k> <C-w>k
-nmap <C-l> <C-w>l
-
-map <up> <C-w>k
-map <down> <C-w>j
-map <left> <C-w>h
-map <right> <C-w>l
-
-
-" COMMAND : jk navigate history - hl move cursor
-cmap <C-h> <left>
-cmap <C-j> <down>
-cmap <C-k> <up>
-cmap <C-l> <right>
-
-
-" INSERT : move cursor
-imap <C-h> <left>
-imap <C-j> <down>
-imap <C-k> <up>
-imap <C-l> <right>
+" Easy window navigation
+map <C-h> <C-w>h
+map <C-j> <C-w>j
+map <C-k> <C-w>k
+map <C-l> <C-w>l
 
 
 "" learn the bloody keys, don't use arrows
@@ -425,122 +321,34 @@ imap <C-l> <right>
 "map <right> <nop>
 
 
-" QUICKFIX list navigation (helpgrep,...)
-":nnoremap <S-F1>  :cc<CR>
-":nnoremap <S-Left>    :cnext<CR>
-":nnoremap <S-Right>  :cprev<CR>
-":nnoremap <F3>    :cnfile<CR>
-":nnoremap <S-F3>  :cpfile<CR>
-":nnoremap <F4>    :cfirst<CR>
-":nnoremap <S-F4>  :clast<CR>
-
-
-
-" ---------ESC is too far away---------
-" and capslock is better used for CTRL
-"
-" GOTCHAS:
-"     1) remap to <C-c> instead of <ESC> in map! modes (insert, command) to avoid the
-"        'E492: Not an editor command:foo'   error
-"     see ":h c_<Esc>"
-"     see http://www.mail-archive.com/vim_mac@googlegroups.com/msg00858.html
-"
-"    2) on *NIX (linux, macosX,...) in terminal, remap to <Nul> instead of <C-Space>
-"
-
-" map CTRL+SPACE to ESC in ALL modes
-" (normal, visual, select, operator pending)
-if has('unix') && !has('gui_running')
-  imap <Nul> <Esc>
-  vmap <Nul> <Esc>
-  nmap <Nul> <Esc>
-  cnoremap <Nul> <C-c>  "hacky, right ?
-else
-  imap <C-space> <Esc>
-  vmap <C-space> <Esc>
-  nmap <C-Space> <ESC>
-  cmap <C-Space> <C-c>
-endif
-
-" remap jj to ESC in modes that don't use the 'j' key for navigation
-" (insert, command, operator-pending)
-imap jj <C-c>
-cmap jj <C-c>
-
-
-
+" Easy window navigation 2 
+" -> map arrow keys to buffer navigation
+map <left> <C-w>h
+map <down> <C-w>j
+map <up> <C-w>k
+map <right> <C-w>l
 
 
 " Easy clear search : ,/
 nmap <silent> <leader>/ :nohlsearch<CR>
-nmap <silent> <leader>: :nohlsearch<CR>  " french keyboard : ,, easier than ,/
 
 
 " Forgot to sudo : save with w!!
 cmap w!! w !sudo tee % >/dev/null
 
-" hide buffer/ close split
+" hide buffer/split
 nmap <leader>x   :clo<CR>
-nmap <leader>X   :bd<CR>
 
 
 " map control-backspace to delete the previous word in edit mode
 imap <C-BS> <C-W>
 
+"------------------------------------------------------------------------------
+"                           HELP
+"------------------------------------------------------------------------------
 
-" DIRECT ACCESS to usefull keys on AZERTY keyboards
-" in NORMAL and VISUAL mode
-nmap è  [
-nmap ç  ]
-nmap §  {
-nmap à  }
-
-vmap è  [
-vmap ç  ]
-vmap §  {
-vmap à  }
-
-nmap ù  %
-vmap ù  %
-
-"nnoremap ù  %
-"vnoremap ù  %
-
-"------------help-buffer--------------
-
-" these are i$ VIMHOME/ftplugin/help.vim
+" this section has been moved to $VIMHOME/ftplugin/help.vim
 " (mappings specific to help buffer for easy navigation)
-
-" --------PERL-(mapping : ,h)----------
-function! PerlDoc()
-  normal yy
-  let l:this = @
-  if match(l:this, '^ *\(use\|require\) ') >= 0
-    exe ':new'
-    exe ':resize'
-    let l:this = substitute(l:this, '^ *\(use\|require\) *', "", "")
-    let l:this = substitute(l:this, ";.*", "", "")
-    let l:this = substitute(l:this, " .*", "", "")
-    exe ':0r!perldoc -t ' . l:this
-    exe ':0'
-    return
-  endif
-  normal yiw
-  exe ':new'
-  exe ':resize'
-  exe ':0r!perldoc -t -f ' . @
-  exe ':0'
-endfunction
-
-if has('autocmd')
-  "Display PERL docs for built-in functions when cursor is on function name
-  "or for modules when cursor is on 'use' or 'require' line.
-  autocmd filetype perl map ,h :call PerlDoc()<CR>:set nomod<CR>:set filetype=man<CR>:echo "perldoc"<CR>
-endif
-
-
-
-
 
 "------------------------------------------------------------------------------
 "                           PLUGINS
@@ -548,14 +356,14 @@ endif
 
 "--------------Gundo-------------------
 if ! v:version < '703' || !has('python')
-  nnoremap <leader>u :GundoToggle<CR>
+    nnoremap <leader>u :GundoToggle<CR>
 endif
 
 "-------------LustyJugler--------------
 " ,l (shorter than default ,lj )
 " unmap first to remove the 1 second delay
 if hasmapto(":LustyJuggler")
-  nunmap <leader>lj
+    nunmap <leader>lj
 endif
 nmap <leader>l   :LustyJuggler<CR>
 
@@ -581,7 +389,7 @@ nmap <leader>gb  :Gbrowse<CR>
 "--------------YankRing----------------
 nmap <leader>y :YRShow<CR>
 nmap <leader>Y :YRToggle<CR>
-" last one : yankring conflicts with lustyjuggler and possibly delimmate
+" last one : yankring conflicts with lustyjuggler
 " (https://github.com/sjbach/lusty/issues/16)
 " to resolve the issue, issue <leader>Y two times to let
 " dd & such work again
@@ -592,8 +400,8 @@ nmap <leader>Y :YRToggle<CR>
 "                   (that you wouldn't put in gvimrc)
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-if has("gui_macvim")
-  " set macvim specific stuff
+if has("gui_macvim") 
+   " set macvim specific stuff 
 endif
 
 
