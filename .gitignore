@@ -1,5 +1,6 @@
 bundle/*
 doc/*
+session/*
 sessions/*
 views/*
 Trashed-Bundles/*

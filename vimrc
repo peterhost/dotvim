@@ -101,6 +101,7 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: http://github.com/pangloss/vim-javascript.git
 "Bundle: https://github.com/vim-scripts/Conque-Shell.git
 "Bundle: https://github.com/vim-scripts/YankRing.vim.git
+"Bundle: https://github.com/c9s/gsession.vim.git
 
 " ----------TAGLIST-PLUS----------------
 "  for JS goodness, you also need node.js & jsdoctor
@@ -142,7 +143,6 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: https://github.com/vim-scripts/L9.git
 "Bundle: https://github.com/vim-scripts/FuzzyFinder.git
 
-"Bundle: https://github.com/vim-scripts/sessionman.vim.git
 
 " ------(NICE BUT PROBLEMATIC)---------
 
@@ -150,6 +150,7 @@ call pathogen#runtime_append_all_bundles()
 ""Bundle: https://github.com/int3/vim-extradite.git           "extends fugitive
 
 " ----------(NOT NEEDED)---------------
+"
 "" --------AUTOALIGN SUITE-------------
 ""Bundle: https://github.com/vim-scripts/Align.git
 ""Bundle: https://github.com/vim-scripts/AutoAlign.git
@@ -259,10 +260,8 @@ nnoremap <space> za  "space to toggle FOLD
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "                               SPELLCHECK
 "------------------------------------------------------------------------------
-
-set spell
-set spelllang=en
-
+"
+set nospell
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -297,9 +296,11 @@ autocmd BufNewFile,BufRead *.json set ft=javascript
 
 " ----------------MISC-----------------
 if has("gui_running") && has("autocmd")
+
+  "only highlight line in GUI mode (in terminal, it's distracting)
   autocmd WinEnter * setlocal cursorline
   autocmd WinLeave * setlocal nocursorline
-  "set cursorline!
+
 endif
 
 " -----------TAB Detection-------------
@@ -408,6 +409,37 @@ let g:CommandTMaxHeight=20
 
 
 
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"                           FILES SPECIFIC CONFIGS
+"------------------------------------------------------------------------------
+
+"--------Markdow and Txt files---------
+"
+" from https://github.com/isaacs/.vim/blob/master/vimrc
+
+function! s:setupWrapping()
+  set wrap
+  set wm=2
+  set textwidth=72
+  if has ("gui_running")
+    set spell
+    set spelllang=en
+    !ls
+  endif
+endfunction
+
+function! s:setupMarkup()
+  call s:setupWrapping()
+  nmap <buffer> <Leader>p :Mm <CR>
+  imap <buffer> <C-p> :Mm <CR>
+endfunction
+
+
+
+" md, markdown, and mk are markdown and define buffer-local preview
+au BufRead,BufNewFile *.{md,markdown,mdown,mkd,mkdn} call s:setupMarkup()
+au BufRead,BufNewFile *.txt call s:setupWrapping()
+
 
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -448,6 +480,14 @@ nmap <A-space> :colorscheme<space>
 set winminheight=0     "minimized window only shows title"
 
 set winheight=999     "hack to avoid <C-W>_
+
+
+" Forgot to sudo : save with w!!
+cmap w!! w !sudo tee % >/dev/null
+
+" hide buffer/ close split
+nmap <leader>x   :clo<CR>
+nmap <leader>X   :bd<CR>
 
 
 " -----------NAVIGATION----------------
@@ -565,7 +605,7 @@ imap fj <C-c>
 cmap fj <C-c>
 
 
-
+"-------------SEARCH-------------------
 
 " Easy clear search : ,/
 nmap <silent> <leader>/ :nohlsearch<CR>
@@ -573,18 +613,12 @@ nmap <silent> <leader>/ :nohlsearch<CR>
 nmap <silent> <leader>; :nohlsearch<CR>
 
 
-" Forgot to sudo : save with w!!
-cmap w!! w !sudo tee % >/dev/null
-
-" hide buffer/ close split
-nmap <leader>x   :clo<CR>
-nmap <leader>X   :bd<CR>
-
-
 " map control-backspace to delete the previous word in edit mode
 imap <C-BS> <C-W>
 
 
+"-----------AZERTY-TO-QWERTY-----------
+"
 " DIRECT ACCESS to usefull keys on AZERTY keyboards
 " in NORMAL and VISUAL mode
 nmap è  [
@@ -602,6 +636,8 @@ vmap ù  %
 
 "nnoremap ù  %
 "vnoremap ù  %
+
+nmap ; .
 
 "------------help-buffer--------------
 
@@ -668,11 +704,14 @@ map <leader><C-t> :execute 'NERDTreeToggle ' . getcwd()<CR>
 
 "-------------FuGITive-----------------
 " GIT (fugitive)
+"
+"  20_ --> give status window height
 nmap <leader>gs  :Gstatus<CR><C-w>20_
 "nmap <leader>gs  :Gstatus<CR>
+
 nmap <leader>gc  :Gcommit<CR>
 nmap <leader>gg  :Ggrep
-nmap <leader>ga  :Gwrite<CR>           " git add current file
+nmap <leader>ga  :Gwrite<CR>
 nmap <leader>gl  :Glog
 nmap <leader>gdc :Gdiff --cached<CR>
 nmap <leader>gdh :Gdiff HEAD<CR>
@@ -690,7 +729,7 @@ nmap <leader>Y :YRToggle<CR>
 
 
 "-----------FuzzyFinder----------------
-  "Command           Mode ~
+
  :nmap <leader>fb      :FufBuffer<CR>
  :nmap <leader>ff      :FufFile<CR>
 ":nmap <leader>fco     :FufCoverageFile<CR>
@@ -713,6 +752,35 @@ let g:fuf_keyOpenVsplit = '<C-k>'
 let g:fuf_keyOpenTabpage = '<C-l>'
 
 
+
+"----------GSessions-------------------
+
+nnoremap <leader>ws    :GSessionMakeLocal<CR>
+nnoremap <leader>wS    :GSessionMake<CR>
+
+nnoremap <leader>wn    :NamedSessionMakeCwd<CR>
+nnoremap <leader>wN    :NamedSessionMake<CR>
+
+nnoremap <leader>wl    :NamedSessionLoadCwd<CR>
+nnoremap <leader>wL    :NamedSessionLoad<CR>
+
+nnoremap <leader>we    :GSessionEliminateCurrent<CR>
+nnoremap <leader>wE    :GSessionEliminateAll<CR>
+
+
+nnoremap <leader>wm    :GSessionListLocal<CR>
+
+"set v:sessionman_save_on_exit=1
+"----------SessionMan------------------
+
+ ":map <leader>wo       :SessionOpen 
+ ":map <leader>wl       :SessionOpenLast<CR>
+ ":map <leader>wL       :SessionShowLast<CR>
+ ":map <leader>ws       :SessionSave<CR>
+ ":map <leader>wS       :SessionSaveAs 
+ ":map <leader>wx       :SessionClose<CR>
+
+"set v:sessionman_save_on_exit=1
 
 "----------ConqueTerm------------------
 "
@@ -770,8 +838,8 @@ set viewdir=$HOME/.vim/views
 if has ("autocmd")
 
   "automatically save a view/load it when switching buffers
-  autocmd BufWinLeave * mkview
-  autocmd BufWinEnter * silent loadview
+  autocmd BufWinLeave * silent! mkview
+  autocmd BufWinEnter * silent! loadview
 
 
   ""This session stuff conflicts with plugins --> disabled
@@ -781,7 +849,6 @@ endif
 
 "" if there's a session in the working dir, load it
 "silent! source Session.vim
-
 
 
 
@@ -815,6 +882,13 @@ endif
 "
 "----------SURROUND--------------------
 " cs("    -> change surrounding parne to quotes
+"
+"
+"----------SESSIONS--------------------
+" ,wl  (load)   ,wS  (saveas)
+" ,wL  (last)   ,wo  (open)
+" ,ws  (save)   ,wx  (close)
+"
 "
 " -------MACOS KeyRemap4Macbook--------
 "
