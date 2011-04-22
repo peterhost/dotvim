@@ -70,7 +70,9 @@ if v:version < '702'
   call add(g:pathogen_disabled, 'l9')
 endif
 
-
+if !exists("+signs")
+  call add(g:pathogen_disabled, 'ShowMarks')
+endif
 
 
 " It is essential that these lines are called before enabling filetype detection
@@ -101,8 +103,8 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: http://github.com/pangloss/vim-javascript.git
 "Bundle: https://github.com/vim-scripts/Conque-Shell.git
 "Bundle: https://github.com/vim-scripts/YankRing.vim.git
-"Bundle: https://github.com/c9s/gsession.vim.git
-
+"Bundle: https://github.com/vim-scripts/session.vim--Odding.git
+"
 " ----------TAGLIST-PLUS----------------
 "  for JS goodness, you also need node.js & jsdoctor
 "  installed on your system (jsdoctor = jsctags)
@@ -143,13 +145,14 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: https://github.com/vim-scripts/L9.git
 "Bundle: https://github.com/vim-scripts/FuzzyFinder.git
 
-
 " ------(NICE BUT PROBLEMATIC)---------
 
 ""Bundle: https://github.com/Raimondi/delimitMate.git
 ""Bundle: https://github.com/int3/vim-extradite.git           "extends fugitive
 
 " ----------(NOT NEEDED)---------------
+"
+""Bundle: https://github.com/c9s/gsession.vim.git
 "
 "" --------AUTOALIGN SUITE-------------
 ""Bundle: https://github.com/vim-scripts/Align.git
@@ -753,34 +756,20 @@ let g:fuf_keyOpenTabpage = '<C-l>'
 
 
 
-"----------GSessions-------------------
 
-nnoremap <leader>ws    :GSessionMakeLocal<CR>
-nnoremap <leader>wS    :GSessionMake<CR>
+"------------vim-session---------------
 
-nnoremap <leader>wn    :NamedSessionMakeCwd<CR>
-nnoremap <leader>wN    :NamedSessionMake<CR>
+nmap <leader>ws       :SaveSession
 
-nnoremap <leader>wl    :NamedSessionLoadCwd<CR>
-nnoremap <leader>wL    :NamedSessionLoad<CR>
+nmap <leader>wo       :OpenSession<CR>
+nmap <leader>wl       :OpenSession<CR>
+nmap <leader>wx       :CloseSession<CR>
+nmap <leader>wd       :DeleteSession
+nmap <leader>wv       :ViewSession<CR>
+nmap <leader>wr       :RestartVim<CR>
 
-nnoremap <leader>we    :GSessionEliminateCurrent<CR>
-nnoremap <leader>wE    :GSessionEliminateAll<CR>
-
-
-nnoremap <leader>wm    :GSessionListLocal<CR>
-
-"set v:sessionman_save_on_exit=1
-"----------SessionMan------------------
-
- ":map <leader>wo       :SessionOpen 
- ":map <leader>wl       :SessionOpenLast<CR>
- ":map <leader>wL       :SessionShowLast<CR>
- ":map <leader>ws       :SessionSave<CR>
- ":map <leader>wS       :SessionSaveAs 
- ":map <leader>wx       :SessionClose<CR>
-
-"set v:sessionman_save_on_exit=1
+let g:session_autosave=1
+let g:session_autoload=0
 
 "----------ConqueTerm------------------
 "
