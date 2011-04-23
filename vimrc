@@ -307,6 +307,8 @@ if has("gui_running") && has("autocmd")
   autocmd WinEnter * setlocal cursorline
   autocmd WinLeave * setlocal nocursorline
 
+else
+  set nocursorline
 endif
 
 " -----------TAB Detection-------------
