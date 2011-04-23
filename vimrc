@@ -46,7 +46,7 @@ if has('gui_running')
 endif
 
 
-if !has('gui')
+if !has('gui') || &t_Co < 256
   call add(g:pathogen_disabled, 'csapprox')
   "csapprox need Vim compiled with gui support to work
 endif
