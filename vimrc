@@ -104,6 +104,7 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: https://github.com/vim-scripts/Conque-Shell.git
 "Bundle: https://github.com/vim-scripts/YankRing.vim.git
 "Bundle: https://github.com/vim-scripts/session.vim--Odding.git
+"Bundle: https://github.com/altercation/vim-colors-solarized.git
 "
 " ----------TAGLIST-PLUS----------------
 "  for JS goodness, you also need node.js & jsdoctor
@@ -178,6 +179,8 @@ let mapleader=","
 " Quickly edit/reload the vimrc file
 nmap <silent> <leader>ev :e $MYVIMRC<CR>
 nmap <silent> <leader>sv :so $MYVIMRC<CR>
+" Quickly edit/reload the bashrc file
+nmap <silent> <leader>eb :e $HOME/.bashrc<CR>
 " Same for the statusLine
 nmap <silent> <leader>ss :so $HOME/.vim/lib/statusbar.vim<CR>
 
@@ -753,7 +756,6 @@ nmap <leader>Y :YRToggle<CR>
 let g:fuf_keyOpenSplit = '<C-j>'
 let g:fuf_keyOpenVsplit = '<C-k>'
 let g:fuf_keyOpenTabpage = '<C-l>'
-
 
 
 
