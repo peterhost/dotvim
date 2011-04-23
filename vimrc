@@ -229,10 +229,6 @@ set noswapfile
 ":set ruler
 
 
-" Make current file's dir the working dir
-if exists("+autochdir")
-  set autochdir
-endif
 
 
 " Awesome TAB completion for Command Mode
@@ -247,8 +243,21 @@ set wildmenu
 "------------------------------------------------------------------------------
 
 set foldenable
-nnoremap <space> za  "space to toggle FOLD
+nnoremap <space> za
+"space to toggle FOLD
 
+
+"default shell to bash
+let g:is_bash=1
+" fold everything please
+"The syntax/sh.vim file provides several levels of syntax-based folding:
+" (octal notation)
+"let g:sh_fold_enabled= 0     (default, no syntax folding)
+"let g:sh_fold_enabled= 1     (enable function folding)
+"let g:sh_fold_enabled= 2     (enable heredoc folding)
+"let g:sh_fold_enabled= 4     (enable if/do/for folding)
+
+let g:sh_fold_enabled=7
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "                           WINDOW RESIZING
@@ -292,7 +301,11 @@ if &t_Co > 2 || has("gui_running")
   syntax on
 endif
 
+" ----------Solarized-spacifics--------
 
+if exists("*ToggleBg")
+  call togglebg#map("<F5>")       " F5 toggle background
+endif
 
 " ----------Additional Syntax----------
 " JSON : js syntax suffices
