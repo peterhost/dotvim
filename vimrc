@@ -30,7 +30,8 @@ filetype off
 " CUSTOM logic
 " To disable a plugin, add it's bundle name to the following list
 "let g:pathogen_disabled = ['command-t']
-let g:pathogen_disabled = ['', 'ManPageView']
+let g:pathogen_disabled = ['']
+"let g:pathogen_disabled = ['Decho', 'svndiff', 'ManPageView', 'vim-blcose', 'SearchComplete', 'supertab', 'vim-fugitive', 'ShowTabs', 'vim-colors-solarized' ]
 
 
 if !has('gui_running')
@@ -111,6 +112,7 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: https://github.com/vim-scripts/ManPageView.git
 "Bundle: https://github.com/vim-scripts/Decho.git
 "Bundle: https://github.com/peterhost/svndiff.git
+"Bundle: https://github.com/vim-scripts/PreciseJump.git
 "
 " ..........TAGLIST.PLUS................
 "  for JS goodness, you also need node.js & jsdoctor
@@ -147,10 +149,9 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: https://github.com/ervandew/supertab.git
 "Bundle: https://github.com/vim-scripts/SearchComplete.git
 "Bundle: https://github.com/vim-scripts/ShowMarks.git
-
+""Bundle: https://github.com/vim-scripts/AutoComplPop.git
 "Bundle: https://github.com/vim-scripts/L9.git
 "Bundle: https://github.com/vim-scripts/FuzzyFinder.git
-""""Bundle: https://github.com/vim-scripts/VimIRC.vim.git
 
 
 " ----------MANUAL-INSTALL-------------
@@ -190,16 +191,6 @@ set encoding=utf-8
 " change the mapleader from \ to ,
 let mapleader=","
 
-" Edit vimrc
-nmap <silent> <leader>ev :e $MYVIMRC<CR>
-" Quickly edit/reload the vimrc file
-" (mapc & mapc! to clear all mappings before reloading)
-nmap <silent> <leader>sv :mapc<CR>:mapc!<CR>:so $MYVIMRC<CR>
-" Quickly edit/reload the bashrc file
-nmap <silent> <leader>eb :e $HOME/.bashrc<CR>
-" Same for the statusLine
-nmap <silent> <leader>es :e $HOME/.vim/lib/statusbar.vim<CR>
-nmap <silent> <leader>ss :so $HOME/.vim/lib/statusbar.vim<CR>
 
 " hide bufers instead of closing them
 set hidden
@@ -255,17 +246,65 @@ set noswapfile
 set wildmode=full
 set wildmenu
 
+
+
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"                               VIEW/SESSION
+"------------------------------------------------------------------------------
+set sessionoptions=blank,buffers,curdir,folds,tabpages,winsize
+
+" Remember last location in file
+if has("autocmd")
+  au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
+    \| exe "normal g'\"" | endif
+endif
+
+" DIR to store views
+set viewdir=$HOME/.vim/views
+
+if has ("autocmd")
+
+  "automatically save a view/load it when switching buffers
+  "autocmd BufWinLeave * silent! mkview
+  "autocmd BufWinEnter * silent! loadview
+
+
+  ""This session stuff conflicts with plugins --> disabled
+  ""Automatically save a session when exiting VIM
+  "autocmd VimLeavePre * silent mksession!
+endif
+
+"" if there's a session in the working dir, load it
+"silent! source Session.vim
+
+
+
+
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "                               FOLDING
 "------------------------------------------------------------------------------
 
 set foldenable
-nnoremap <space>  za
-nnoremap <BS>     zA
-nnoremap <S-BS>   zr
-nnoremap <C-BS>   zm
+"
 "space to toggle FOLD
+nnoremap <space>  za
+"
+"BACKSPACE to FULL toggle fold
+nnoremap <BS>     zA
+"
+"SHIFT+BACKSPACE to expand ALL folds 1 level
+nnoremap <S-BS>   zr
+"
+"SHIFT+BACKSPACE to contract ALL folds 1 level
+nnoremap <C-BS>   zm
 
+
+
+
+" --------------SHELL-SOURCE-----------
 
 "default shell to bash
 let g:is_bash=1
@@ -278,19 +317,6 @@ let g:is_bash=1
 "let g:sh_fold_enabled= 4     (enable if/do/for folding)
 
 let g:sh_fold_enabled=7
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"                           WINDOW RESIZING
-"------------------------------------------------------------------------------
-
-"Vertical resizing to ,< AND ,>, and faster
-" (shorter than C-w C-<, C-w C->)
-:nnoremap ,< <C-W><<C-W><<C-W><<C-W><
-:nnoremap ,> <C-W>><C-W>><C-W>><C-W>>
-
-
-
-
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "                               SPELLCHECK
@@ -306,7 +332,7 @@ set nospell
 " GOTCHA : carefull to always do 'colorscheme'ing before declaring custom
 "          highlight groups, as the colorscheme directive resets them
 "          (ex: status bar construction)
-"
+"          NB : late coloring in section COLORING2
 "------------------------------------------------------------------------------
 
 
@@ -315,7 +341,7 @@ set nospell
 if &t_Co >= 256 || has("gui_running")
 
   "colorscheme mustang
-  
+
   colorscheme solarized
   call togglebg#map("<F5>")       " F5 toggle background
 
@@ -326,22 +352,6 @@ if &t_Co > 2 || has("gui_running")
   syntax on
 endif
 
-" ----------Solarized-spacifics--------
-
-"function TTT()
-  ""if exists("*ToggleBG")
-    "call togglebg#map("<F5>")       " F5 toggle background
-  ""endif
-"endfunction
-"au ColorScheme call TTT()
-
-"function! ToggleBgFix()
-  "if g:colors_name == "solarized"
-    "call togglebg()
-  "endif
-"endfunction
- ""call ToggleBg#map("<F5>")
-"nmap <silent><F5> :call ToggleBgFix()<CR>
 
 
 " ----------Additional Syntax----------
@@ -368,14 +378,29 @@ match errorMsg /[^"\t]\zs\t\+/
 
 
 
+
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"                               COLORING2
+"------------------------------------------------------------------------------
+
+
 " ----------Long-Lines-Suck------------
 "
 " discrete marking of long lines (> 80)
 " (http://stackoverflow.com/questions/235439/vim-80-column-layout-concerns#answer-235970)
-highlight OverLength ctermbg=red ctermfg=white guibg=#592929
-match OverLength /\%81v.\+/
-" NB : warning : for some reason, put this BEFORE the 'set list' command
+" and make that compatible with colorschemes which have background (light,
+" dark) setup
+"
+if &background == "light"
+  highlight OverLength ctermbg=red ctermfg=white guibg=#efe9d6
+else
+  highlight OverLength ctermbg=red ctermfg=white guibg=#592929
+endif
+" NB : warning : for some reason, put this AFTER the 'set list' command
 " otherwise it won't work
+" match OverLength /\%81v.\+/
+
 
 
 
@@ -436,8 +461,8 @@ match Todo /\s\+$/
 set pastetoggle=<F10>
 
 
-
-
+" ----------Long-Lines-Suck-2----------
+match OverLength /\%81v.\+/
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -500,6 +525,34 @@ au BufRead,BufNewFile *.txt call s:setupWrapping()
 
 
 
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"                           FILES SPECIFIC CONFIGS
+"------------------------------------------------------------------------------
+
+" Edit vimrc
+nmap <silent> <leader>ev :e $HOME/.vim/vimrc<CR>
+"nmap <silent> <leader>ev :e $MYVIMRC<CR>
+" Quickly edit/reload the vimrc file
+" (mapc & mapc! to clear all mappings before reloading)
+nmap <silent> <leader>sv :mapc<CR>:mapc!<CR>:so $MYVIMRC<CR>
+" Quickly edit/reload the bashrc file
+nmap <silent> <leader>eb :e $HOME/.bashrc<CR>
+" Same for the statusLine
+nmap <silent> <leader>es :e $HOME/.vim/lib/statusbar.vim<CR>
+nmap <silent> <leader>ss :so $HOME/.vim/lib/statusbar.vim<CR>
+
+
+
+
+
+
+
+
+
+
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "                           --MAPING--
 "
@@ -515,6 +568,11 @@ au BufRead,BufNewFile *.txt call s:setupWrapping()
 " (http://stackoverflow.com/q/3776117) difference-between-the-remap-noremap...)
 "
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""{{{
+
+
+
 
 "------------------------------------------------------------------------------
 "                           GENERAL
@@ -553,6 +611,16 @@ nmap <Leader>x      :Kwbd<CR>
 nmap <leader>X      :bd<CR>
 " Close window
 nmap <leader><c-x>   :clo<CR>
+
+
+" ----------WINDOW RESIZING------------
+
+"Vertical resizing to ,< AND ,>, and faster
+" (shorter than C-w C-<, C-w C->)
+:nnoremap ,< <C-W><<C-W><<C-W><<C-W><
+:nnoremap ,> <C-W>><C-W>><C-W>><C-W>>
+
+
 
 
 " -----------NAVIGATION----------------
@@ -825,9 +893,10 @@ let g:fuf_keyOpenTabpage = '<C-l>'
 
 "------------vim-session---------------
 
-nmap <leader>ws       :SaveSession
+nmap <leader>ws       :SaveSession 
 
 nmap <leader>wo       :OpenSession 
+nmap <leader>ww       :OpenSession 
 nmap <leader>wl       :OpenSession<CR>
 nmap <leader>wx       :CloseSession<CR>
 nmap <leader>wd       :DeleteSession 
@@ -835,7 +904,7 @@ nmap <leader>wv       :ViewSession<CR>
 nmap <leader>wr       :RestartVim<CR>
 
 let g:session_autosave=1
-let g:session_autoload=1
+"let g:session_autoload=1
 
 "----------ConqueTerm------------------
 "
@@ -860,8 +929,11 @@ nmap <leader>ds       :call Svndiff("show")<CR>
 let g:svndiff_autoupdate=1
 
 
-
-
+" ---------PreciseJump-----------------
+"
+nmap <leader>j        _f
+nmap <leader>J        _F
+let g:PreciseJump_I_am_brave=1
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "                       MACVIM SPECIFIC STUFF
@@ -892,37 +964,6 @@ endif
 
 
 
-
-
-
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"                               VIEW/SESSION
-"------------------------------------------------------------------------------
-
-" Remember last location in file
-if has("autocmd")
-  au BufReadPost * if line("'\"") > 0 && line("'\"") <= line("$")
-    \| exe "normal g'\"" | endif
-endif
-
-" DIR to store views
-set viewdir=$HOME/.vim/views
-
-if has ("autocmd")
-
-  "automatically save a view/load it when switching buffers
-  "autocmd BufWinLeave * silent! mkview
-  "autocmd BufWinEnter * silent! loadview
-
-
-  ""This session stuff conflicts with plugins --> disabled
-  ""Automatically save a session when exiting VIM
-  "autocmd VimLeavePre * silent mksession!
-endif
-
-"" if there's a session in the working dir, load it
-"silent! source Session.vim
 
 
 
