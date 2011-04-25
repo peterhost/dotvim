@@ -30,7 +30,7 @@ filetype off
 " CUSTOM logic
 " To disable a plugin, add it's bundle name to the following list
 "let g:pathogen_disabled = ['command-t']
-let g:pathogen_disabled = ['']
+let g:pathogen_disabled = ['', 'ManPageView']
 
 
 if !has('gui_running')
@@ -54,6 +54,7 @@ endif
 
 if  !has('ruby')
   call add(g:pathogen_disabled, 'LustyJuggler')
+  call add(g:pathogen_disabled, 'command-t')
   " All those need ruby support
 endif
 
@@ -70,8 +71,9 @@ if v:version < '702'
   call add(g:pathogen_disabled, 'l9')
 endif
 
-if !exists("+signs")
+if !has("signs")
   call add(g:pathogen_disabled, 'ShowMarks')
+  call add(g:pathogen_disabled, 'svndiff')
 endif
 
 
@@ -105,22 +107,25 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: https://github.com/vim-scripts/YankRing.vim.git
 "Bundle: https://github.com/vim-scripts/session.vim--Odding.git
 "Bundle: https://github.com/altercation/vim-colors-solarized.git
+"Bundle: https://github.com/cespare/vim-bclose.git
+"Bundle: https://github.com/vim-scripts/ManPageView.git
+"Bundle: https://github.com/vim-scripts/Decho.git
+"Bundle: https://github.com/peterhost/svndiff.git
 "
-" ----------TAGLIST-PLUS----------------
+" ..........TAGLIST.PLUS................
 "  for JS goodness, you also need node.js & jsdoctor
 "  installed on your system (jsdoctor = jsctags)
 ""Bundle: https://github.com/vim-scripts/taglist.vim.git
 "Bundle: https://github.com/int3/vim-taglist-plus.git
 
 
-" ----------SNIPMATE-------------------
+" ..........SNIPMATE...................
 "Bundle: https://github.com/vim-scripts/snipMate.git
 """ Replacement snippets for snipmate
 "" Bundle: https://github.com/scrooloose/snipmate-snippets.git
 "" Bundle-Command: rake deploy_local
 
-
-" ----------COMMAND-T------------------
+" ..........COMMAND.T..................
 "" MACOS : conflict native Ruby / homebrew Ruby -> do this Manually
 "" (https://wincent.com/forums/command-t/topics/425#comment_6536)
 ""      Download the bundle, then :
@@ -145,6 +150,15 @@ call pathogen#runtime_append_all_bundles()
 
 "Bundle: https://github.com/vim-scripts/L9.git
 "Bundle: https://github.com/vim-scripts/FuzzyFinder.git
+""""Bundle: https://github.com/vim-scripts/VimIRC.vim.git
+
+
+" ----------MANUAL-INSTALL-------------
+
+
+
+
+
 
 " ------(NICE BUT PROBLEMATIC)---------
 
@@ -155,7 +169,7 @@ call pathogen#runtime_append_all_bundles()
 "
 ""Bundle: https://github.com/c9s/gsession.vim.git
 "
-"" --------AUTOALIGN SUITE-------------
+"" ........AUTOALIGN SUITE.............
 ""Bundle: https://github.com/vim-scripts/Align.git
 ""Bundle: https://github.com/vim-scripts/AutoAlign.git
 
@@ -176,12 +190,15 @@ set encoding=utf-8
 " change the mapleader from \ to ,
 let mapleader=","
 
-" Quickly edit/reload the vimrc file
+" Edit vimrc
 nmap <silent> <leader>ev :e $MYVIMRC<CR>
-nmap <silent> <leader>sv :so $MYVIMRC<CR>
+" Quickly edit/reload the vimrc file
+" (mapc & mapc! to clear all mappings before reloading)
+nmap <silent> <leader>sv :mapc<CR>:mapc!<CR>:so $MYVIMRC<CR>
 " Quickly edit/reload the bashrc file
 nmap <silent> <leader>eb :e $HOME/.bashrc<CR>
 " Same for the statusLine
+nmap <silent> <leader>es :e $HOME/.vim/lib/statusbar.vim<CR>
 nmap <silent> <leader>ss :so $HOME/.vim/lib/statusbar.vim<CR>
 
 " hide bufers instead of closing them
@@ -223,7 +240,7 @@ set nobackup
 set noswapfile
 
 " See more context when scrolling
-:set scrolloff=3
+:set scrolloff=6
 
 " Show position in lower right
 ":set ruler
@@ -243,7 +260,10 @@ set wildmenu
 "------------------------------------------------------------------------------
 
 set foldenable
-nnoremap <space> za
+nnoremap <space>  za
+nnoremap <BS>     zA
+nnoremap <S-BS>   zr
+nnoremap <C-BS>   zm
 "space to toggle FOLD
 
 
@@ -293,7 +313,12 @@ set nospell
 " -------Syntax Highlightning----------
 
 if &t_Co >= 256 || has("gui_running")
-  colorscheme mustang
+
+  "colorscheme mustang
+  
+  colorscheme solarized
+  call togglebg#map("<F5>")       " F5 toggle background
+
 endif
 
 if &t_Co > 2 || has("gui_running")
@@ -303,9 +328,21 @@ endif
 
 " ----------Solarized-spacifics--------
 
-if exists("*ToggleBg")
-  call togglebg#map("<F5>")       " F5 toggle background
-endif
+"function TTT()
+  ""if exists("*ToggleBG")
+    "call togglebg#map("<F5>")       " F5 toggle background
+  ""endif
+"endfunction
+"au ColorScheme call TTT()
+
+"function! ToggleBgFix()
+  "if g:colors_name == "solarized"
+    "call togglebg()
+  "endif
+"endfunction
+ ""call ToggleBg#map("<F5>")
+"nmap <silent><F5> :call ToggleBgFix()<CR>
+
 
 " ----------Additional Syntax----------
 " JSON : js syntax suffices
@@ -406,9 +443,10 @@ set pastetoggle=<F10>
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "                               STATUS LINE
 "------------------------------------------------------------------------------
-
-source $HOME/.vim/lib/statusbar.vim
-"au FocusLost * source $HOME/.vim/lib/statusbar.vim
+if has("statusline") && has("autocmd")
+  source $HOME/.vim/lib/statusbar.vim
+  "au FocusLost * source $HOME/.vim/lib/statusbar.vim
+endif
 
 
 
@@ -445,7 +483,6 @@ function! s:setupWrapping()
   if has ("gui_running")
     set spell
     set spelllang=en
-    !ls
   endif
 endfunction
 
@@ -506,9 +543,16 @@ set winheight=999     "hack to avoid <C-W>_
 " Forgot to sudo : save with w!!
 cmap w!! w !sudo tee % >/dev/null
 
-" hide buffer/ close split
-nmap <leader>x   :clo<CR>
-nmap <leader>X   :bd<CR>
+
+" Buffer/Window closing
+"
+" Close buffer without closing window (using plugin function Kwbd)
+" (http://vim.wikia.com/wiki/VimTip165)
+nmap <Leader>x      :Kwbd<CR>
+" Close buffer & window
+nmap <leader>X      :bd<CR>
+" Close window
+nmap <leader><c-x>   :clo<CR>
 
 
 " -----------NAVIGATION----------------
@@ -665,6 +709,11 @@ nmap ; .
 " these are i$ VIMHOME/ftplugin/help.vim
 " (mappings specific to help buffer for easy navigation)
 
+nmap <leader>h        :help <C-R>=expand("<cword>")<CR><CR>
+nmap <leader>H        :helpg  <C-R>=expand("<cword>")<CR><CR>
+
+
+
 " --------PERL-(mapping : ,h)----------
 function! PerlDoc()
   normal yy
@@ -689,7 +738,7 @@ endfunction
 if has('autocmd')
   "Display PERL docs for built-in functions when cursor is on function name
   "or for modules when cursor is on 'use' or 'require' line.
-  autocmd filetype perl map ,h :call PerlDoc()<CR>:set nomod<CR>:set filetype=man<CR>:echo "perldoc"<CR>
+  autocmd filetype perl map <leader>h :call PerlDoc()<CR>:set nomod<CR>:set filetype=man<CR>:echo "perldoc"<CR>
 endif
 
 
@@ -751,22 +800,22 @@ nmap <leader>Y :YRToggle<CR>
 
 "-----------FuzzyFinder----------------
 
- :nmap <leader>fb      :FufBuffer<CR>
- :nmap <leader>ff      :FufFile<CR>
-":nmap <leader>fco     :FufCoverageFile<CR>
- :nmap <leader>fd      :FufDir<CR>
-":nmap <leader>fmf     :FufMruFile<CR>
-":nmap <leader>fcc     :FufMruCmd<CR>
-":nmap <leader>fbf     :FufBookmarkFile<CR>
-":nmap <leader>fbd     :FufBookmarkDir<CR>
- :nmap <leader>ft      :FufTag<CR>
-":nmap <leader>ftb     :FufBufferTag<CR>
-":nmap <leader>fft     :FufTaggedFile<CR>
- :nmap <leader>fj      :FufJumpList<CR>
- :nmap <leader>fc      :FufChangeList<CR>
-":nmap <leader>fq      :FufQuickfix<CR>
-":nmap <leader>fl      :FufLine<CR>
- :nmap <leader>fh      :FufHelp<CR>
+ :nmap <leader>fb     :FufBuffer<CR>
+ :nmap <leader>ff     :FufFile<CR>
+":nmap <leader>fco    :FufCoverageFile<CR>
+ :nmap <leader>fd     :FufDir<CR>
+":nmap <leader>fmf    :FufMruFile<CR>
+":nmap <leader>fcc    :FufMruCmd<CR>
+":nmap <leader>fbf    :FufBookmarkFile<CR>
+":nmap <leader>fbd    :FufBookmarkDir<CR>
+ :nmap <leader>ft     :FufTag<CR>
+":nmap <leader>ftb    :FufBufferTag<CR>
+":nmap <leader>fft    :FufTaggedFile<CR>
+ :nmap <leader>fj     :FufJumpList<CR>
+ :nmap <leader>fc     :FufChangeList<CR>
+":nmap <leader>fq     :FufQuickfix<CR>
+":nmap <leader>fl     :FufLine<CR>
+ :nmap <leader>fh     :FufHelp<CR>
 
 let g:fuf_keyOpenSplit = '<C-j>'
 let g:fuf_keyOpenVsplit = '<C-k>'
@@ -791,10 +840,29 @@ let g:session_autoload=0
 "----------ConqueTerm------------------
 "
 if has("win32") || has("win64")
-  nmap <leader>q  :ConqueTermTab Powershell.exe<CR>
+  nmap <leader>q      :ConqueTermTab Powershell.exe<CR>
 else
-  nmap <leader>q  :ConqueTermTab bash<CR>
+  nmap <leader>q      :ConqueTermTab bash<CR>
 endif
+
+" ----------SvnDiff--------------------
+"
+
+nmap <leader>dd       :call Svndiff("next")<CR>
+nmap <leader>dn       :call Svndiff("next")<CR>
+nmap <leader>du       :call Svndiff("prev")<CR>
+nmap <leader>dp       :call Svndiff("prev")<CR>
+nmap <leader>dc       :call Svndiff("clear")<CR>
+nmap <leader>dh       :call Svndiff("clear")<CR>
+nmap <leader>ds       :call Svndiff("show")<CR>
+
+
+let g:svndiff_autoupdate=1
+
+
+
+
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "                       MACVIM SPECIFIC STUFF
 "                   (that you wouldn't put in gvimrc)
@@ -838,14 +906,14 @@ if has("autocmd")
     \| exe "normal g'\"" | endif
 endif
 
-" store views/sessions
+" DIR to store views
 set viewdir=$HOME/.vim/views
 
 if has ("autocmd")
 
   "automatically save a view/load it when switching buffers
-  autocmd BufWinLeave * silent! mkview
-  autocmd BufWinEnter * silent! loadview
+  "autocmd BufWinLeave * silent! mkview
+  "autocmd BufWinEnter * silent! loadview
 
 
   ""This session stuff conflicts with plugins --> disabled
