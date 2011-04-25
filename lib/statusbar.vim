@@ -107,7 +107,7 @@ endfunction
 
 
 "Better wrapper using FUGITIVE
-function! StatuslineGitFugitive()
+function! StatuslineGit()
   if !exists('b:git_dir')
     return ''
   endif

@@ -37,20 +37,20 @@
 #-----------------------------------------------------------------------------------------------
 
 # colors
-case "$TERM" in
-    xterm*|rxvt*|screen*)
-        ESC="\033"
-        RED="\[$ESC[01;31m\]"
-        LIGHT_RED="\[$ESC[1;31m\]"
-        GREEN="\[$ESC[01;32m\]"
-        LIGHT_GREEN="\[$ESC[1;32m\]"
-        GREY="\[$ESC[0;37m\]"
-        CYAN="\[$ESC[01;36m\]"
-        YELLOW="\[$ESC[0;33m\]"
-        LIGHT_VIOLET="\[$ESC[1;35m\]"
-        RESET="\[$ESC[0m\]"
-    ;;
-    *)
+#case "$TERM" in
+    #xterm*|rxvt*|screen*)
+        #ESC="\033"
+        #RED="\[$ESC[01;31m\]"
+        #LIGHT_RED="\[$ESC[1;31m\]"
+        #GREEN="\[$ESC[01;32m\]"
+        #LIGHT_GREEN="\[$ESC[1;32m\]"
+        #GREY="\[$ESC[0;37m\]"
+        #CYAN="\[$ESC[01;36m\]"
+        #YELLOW="\[$ESC[0;33m\]"
+        #LIGHT_VIOLET="\[$ESC[1;35m\]"
+        #RESET="\[$ESC[0m\]"
+    #;;
+    #*)
         ESC=""
         RED=""
         LIGHT_RED=""
@@ -61,8 +61,8 @@ case "$TERM" in
         YELLOW=""
         LIGHT_VIOLET=""
         RESET=""
-    ;;
-esac
+    #;;
+#esac
 
 # prints path to git directory
 __git_dirname() {
@@ -337,9 +337,9 @@ PROMPT_COMMAND=__git_prompt
 
 __git_prompt_vim() {
   #echo "BOB:"$1
-  local path=`echo \`pwd\` | sed 's/[[:space:]]+/\\ /g'`
-  cd $path
-  #return 0
+  #local __path=`echo \`pwd\` | sed 's/[[:space:]]+/\\ /g'`
+  local __path=`dirname $1`
+  cd $__path
   #are we inside a git repo ?
   if git rev-parse --git-dir >/dev/null 2>&1;then
 
@@ -397,6 +397,142 @@ __git_prompt_vim() {
   fi
 }
 
+
+
+
+
+__git_vim_tell_repo() {
+  local __path=`dirname $1`
+  cd $__path
+
+  local vimRepo
+  local gitdir="$(__git_dirname)"
+  if [ -n "$gitdir" ]; then
+      local branch
+      local extras
+
+      local in_gitdir="$(__git_in_gitdir)"
+      case "$in_gitdir" in
+          gitdir|bare)
+              branch="~$(echo $in_gitdir | tr "[:lower:]" "[:upper:]")~"
+              extras=""
+          ;;
+          *)
+              local branch="$(__git_branch_name current ${gitdir})"
+              local br_state="$(__git_branching_state $gitdir)"
+
+              # rebasing..use merge head for branch name
+              case "$br_state" in
+                  rebase-*)
+                      # get the ref head during rebase
+                      branch="$(cat "$gitdir/rebase-merge/head-name")"
+                      branch="${branch##refs/heads/}"
+                      branch="${branch##remotes/}"
+                  ;;
+              esac
+          ;;
+      esac
+
+      vimRepo="${vimRepo}${branch}"
+  fi
+  echo $vimRepo
+}
+
+
+
+
+__git_vim_tell_extra() {
+  local __path=`dirname $1`
+  cd $__path
+
+  local vimExtra
+  local gitdir="$(__git_dirname)"
+  if [ -n "$gitdir" ]; then
+      local branch
+      local extras
+
+      local in_gitdir="$(__git_in_gitdir)"
+      case "$in_gitdir" in
+          gitdir|bare)
+              branch="~$(echo $in_gitdir | tr "[:lower:]" "[:upper:]")~"
+              extras=""
+          ;;
+          *)
+                # extras (count strings, working dir symbols)
+                local countstr="$(__git_count_str)"
+                local wd_syms="${LIGHT_VIOLET}$(__git_working_dir_symbols)${RESET}"
+
+          ;;
+      esac
+
+      vimExtra="${vimExtra}${branch}"
+  fi
+  echo $vimExtra
+}
+
+
+
+__git_vim_tell_count() {
+  local __path=`dirname $1`
+  cd $__path
+
+  local vimCount
+  local gitdir="$(__git_dirname)"
+  if [ -n "$gitdir" ]; then
+      local branch
+      local extras
+
+      local in_gitdir="$(__git_in_gitdir)"
+      case "$in_gitdir" in
+          gitdir|bare)
+              branch="~$(echo $in_gitdir | tr "[:lower:]" "[:upper:]")~"
+              extras=""
+          ;;
+          *)
+                # extras (count strings, working dir symbols)
+                local countstr="$(__git_count_str)"
+
+          ;;
+      esac
+
+      vimCount="${vimCount}${branch}"
+  fi
+  echo $vimExtra
+}
+
+
+__git_vim_tell_lastcommit() {
+  local __path=`dirname $1`
+  cd $__path
+
+  local vimLastCommit
+  local gitdir="$(__git_dirname)"
+  if [ -n "$gitdir" ]; then
+      local branch
+      local extras
+
+      local in_gitdir="$(__git_in_gitdir)"
+      case "$in_gitdir" in
+          gitdir|bare)
+              branch="~$(echo $in_gitdir | tr "[:lower:]" "[:upper:]")~"
+              extras=""
+          ;;
+          *)
+                # calc relative time diff of last commit
+                local secs="$(__git_secs_since)"
+                if [ -n "$secs" ]; then
+                    local timestr=" [$(__git_timestr_relformat $secs true)]"
+                    extras="${countstr}${wd_syms}${timestr}"
+                else 
+                    extras="${countstr}${wd_syms}"
+                fi
+          ;;
+      esac
+
+      vimLastCommit="${vimLastCommit}${branch}"
+  fi
+  echo $vimLastCommit
+}
 
 
 export -f __git_prompt

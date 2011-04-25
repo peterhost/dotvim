@@ -253,7 +253,7 @@ set wildmenu
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "                               VIEW/SESSION
 "------------------------------------------------------------------------------
-set sessionoptions=blank,buffers,curdir,folds,tabpages,winsize
+set sessionoptions=blank,buffers,curdir,folds,help,options,tabpages,winsize
 
 " Remember last location in file
 if has("autocmd")
