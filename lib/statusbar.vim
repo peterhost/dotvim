@@ -49,9 +49,14 @@ set statusline+=%y      "filetype
 set statusline+=%r      "read only flag
 set statusline+=%m      "modified flag
 
-" display current git branch
+"" display current git branch
+"set statusline+=%2*
+"set statusline+=%{fugitive#statusline()}
+"set statusline+=%*
+
+" display __git_ps1
 set statusline+=%2*
-set statusline+=%{fugitive#statusline()}
+set statusline+=%{StatuslineGitps1()}
 set statusline+=%*
 
 "display a warning if &et is wrong, or we have mixed-indenting
@@ -86,6 +91,37 @@ function! IsMinimized()
     return ''
   endif
 endfunction
+
+
+"bash's git_ps1's wrapper
+function! StatuslineGitps1()
+  "caching
+  if !exists("b:statusline_gitps1_prompt")
+    let b:statusline_gitps1_prompt = system( "__git_prompt_vim " .  shellescape(expand('%:p')) )
+    if !v:shell_error == 0
+      let b:statusline_gitps1_prompt = ""
+    endif
+  endif
+  return b:statusline_gitps1_prompt
+endfunction
+
+
+"Better wrapper using FUGITIVE
+function! StatuslineGitFugitive()
+  if !exists('b:git_dir')
+    return ''
+  endif
+endfunction
+
+"recalculate the Gitps1 when idle, and after saving
+autocmd cursorhold,CursorHoldI,bufwritepost,InsertLeave,WinEnter,WinLeave * unlet! b:statusline_gitps1_prompt
+
+
+
+
+
+
+
 
 "return the syntax highlight group under the cursor ''
 function! StatuslineCurrentHighlight()

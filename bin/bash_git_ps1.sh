@@ -329,3 +329,116 @@ __git_prompt() {
 }
 PROMPT_COMMAND=__git_prompt
 
+
+
+
+
+
+
+__git_prompt_vim() {
+  #echo "BOB:"$1
+  local path=`echo \`pwd\` | sed 's/[[:space:]]+/\\ /g'`
+  cd $path
+  #return 0
+  #are we inside a git repo ?
+  if git rev-parse --git-dir >/dev/null 2>&1;then
+
+    # setup vimSTATUS
+    local vimSTATUS
+    #local vimSTATUS='%#warningmsg#TOTO'
+
+    # when in git repository
+    local gitdir="$(__git_dirname)"
+    if [ -n "$gitdir" ]; then
+        local branch
+        local extras
+
+        local in_gitdir="$(__git_in_gitdir)"
+        case "$in_gitdir" in
+            gitdir|bare)
+                branch="~$(echo $in_gitdir | tr "[:lower:]" "[:upper:]")~"
+                extras=""
+            ;;
+            *)
+                local branch="$(__git_branch_name current ${gitdir})"
+                local br_state="$(__git_branching_state $gitdir)"
+
+                # rebasing..use merge head for branch name
+                case "$br_state" in
+                    rebase-*)
+                        # get the ref head during rebase
+                        branch="$(cat "$gitdir/rebase-merge/head-name")"
+                        branch="${branch##refs/heads/}"
+                        branch="${branch##remotes/}"
+                    ;;
+                esac
+
+                # extras (count strings, working dir symbols)
+                local countstr="$(__git_count_str)"
+                local wd_syms="${LIGHT_VIOLET}$(__git_working_dir_symbols)${RESET}"
+
+                # calc relative time diff of last commit
+                local secs="$(__git_secs_since)"
+                if [ -n "$secs" ]; then
+                    local timestr=" [$(__git_timestr_relformat $secs true)]"
+                    extras="${countstr}${wd_syms}${timestr}"
+                else 
+                    extras="${countstr}${wd_syms}"
+                fi
+            ;;
+        esac
+        branch="${YELLOW}${branch}${RESET}"
+
+        # update vimSTATUS
+        vimSTATUS="${vimSTATUS} ${branch}${extras}"
+    fi
+
+    echo $vimSTATUS
+  fi
+}
+
+
+
+export -f __git_prompt
+export -f __git_dirname
+export -f __git_working_dir_symbols
+export -f __git_count_str
+export -f __git_branch_name
+export -f __git_branching_state
+export -f __git_commit_diff_count
+export -f __git_count_str
+export -f __git_timestr_relformat
+export -f __git_secs_since
+export -f __git_in_gitdir
+export -f __git_prompt_vim
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

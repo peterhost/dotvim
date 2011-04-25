@@ -827,15 +827,15 @@ let g:fuf_keyOpenTabpage = '<C-l>'
 
 nmap <leader>ws       :SaveSession
 
-nmap <leader>wo       :OpenSession<CR>
+nmap <leader>wo       :OpenSession 
 nmap <leader>wl       :OpenSession<CR>
 nmap <leader>wx       :CloseSession<CR>
-nmap <leader>wd       :DeleteSession
+nmap <leader>wd       :DeleteSession 
 nmap <leader>wv       :ViewSession<CR>
 nmap <leader>wr       :RestartVim<CR>
 
 let g:session_autosave=1
-let g:session_autoload=0
+let g:session_autoload=1
 
 "----------ConqueTerm------------------
 "
