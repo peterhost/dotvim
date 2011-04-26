@@ -60,6 +60,12 @@ if  !has('ruby')
 endif
 
 
+if  !has('python')
+  call add(g:pathogen_disabled, 'simplenote.vim')
+  " All those need python support
+endif
+
+
 if v:version < '703' || !has('python')
   call add(g:pathogen_disabled, 'Gundo')
   " Gundo requires at least Vim 7.3
@@ -146,13 +152,16 @@ call pathogen#runtime_append_all_bundles()
 
 
 " ----------NOT SURE-------------------
+" this is the latest supertab (supertab-continued on vim-script)
 "Bundle: https://github.com/ervandew/supertab.git
+"
 "Bundle: https://github.com/vim-scripts/SearchComplete.git
 "Bundle: https://github.com/vim-scripts/ShowMarks.git
 ""Bundle: https://github.com/vim-scripts/AutoComplPop.git
 "Bundle: https://github.com/vim-scripts/L9.git
 "Bundle: https://github.com/vim-scripts/FuzzyFinder.git
 
+"Bundle: https://github.com/mrtazz/simplenote.vim.git
 
 " ----------MANUAL-INSTALL-------------
 
@@ -681,27 +690,27 @@ imap <C-l> <right>
 
 
 
-" this IS REALLY questionnable :
-" Replicate textmate shift arrow/movement in order to select stuff
-nmap <S-up> vk
-vmap <S-up> k
-nmap <S-k> vk
-vmap <S-k> k
+"" this IS REALLY questionnable :
+"" Replicate textmate shift arrow/movement in order to select stuff
+"nmap <S-up> vk
+"vmap <S-up> k
+"nmap <S-k> vk
+"vmap <S-k> k
 
-nmap <S-right> vl
-vmap <S-right> l
-nmap <S-l> vl
-vmap <S-l> l
+"nmap <S-right> vl
+"vmap <S-right> l
+"nmap <S-l> vl
+"vmap <S-l> l
 
-nmap <S-down> vj
-vmap <S-down> j
-nmap <S-j> vj
-vmap <S-j> j
+"nmap <S-down> vj
+"vmap <S-down> j
+"nmap <S-j> vj
+"vmap <S-j> j
 
-nmap <S-left> v
-vmap <S-left> h
-nmap <S-h> vh
-vmap <S-h> h
+"nmap <S-left> v
+"vmap <S-left> h
+"nmap <S-h> vh
+"vmap <S-h> h
 
 
 

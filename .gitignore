@@ -8,3 +8,4 @@ Session.vim
 logfile
 ftplugin/*
 !ftplugin/help.vim
+simplenoterc
