@@ -1,4 +1,3 @@
-
 "                               web resources
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " http://objectmix.com/editors/394885-how-do-you-parameterize-your-vimrc-different-machines.html
@@ -11,9 +10,10 @@
 
 
 
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"##############################################################################
 "                               PATHOGEN
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"##############################################################################
+
 
 
 " This must be first, because it changes other options as side effect
@@ -24,9 +24,8 @@ set nocompatible
 filetype off
 
 
-"------------------------------------------------------------------------------
-"                      Load/Unload plugins RULES
-"------------------------------------------------------------------------------
+" ----- Load/Unload plugins RULES -----{{{1
+
 " CUSTOM logic
 " To disable a plugin, add it's bundle name to the following list
 "let g:pathogen_disabled = ['command-t']
@@ -88,9 +87,14 @@ endif
 call pathogen#helptags()
 call pathogen#runtime_append_all_bundles()
 
-"------------------------------------------------------------------------------
-"                           Pathogen BUNDLES
-"------------------------------------------------------------------------------
+
+
+
+
+
+"1}}}
+"-----------Pathogen-BUNDLES-----------{{{1
+"
 "Bundle: https://github.com/tpope/vim-fugitive.git
 "Bundle: https://github.com/taq/vim-git-branch-info.git
 "Bundle: https://github.com/wookiehangover/jshint.vim.git
@@ -161,13 +165,15 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: https://github.com/vim-scripts/L9.git
 "Bundle: https://github.com/vim-scripts/FuzzyFinder.git
 
-"Bundle: https://github.com/mrtazz/simplenote.vim.git
 
 " ----------MANUAL-INSTALL-------------
 
 
 
 
+" --------CANT-GET-IT-TO-WORK----------
+"
+""Bundle: https://github.com/mrtazz/simplenote.vim.git
 
 
 " ------(NICE BUT PROBLEMATIC)---------
@@ -177,19 +183,23 @@ call pathogen#runtime_append_all_bundles()
 
 " ----------(NOT NEEDED)---------------
 "
-""Bundle: https://github.com/c9s/gsession.vim.git
-"
 "" ........AUTOALIGN SUITE.............
 ""Bundle: https://github.com/vim-scripts/Align.git
 ""Bundle: https://github.com/vim-scripts/AutoAlign.git
 
+"1}}}
 
 
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"                               GENERAL SETTINGS
-"
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
+
+
+
+"##############################################################################
+"                             GENERAL SETTINGS
+"##############################################################################
+
+
+"{{{1
 
 " UTF8 by default
 set encoding=utf-8
@@ -257,11 +267,15 @@ set wildmenu
 
 
 
+"1}}}
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "                               VIEW/SESSION
 "------------------------------------------------------------------------------
+
+"{{{1
+
 set sessionoptions=blank,buffers,curdir,folds,help,options,tabpages,winsize
 
 " Remember last location in file
@@ -290,14 +304,19 @@ endif
 
 
 
+"1}}}
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "                               FOLDING
 "------------------------------------------------------------------------------
 
+"------------General-------------------{{{1
+
 set foldenable
-"
+set foldmethod=syntax
+
+
 "space to toggle FOLD
 nnoremap <space>  za
 "
@@ -310,10 +329,21 @@ nnoremap <S-BS>   zr
 "SHIFT+BACKSPACE to contract ALL folds 1 level
 nnoremap <C-BS>   zm
 
+"1}}}
+" -----------VIM,VIMRC----------------{{{1
+if has("autocmd")
+  autocmd BufNewFile,BufRead {.,_}vimrc   setlocal foldmethod=marker
+  autocmd BufNewFile,BufRead *.vim        setlocal foldmethod=marker
+endif
+
+"au BufReadPre * setlocal foldmethod=indent
+"au BufWinEnter * if &fdm == 'indent' | setlocal foldmethod=manual | endif
+
+let g:vimsyn_folding="afmpPrt"
 
 
-
-" --------------SHELL-SOURCE-----------
+"1}}}
+" --------------SHELL-SOURCE-----------{{{1
 
 "default shell to bash
 let g:is_bash=1
@@ -326,6 +356,8 @@ let g:is_bash=1
 "let g:sh_fold_enabled= 4     (enable if/do/for folding)
 
 let g:sh_fold_enabled=7
+"1}}}
+
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "                               SPELLCHECK
@@ -344,8 +376,7 @@ set nospell
 "          NB : late coloring in section COLORING2
 "------------------------------------------------------------------------------
 
-
-" -------Syntax Highlightning----------
+" -------Syntax Highlightning----------{{{1
 
 if &t_Co >= 256 || has("gui_running")
 
@@ -362,14 +393,14 @@ if &t_Co > 2 || has("gui_running")
 endif
 
 
-
-" ----------Additional Syntax----------
+"1}}}
+" ----------Additional Syntax----------{{{1
 " JSON : js syntax suffices
 autocmd BufNewFile,BufRead *.json set ft=javascript
 
 
-
-" ----------------MISC-----------------
+"1}}}
+" ----------------MISC-----------------{{{1
 if has("gui_running") && has("autocmd")
 
   "only highlight line in GUI mode (in terminal, it's distracting)
@@ -379,22 +410,22 @@ if has("gui_running") && has("autocmd")
 else
   set nocursorline
 endif
-
-" -----------TAB Detection-------------
+"1}}}
+" -----------TAB Detection-------------{{{1
 "
 " mark non-indent tabs, except on commented lines
 match errorMsg /[^"\t]\zs\t\+/
 
 
 
+"1}}}
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "                               COLORING2
 "------------------------------------------------------------------------------
 
-
-" ----------Long-Lines-Suck------------
+" ----------Long-Lines-Suck------------{{{1
 "
 " discrete marking of long lines (> 80)
 " (http://stackoverflow.com/questions/235439/vim-80-column-layout-concerns#answer-235970)
@@ -412,6 +443,7 @@ endif
 
 
 
+"1}}}
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -433,7 +465,7 @@ if has('autocmd')
   autocmd FileType python      set noexpandtab
 endif
 
-"--------non-printable-characters------
+"--------non-printable-characters------{{{1
 "
 " help: h listchars
 
@@ -449,8 +481,8 @@ if has('autocmd')
   autocmd filetype py set listchars=tab:▷⋅,trail:.,extends:#,nbsp:.
 endif
 
-
-"----------trailing-whitespaces--------
+"1}}}
+"--------trailing-whitespaces----------{{{1
 
 " highlight trailing whitespaces so they are easier to spot
 match Todo /\s\+$/
@@ -464,19 +496,20 @@ match Todo /\s\+$/
 :map <S-F7> :%s/\s\+$//g<CR>
 
 
-
-" -----------Pase-in-insert-mode-------
+"1}}}
+" --------Pase-in-insert-mode----------{{{1
 " disable AUTOindenting when doing big pastes
 set pastetoggle=<F10>
 
-
-" ----------Long-Lines-Suck-2----------
 match OverLength /\%81v.\+/
+"1}}}
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "                               STATUS LINE
 "------------------------------------------------------------------------------
+
+"{{{1
 if has("statusline") && has("autocmd")
   source $HOME/.vim/lib/statusbar.vim
   "au FocusLost * source $HOME/.vim/lib/statusbar.vim
@@ -485,12 +518,14 @@ endif
 
 
 
-
+"1}}}
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "                           PLUGIN SPECIFIC CONFIGS
 "------------------------------------------------------------------------------
+
+"{{{1
 let g:showmarks_enable=0       "ShowMarks - disable by default
 let g:Tlist_Use_SingleClick=1  "TagList   - single click to 'goto' tag
 
@@ -499,14 +534,14 @@ let g:CommandTMaxHeight=20
 
 
 
-
+"1}}}
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "                           FILES SPECIFIC CONFIGS
 "------------------------------------------------------------------------------
 
-"--------Markdow and Txt files---------
+"--------Markdow and Txt files---------{{{1
 "
 " from https://github.com/isaacs/.vim/blob/master/vimrc
 
@@ -532,12 +567,14 @@ endfunction
 au BufRead,BufNewFile *.{md,markdown,mdown,mkd,mkdn} call s:setupMarkup()
 au BufRead,BufNewFile *.txt call s:setupWrapping()
 
+"1}}}
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "                           FILES SPECIFIC CONFIGS
 "------------------------------------------------------------------------------
 
+"{{{1
 " Edit vimrc
 nmap <silent> <leader>ev :e $HOME/.vim/vimrc<CR>
 "nmap <silent> <leader>ev :e $MYVIMRC<CR>
@@ -557,36 +594,22 @@ nmap <silent> <leader>ss :so $HOME/.vim/lib/statusbar.vim<CR>
 
 
 
+"1}}}
 
 
 
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+
+"##############################################################################
 "                           --MAPING--
-"
-"
-"               (MODE)?     (NO-RECURSIVE)?     (MAP)
-" nmap      =   [n]ormal                        [map]
-" noremap   =               [nore]cursive       [map]
-" nnoremap  =   [n]ormal    [nore]cursive       [map]
-" vnoremap  =   [v]isual    [n,svore]cursive    [map]
-"
-" ... etc
-"
-" (http://stackoverflow.com/q/3776117) difference-between-the-remap-noremap...)
-"
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""{{{
-
-
+"##############################################################################
 
 
 "------------------------------------------------------------------------------
 "                           GENERAL
 "------------------------------------------------------------------------------
 
+"{{{1
 " Use Q for formatting the current paragraph (or selection)
 vmap Q gq
 nmap Q gqap
@@ -620,9 +643,10 @@ nmap <Leader>x      :Kwbd<CR>
 nmap <leader>X      :bd<CR>
 " Close window
 nmap <leader><c-x>   :clo<CR>
+"1}}}
 
 
-" ----------WINDOW RESIZING------------
+" --------WINDOW RESIZING--------------{{{1
 
 "Vertical resizing to ,< AND ,>, and faster
 " (shorter than C-w C-<, C-w C->)
@@ -631,8 +655,8 @@ nmap <leader><c-x>   :clo<CR>
 
 
 
-
-" -----------NAVIGATION----------------
+"1}}}
+" --------NAVIGATION-------------------{{{1
 " use CTRL hjkl to navigate in different modes
 
 " NORMAL : Window navigation
@@ -714,8 +738,8 @@ imap <C-l> <right>
 
 
 
-
-" ---------ESC is too far away---------
+"1}}}
+" --------ESC is too far away----------{{{1
 " and capslock is better used for CTRL
 "
 " GOTCHAS:
@@ -746,8 +770,8 @@ endif
 imap fj <C-c>
 cmap fj <C-c>
 
-
-"-------------SEARCH-------------------
+"1}}}
+"--------SEARCH------------------------{{{1
 
 " Easy clear search : ,/
 nmap <silent> <leader>/ :nohlsearch<CR>
@@ -758,8 +782,8 @@ nmap <silent> <leader>; :nohlsearch<CR>
 " map control-backspace to delete the previous word in edit mode
 imap <C-BS> <C-W>
 
-
-"-----------AZERTY-TO-QWERTY-----------
+"1}}}
+"--------AZERTY-TO-QWERTY--------------{{{1
 "
 " DIRECT ACCESS to usefull keys on AZERTY keyboards
 " in NORMAL and VISUAL mode
@@ -780,8 +804,8 @@ vmap ù  %
 "vnoremap ù  %
 
 nmap ; .
-
-"------------help-buffer--------------
+"1}}}
+"--------help-buffer------------------{{{1
 
 " these are i$ VIMHOME/ftplugin/help.vim
 " (mappings specific to help buffer for easy navigation)
@@ -790,8 +814,8 @@ nmap <leader>h        :help <C-R>=expand("<cword>")<CR><CR>
 nmap <leader>H        :helpg  <C-R>=expand("<cword>")<CR><CR>
 
 
-
-" --------PERL-(mapping : ,h)----------
+"1}}}
+" --------PERL-(mapping : ,h)----------{{{1
 function! PerlDoc()
   normal yy
   let l:this = @
@@ -820,18 +844,18 @@ endif
 
 
 
-
+"1}}}
 
 "------------------------------------------------------------------------------
 "                           PLUGINS
 "------------------------------------------------------------------------------
 
-"--------------Gundo-------------------
+"---------Gundo------------------------{{{1
 if ! v:version < '703' || !has('python')
   nnoremap <leader>u :GundoToggle<CR>
 endif
-
-"-------------LustyJugler--------------
+"1}}}
+"---------LustyJugler------------------{{{1
 " ,l (shorter than default ,lj )
 " unmap first to remove the 1 second delay
 if hasmapto(":LustyJuggler")
@@ -839,17 +863,17 @@ if hasmapto(":LustyJuggler")
 endif
 nmap <leader>l   :LustyJuggler<CR>
 
-
-"-------------TagList------------------
+"1}}}
+"---------TagList----------------------{{{1
 " taglist to ,T
 nmap <leader>T   :TlistToggle<CR>
 
 
-"------------NERDTree-----------------
+"---------NERDTree--------------------{{{1
 map <leader><C-t> :execute 'NERDTreeToggle ' . getcwd()<CR>
 
-
-"-------------FuGITive-----------------
+"1}}}
+"---------FuGITive---------------------{{{1
 " GIT (fugitive)
 "
 "  20_ --> give status window height
@@ -865,8 +889,8 @@ nmap <leader>gdh :Gdiff HEAD<CR>
 nmap <leader>gdo :Gdiff ORIG_HEAD<CR>
 nmap <leader>gb  :Gbrowse<CR>
 
-
-"--------------YankRing----------------
+"1}}}
+"---------YankRing---------------------{{{1
 nmap <leader>y :YRShow<CR>
 nmap <leader>Y :YRToggle<CR>
 " last one : yankring conflicts with lustyjuggler and possibly delimmate
@@ -874,8 +898,8 @@ nmap <leader>Y :YRToggle<CR>
 " to resolve the issue, issue <leader>Y two times to let
 " dd & such work again
 
-
-"-----------FuzzyFinder----------------
+"1}}}
+"---------FuzzyFinder------------------{{{1
 
  :nmap <leader>fb     :FufBuffer<CR>
  :nmap <leader>ff     :FufFile<CR>
@@ -899,8 +923,8 @@ let g:fuf_keyOpenVsplit = '<C-k>'
 let g:fuf_keyOpenTabpage = '<C-l>'
 
 
-
-"------------vim-session---------------
+"1}}}
+"---------vim-session------------------{{{1
 
 nmap <leader>ws       :SaveSession 
 
@@ -914,16 +938,16 @@ nmap <leader>wr       :RestartVim<CR>
 
 let g:session_autosave=1
 "let g:session_autoload=1
-
-"----------ConqueTerm------------------
+"1}}}
+"---------ConqueTerm-------------------{{{1
 "
 if has("win32") || has("win64")
   nmap <leader>q      :ConqueTermTab Powershell.exe<CR>
 else
   nmap <leader>q      :ConqueTermTab bash<CR>
 endif
-
-" ----------SvnDiff--------------------
+"1}}}
+" ---------SvnDiff---------------------{{{1
 "
 
 nmap <leader>dd       :call Svndiff("next")<CR>
@@ -937,24 +961,26 @@ nmap <leader>ds       :call Svndiff("show")<CR>
 
 let g:svndiff_autoupdate=1
 
-
-" ---------PreciseJump-----------------
+"1}}}
+" ---------PreciseJump-----------------{{{1
 "
 nmap <leader>j        _f
 nmap <leader>J        _F
 let g:PreciseJump_I_am_brave=1
-
+"1}}}
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "                       MACVIM SPECIFIC STUFF
 "                   (that you wouldn't put in gvimrc)
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+
+"{{{1
 
 if has("gui_macvim")
   " set macvim specific stuff
 endif
 
 
-
+"1}}}
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -962,8 +988,7 @@ endif
 "
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-
-
+"{{{1
 " Include user's local vim config
 if filereadable(expand("~/.vimrc.local"))
   source ~/.vimrc.local
@@ -976,6 +1001,7 @@ endif
 
 
 
+"1}}}
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
