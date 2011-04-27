@@ -10,10 +10,12 @@
 
 "define (up to 9) custom highlight groups (mandatory name : UserN)
 hi User1 ctermbg=darkgreen ctermfg=darkred   guibg=green guifg=red
-"hi User1 ctermbg=green ctermfg=red   guibg=green guifg=red
 hi User2 ctermbg=darkgrey   ctermfg=darkblue guibg=darkgrey guifg=darkblue
 hi User3 ctermbg=blue  ctermfg=green guibg=blue  guifg=green
+hi User4 ctermbg=blue  ctermfg=green guibg=darkgrey  guifg=grey
 
+
+hi User5 ctermbg=darkgreen ctermfg=darkred   guibg=green guifg=red
 " use them with %N* : %1*, %2*,...
 "set statusline+=%1*  "switch to User1 highlight
 
@@ -28,7 +30,7 @@ hi User3 ctermbg=blue  ctermfg=green guibg=blue  guifg=green
 set statusline=
 
 "marker for minimized window
-set statusline+=%1*
+set statusline+=%5*
 set statusline+=%{IsMinimized()}
 set statusline+=%*
 
@@ -54,10 +56,24 @@ set statusline+=%m      "modified flag
 "set statusline+=%{fugitive#statusline()}
 "set statusline+=%*
 
-" display __git_ps1
-set statusline+=%2*
-set statusline+=%{StatuslineGitps1()}
+set statusline+=%#ModeMsg#
+"set statusline+=%1*
+set statusline+=%{StatuslineGitps1(1)}
+
+"set statusline+=%2*
+set statusline+=%#DiffAdd#
+set statusline+=%{StatuslineGitps1(2)}
+
+"set statusline+=%3*
+set statusline+=%#DiffText#
+set statusline+=%{StatuslineGitps1(3)}
+
+set statusline+=%#NonText#
+"set statusline+=%4*
+set statusline+=%{StatuslineGitps1(4)}
+
 set statusline+=%*
+
 
 "display a warning if &et is wrong, or we have mixed-indenting
 set statusline+=%#error#
@@ -93,66 +109,64 @@ function! IsMinimized()
 endfunction
 
 
-"bash's git_ps1's wrapper
-function! StatuslineGitps1()
+
+
+ "bash's git_ps1's wrapper
+ "a:item       == 1 -> branch
+ "              == 2 -> commit diff count
+ "              == 3 -> working dir symbols
+ "              == 4 -> time since last commit
+function! StatuslineGitps1(item)
   "caching
   if !exists("b:statusline_gitps1_prompt")
     let b:statusline_gitps1_prompt = system( "__git_prompt_vim " .  shellescape(expand('%:p')) )
+    "Cleanup whatever the shell's echo command uses at EOL
+    let b:statusline_gitps1_prompt = substitute(
+        \ b:statusline_gitps1_prompt,
+        \ '^\([^\]]\+\]\).\+$',
+        \ '\1', "")
   endif
 
   "no a git repo
   if b:statusline_gitps1_prompt == ""
     return ""
-  " git repo and unexpected error (report please)
+  "git repo but unexpected error (report please)
   elseif !v:shell_error == 0
     return " -ERROR- "
   "git repo, all fine
   else
-    "BRANCH
-    "   branchname
-    "EXTRAS
-    "   Count Strings
-    "     (-nb)
-    "     (+nb)
-    "   Working Dir Symbols
-    "     * unstaged changes
-    "     + staged changes
-    "     % untracked files
-    "     ^ stashed files
-    "TIME LAST COMMIT
-    "   [xd,xh,xm]
-
-    let b:tmp_str = ""
-    let b:statusline_gitps1_result = ""
+    "echo b:tmp_str
     for b:tmp_str in split(b:statusline_gitps1_prompt, '|')
-      " Count String
-      if match(b:tmp_str, '[+-]\d') >= 0
-        let b:statusline_gitps1_result .= b:tmp_str
-      " Time of last Commit
-      elseif match(b:tmp_str, '\[[^\]]\+\]') >= 0
-        let b:statusline_gitps1_result .= b:tmp_str
-      " Working dir symbols
-      elseif match(b:tmp_str, '[*+%\^]\+') >= 0
-        let b:statusline_gitps1_result .= b:tmp_str
-      " Branch Name
-      elseif match(b:tmp_str, '[\w\s]\+') >= 0
-        let b:statusline_gitps1_result .= b:tmp_str
+
+      "Branch Name
+      if match(b:tmp_str, '[\w\s]\+') >= 0 && a:item == 1
+        return " " . b:tmp_str . " "
+
+      "Count Strings
+      "    (-nb)
+      "    (+nb)
+      elseif match(b:tmp_str, '([+-]\d)') >= 0 && a:item == 2
+        return b:tmp_str
+
+      "Working Dir Symbols
+      "    * unstaged changes
+      "    + staged changes
+      "    % untracked files
+      "    ^ stashed files
+      elseif match(b:tmp_str, '^[*+%\^]\+$') >= 0 && a:item == 3
+        return b:tmp_str
+
+      "Time of last Commit
+      "   [xd,xh,xm]
+      elseif match(b:tmp_str, '\[[^\]]\+\]') >= 0 && a:item == 4
+        let b:tmp_str = ' ' . substitute(b:tmp_str, '\[\([^\]]\+\)\]', '\ \1\ ', '')
+        "let b:tmp_str = "_" . substitute(b:tmp_str, '\[\([^\]]\+\)\]', '\1', "") . "_"
+        return b:tmp_str
+
       endif
-
-      "let b:statusline_gitps1_result .= b:tmp_str
     endfo
-
   endif
 
-  return b:statusline_gitps1_result . " - " . b:statusline_gitps1_prompt
-endfunction
-
-
-"Better wrapper using FUGITIVE
-function! StatuslineGit()
-  if !exists('b:git_dir')
-    return ''
-  endif
 endfunction
 
 "recalculate the Gitps1 when idle, and after saving
