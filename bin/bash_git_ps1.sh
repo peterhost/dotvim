@@ -335,7 +335,7 @@ PROMPT_COMMAND=__git_prompt
 
 
 
-__git_prompt_vim() {
+__git_prompt_vim_orig() {
   #echo "BOB:"$1
   #local __path=`echo \`pwd\` | sed 's/[[:space:]]+/\\ /g'`
   local __path=`dirname $1`
@@ -401,11 +401,15 @@ __git_prompt_vim() {
 
 
 
-__git_vim_tell_repo() {
+
+__git_prompt_vim() {
   local __path=`dirname $1`
   cd $__path
 
-  local vimRepo
+  # setup vimSTATUS
+  local vimSTATUS
+
+  # when in git repository
   local gitdir="$(__git_dirname)"
   if [ -n "$gitdir" ]; then
       local branch
@@ -430,109 +434,32 @@ __git_vim_tell_repo() {
                       branch="${branch##remotes/}"
                   ;;
               esac
+
+              # extras (count strings, working dir symbols)
+              local countstr="$(__git_count_str)"
+              local wd_syms="$(__git_working_dir_symbols)"
+
+              # calc relative time diff of last commit
+              local secs="$(__git_secs_since)"
+              if [ -n "$secs" ]; then
+                  local timestr="[$(__git_timestr_relformat $secs true)]"
+                  extras="${countstr}|${wd_syms}|${timestr}"
+              else 
+                  extras="${countstr}|${wd_syms}"
+              fi
           ;;
       esac
 
-      vimRepo="${vimRepo}${branch}"
+      # update vimSTATUS
+      vimSTATUS="${branch}|${extras}"
   fi
-  echo $vimRepo
+
+  echo $vimSTATUS
 }
 
 
 
 
-__git_vim_tell_extra() {
-  local __path=`dirname $1`
-  cd $__path
-
-  local vimExtra
-  local gitdir="$(__git_dirname)"
-  if [ -n "$gitdir" ]; then
-      local branch
-      local extras
-
-      local in_gitdir="$(__git_in_gitdir)"
-      case "$in_gitdir" in
-          gitdir|bare)
-              branch="~$(echo $in_gitdir | tr "[:lower:]" "[:upper:]")~"
-              extras=""
-          ;;
-          *)
-                # extras (count strings, working dir symbols)
-                local countstr="$(__git_count_str)"
-                local wd_syms="${LIGHT_VIOLET}$(__git_working_dir_symbols)${RESET}"
-
-          ;;
-      esac
-
-      vimExtra="${vimExtra}${branch}"
-  fi
-  echo $vimExtra
-}
-
-
-
-__git_vim_tell_count() {
-  local __path=`dirname $1`
-  cd $__path
-
-  local vimCount
-  local gitdir="$(__git_dirname)"
-  if [ -n "$gitdir" ]; then
-      local branch
-      local extras
-
-      local in_gitdir="$(__git_in_gitdir)"
-      case "$in_gitdir" in
-          gitdir|bare)
-              branch="~$(echo $in_gitdir | tr "[:lower:]" "[:upper:]")~"
-              extras=""
-          ;;
-          *)
-                # extras (count strings, working dir symbols)
-                local countstr="$(__git_count_str)"
-
-          ;;
-      esac
-
-      vimCount="${vimCount}${branch}"
-  fi
-  echo $vimExtra
-}
-
-
-__git_vim_tell_lastcommit() {
-  local __path=`dirname $1`
-  cd $__path
-
-  local vimLastCommit
-  local gitdir="$(__git_dirname)"
-  if [ -n "$gitdir" ]; then
-      local branch
-      local extras
-
-      local in_gitdir="$(__git_in_gitdir)"
-      case "$in_gitdir" in
-          gitdir|bare)
-              branch="~$(echo $in_gitdir | tr "[:lower:]" "[:upper:]")~"
-              extras=""
-          ;;
-          *)
-                # calc relative time diff of last commit
-                local secs="$(__git_secs_since)"
-                if [ -n "$secs" ]; then
-                    local timestr=" [$(__git_timestr_relformat $secs true)]"
-                    extras="${countstr}${wd_syms}${timestr}"
-                else 
-                    extras="${countstr}${wd_syms}"
-                fi
-          ;;
-      esac
-
-      vimLastCommit="${vimLastCommit}${branch}"
-  fi
-  echo $vimLastCommit
-}
 
 
 export -f __git_prompt

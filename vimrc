@@ -804,6 +804,7 @@ vmap ù  %
 "vnoremap ù  %
 
 nmap ; .
+omap ; .
 "1}}}
 "--------help-buffer------------------{{{1
 

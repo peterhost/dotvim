@@ -85,7 +85,7 @@ set laststatus=2        " Always show status line
 
 "visual marker if minimized window
 function! IsMinimized()
-  if winheight(0) <= 2
+  if winheight(0) <= &winminheight
     return '[↓]'
   else
     return ''
@@ -98,11 +98,53 @@ function! StatuslineGitps1()
   "caching
   if !exists("b:statusline_gitps1_prompt")
     let b:statusline_gitps1_prompt = system( "__git_prompt_vim " .  shellescape(expand('%:p')) )
-    if !v:shell_error == 0
-      let b:statusline_gitps1_prompt = ""
-    endif
   endif
-  return b:statusline_gitps1_prompt
+
+  "no a git repo
+  if b:statusline_gitps1_prompt == ""
+    return ""
+  " git repo and unexpected error (report please)
+  elseif !v:shell_error == 0
+    return " -ERROR- "
+  "git repo, all fine
+  else
+    "BRANCH
+    "   branchname
+    "EXTRAS
+    "   Count Strings
+    "     (-nb)
+    "     (+nb)
+    "   Working Dir Symbols
+    "     * unstaged changes
+    "     + staged changes
+    "     % untracked files
+    "     ^ stashed files
+    "TIME LAST COMMIT
+    "   [xd,xh,xm]
+
+    let b:tmp_str = ""
+    let b:statusline_gitps1_result = ""
+    for b:tmp_str in split(b:statusline_gitps1_prompt, '|')
+      " Count String
+      if match(b:tmp_str, '[+-]\d') >= 0
+        let b:statusline_gitps1_result .= b:tmp_str
+      " Time of last Commit
+      elseif match(b:tmp_str, '\[[^\]]\+\]') >= 0
+        let b:statusline_gitps1_result .= b:tmp_str
+      " Working dir symbols
+      elseif match(b:tmp_str, '[*+%\^]\+') >= 0
+        let b:statusline_gitps1_result .= b:tmp_str
+      " Branch Name
+      elseif match(b:tmp_str, '[\w\s]\+') >= 0
+        let b:statusline_gitps1_result .= b:tmp_str
+      endif
+
+      "let b:statusline_gitps1_result .= b:tmp_str
+    endfo
+
+  endif
+
+  return b:statusline_gitps1_result . " - " . b:statusline_gitps1_prompt
 endfunction
 
 
