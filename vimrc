@@ -326,14 +326,16 @@ nnoremap <BS>     zA
 "SHIFT+BACKSPACE to expand ALL folds 1 level
 nnoremap <S-BS>   zr
 "
-"SHIFT+BACKSPACE to contract ALL folds 1 level
+"CMD+BACKSPACE to contract ALL folds 1 level
 nnoremap <C-BS>   zm
 
+"CMD+SHIFT+BACKSPACE to toggle ALL folds
+nnoremap <S-C-BS>   zi
 "1}}}
 " -----------VIM,VIMRC----------------{{{1
 if has("autocmd")
-  autocmd BufNewFile,BufRead {.,_}vimrc   setlocal foldmethod=marker
-  autocmd BufNewFile,BufRead *.vim        setlocal foldmethod=marker
+  autocmd FileType vim        setlocal foldmethod=marker
+  autocmd BufRead *.vim       setlocal foldmethod=marker
 endif
 
 "au BufReadPre * setlocal foldmethod=indent
@@ -478,6 +480,7 @@ set listchars=tab:\ \ ,extends:#,trail:⋅,nbsp:⋅
 " show tabs more strongly for specific files
 if has('autocmd')
   autocmd filetype py set list
+  "␣␣
   autocmd filetype py set listchars=tab:▷⋅,trail:.,extends:#,nbsp:.
 endif
 
@@ -493,8 +496,12 @@ match Todo /\s\+$/
 "   have meaningful trailing whitespaces
 " * carefull with commits so as not to scramble diffs : do this
 "   only once in a while
-:map <S-F7> :%s/\s\+$//g<CR>
 
+" in WHOLE FILE
+:map <S-F7>                 :%s/\s\+$//g<CR>
+" on CURRENT LINE
+:nnoremap <leader><space>   :s/\s\+$//g<CR>
+:vnoremap <leader><space>   :s/\s\+$//g<CR>
 
 "1}}}
 " --------Pase-in-insert-mode----------{{{1
@@ -575,14 +582,24 @@ au BufRead,BufNewFile *.txt call s:setupWrapping()
 "------------------------------------------------------------------------------
 
 "{{{1
+" open real file instead of symlink
+function! UnSymLinkEdit(path)
+  let l:filetoedit = system( "ttmp=" . shellescape(a:path) . "; [ -L $ttmp ] && echo $(readlink $ttmp) || echo $ttmp" )
+  execute "edit " . l:filetoedit
+endfunction
+
+"1}}}
+
+
+"{{{1
 " Edit vimrc
-nmap <silent> <leader>ev :e $HOME/.vim/vimrc<CR>
+nmap <silent> <leader>ev :call UnSymLinkEdit($MYVIMRC)<CR>
 "nmap <silent> <leader>ev :e $MYVIMRC<CR>
 " Quickly edit/reload the vimrc file
 " (mapc & mapc! to clear all mappings before reloading)
 nmap <silent> <leader>sv :mapc<CR>:mapc!<CR>:so $MYVIMRC<CR>
 " Quickly edit/reload the bashrc file
-nmap <silent> <leader>eb :e $HOME/.bashrc<CR>
+nmap <silent> <leader>eb :call UnSymLinkEdit($HOME . "/.bashrc")<CR>
 " Same for the statusLine
 nmap <silent> <leader>es :e $HOME/.vim/lib/statusbar.vim<CR>
 nmap <silent> <leader>ss :so $HOME/.vim/lib/statusbar.vim<CR>
@@ -596,6 +613,31 @@ nmap <silent> <leader>ss :so $HOME/.vim/lib/statusbar.vim<CR>
 
 "1}}}
 
+
+
+
+
+""{{{1
+"" Edit vimrc
+"nmap <silent> <leader>ev :e $HOME/.vim/vimrc<CR>
+""nmap <silent> <leader>ev :e $MYVIMRC<CR>
+"" Quickly edit/reload the vimrc file
+"" (mapc & mapc! to clear all mappings before reloading)
+"nmap <silent> <leader>sv :mapc<CR>:mapc!<CR>:so $MYVIMRC<CR>
+"" Quickly edit/reload the bashrc file
+"nmap <silent> <leader>eb :e $HOME/.bashrc<CR>
+"" Same for the statusLine
+"nmap <silent> <leader>es :e $HOME/.vim/lib/statusbar.vim<CR>
+"nmap <silent> <leader>ss :so $HOME/.vim/lib/statusbar.vim<CR>
+
+
+
+
+
+
+
+
+""1}}}
 
 
 
