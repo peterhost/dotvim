@@ -100,8 +100,8 @@ endfo
 "1}}}
 
 
-" -------- User Defined Colors --------{{{1
-" -------- StatusLine TARTIFICATION ----{{{2
+" -------- SMART User{N} Colors -------{{{1
+" -------- ABOUT StatusLine coloring --{{{2
 " --------------------------------------------------------------------------
 "
 " PROBLEM1: When coloring Vim's StatusLine, we have two options :
@@ -132,188 +132,25 @@ endfo
 "    (especially background color) for our custom "User{N}" highlight
 "    groups
 "
+"  - Try to cache as much as possible cause that's heavy on refresh time
 "
 " WARN: BIG GOTCHA
+"
 "       if the StatusLine Highlight contains :
 "         - term=reverse
 "         - cterm=reverse
 "         - gui=reverse
 "        the termfg/termbg, ctermfg/ctermbg, and guifg/guibg couples
-"        have to be substituted one for another
+"        have to be substituted one for another, when leeching colors from a
+"        highlight group.
 "
 "
-
-"We need to be able to change the text's color on the statusline without
-"modifying the background. As we need to do that with "User defined"
-"Highlights, we need to store :
-" - active window's number
-" - current Colorscheme's StatusLine color
-" - current Colorscheme's StatusLineNC color
-
-
-
-"2}}}
-" -------- Leech current ColorScheme --{{{2
-
-
-
-" WARN: For some reason, the call :
-"
-"   synIDattr(synIDtrans(hlID(GroupName)), {what}, {mode})
-"
-"  does not work as expected if {mode} equals "gui",in a FOR loop. It
-"  must have stg to do with the scope and my being an ass, but for the
-"  moment, just do the following calls sequentially.
-"
-
-""DEPRECATED:
-"function! s:statuslineHighlightLeech()
-"  let s:listSynIDattrWhat = ["name","fg","bg","font","sp","fg#","bg#","sp#",
-"                            \"bold","italic","reverse","inverse","standout",
-"                            \"underline","undercurl"]
-"  let s:listSynIDattrMode = ["term", "cterm", "gui"]
-
-
-"  let l:tmpList = {}
-
-"  let l:tmpList["name"] = synIDattr(synIDtrans(hlID("StatusLine")), "name")
-
-"  let l:tmpList["termbold"]       = synIDattr(synIDtrans(hlID("StatusLine")), "bold",        "term")
-"  let l:tmpList["termitalic"]     = synIDattr(synIDtrans(hlID("StatusLine")), "italic",      "term")
-"  let l:tmpList["termreverse"]    = synIDattr(synIDtrans(hlID("StatusLine")), "reverse",     "term")
-"  let l:tmpList["terminverse"]    = synIDattr(synIDtrans(hlID("StatusLine")), "inverse",     "term")
-"  let l:tmpList["termstandout"]   = synIDattr(synIDtrans(hlID("StatusLine")), "standout",    "term")
-"  let l:tmpList["termunderline"]  = synIDattr(synIDtrans(hlID("StatusLine")), "underline",   "term")
-"  let l:tmpList["termundercurl"]  = synIDattr(synIDtrans(hlID("StatusLine")), "undercurl",   "term")
-
-"  let l:tmpList["ctermbold"]      = synIDattr(synIDtrans(hlID("StatusLine")), "bold",        "cterm")
-"  let l:tmpList["ctermitalic"]    = synIDattr(synIDtrans(hlID("StatusLine")), "italic",      "cterm")
-"  let l:tmpList["ctermreverse"]   = synIDattr(synIDtrans(hlID("StatusLine")), "reverse",     "cterm")
-"  let l:tmpList["cterminverse"]   = synIDattr(synIDtrans(hlID("StatusLine")), "inverse",     "cterm")
-"  let l:tmpList["ctermstandout"]  = synIDattr(synIDtrans(hlID("StatusLine")), "standout",    "cterm")
-"  let l:tmpList["ctermunderline"] = synIDattr(synIDtrans(hlID("StatusLine")), "underline",   "cterm")
-"  let l:tmpList["ctermundercurl"] = synIDattr(synIDtrans(hlID("StatusLine")), "undercurl",   "cterm")
-"  let l:tmpList["ctermfg"]        = synIDattr(synIDtrans(hlID("StatusLine")), "fg",          "cterm")
-"  let l:tmpList["ctermbg"]        = synIDattr(synIDtrans(hlID("StatusLine")), "bg",          "cterm")
-"  let l:tmpList["ctermsp"]        = synIDattr(synIDtrans(hlID("StatusLine")), "sp",          "cterm")
-
-
-"  let l:tmpList["guibold"]        = synIDattr(synIDtrans(hlID("StatusLine")), "bold",        "gui")
-"  let l:tmpList["guiitalic"]      = synIDattr(synIDtrans(hlID("StatusLine")), "italic",      "gui")
-"  let l:tmpList["guireverse"]     = synIDattr(synIDtrans(hlID("StatusLine")), "reverse",     "gui")
-"  let l:tmpList["guiinverse"]     = synIDattr(synIDtrans(hlID("StatusLine")), "inverse",     "gui")
-"  let l:tmpList["guistandout"]    = synIDattr(synIDtrans(hlID("StatusLine")), "standout",    "gui")
-"  let l:tmpList["guiunderline"]   = synIDattr(synIDtrans(hlID("StatusLine")), "underline",   "gui")
-"  let l:tmpList["guiundercurl"]   = synIDattr(synIDtrans(hlID("StatusLine")), "undercurl",   "gui")
-"  let l:tmpList["guifg"]          = synIDattr(synIDtrans(hlID("StatusLine")), "fg",          "gui")
-"  let l:tmpList["guibg"]          = synIDattr(synIDtrans(hlID("StatusLine")), "bg",          "gui")
-"  let l:tmpList["guisp"]          = synIDattr(synIDtrans(hlID("StatusLine")), "sp",          "gui")
-"  let l:tmpList["guifg#"]         = synIDattr(synIDtrans(hlID("StatusLine")), "fg#",         "gui")
-"  let l:tmpList["guibg#"]         = synIDattr(synIDtrans(hlID("StatusLine")), "bg#",         "gui")
-"  let l:tmpList["guisp#"]         = synIDattr(synIDtrans(hlID("StatusLine")), "sp#",        "gui")
-"  let l:tmpList["guifont"]        = synIDattr(synIDtrans(hlID("StatusLine")), "font",        "gui")
-
-"  return l:tmpList
-"endfunction
-
-
-"let s:statusLineHighlightDBG = s:statuslineHighlightLeech()
-"call Decho("-------------begin-------------")           "Decho
-"for key in sort(keys(s:statusLineHighlightDBG))            "Decho
-"  if s:statusLineHighlightDBG[key] != ""                   "Decho
-"    call Decho(key . ":" . s:statusLineHighlightDBG[key])  "Decho
-"  endif                                                 "Decho
-"endfo                                                   "Decho
-"call Decho("--------------end--------------")
-
-
-
-
-function! s:STO(arg)
-  let s:__sto = a:arg
-  return a:arg
-endfunction
-
-" avoid the "-1" value cause we can't feed it back to the Highlight command
-function! s:noNEG1(arg)
-  return (a:arg == "-1")? "" : a:arg
-endfunction
-
-
-function! s:statuslineHighlightConcat()
-  " WHAT:
-  " "name", "fg", "bg", "font", "sp", "fg#", "bg#", "sp#",
-  " "bold", "italic", "reverse", "inverse", "standout",
-  " "underline", "undercurl"
-  " MODE:
-  " "term", "cterm", "gui"
-
-  ""Cache!
-  "if !exists("g:tartify_updating")
-  "  call Decho("s:statuslineHighlightConcat -> RUNNING")
-
-    let s:statusLineGroupAttr = {}
-
-    let s:statusLineGroupAttr["term"]       =          ( synIDattr(synIDtrans(hlID("StatusLine")), "bold",        "term") ? "bold,"       : "" )
-    let s:statusLineGroupAttr["term"]      .=          ( synIDattr(synIDtrans(hlID("StatusLine")), "italic",      "term") ? "italic,"     : "" )
-    let s:statusLineGroupAttr["term"]      .=          ( synIDattr(synIDtrans(hlID("StatusLine")), "reverse",     "term") ? "reverse,"    : "" )
-  " let s:statusLineGroupAttr["term"]      .=          ( synIDattr(synIDtrans(hlID("StatusLine")), "inverse",     "term") ? "inverse,"    : "" )
-    let s:statusLineGroupAttr["term"]      .=          ( synIDattr(synIDtrans(hlID("StatusLine")), "standout",    "term") ? "standout,"   : "" )
-    let s:statusLineGroupAttr["term"]      .=          ( synIDattr(synIDtrans(hlID("StatusLine")), "underline",   "term") ? "underline,"  : "" )
-    let s:statusLineGroupAttr["term"]      .=          ( synIDattr(synIDtrans(hlID("StatusLine")), "undercurl",   "term") ? "undercurl,"  : "" )
-
-    let s:statusLineGroupAttr["cterm"]      =          ( synIDattr(synIDtrans(hlID("StatusLine")), "bold",        "cterm") ? "bold,"      : "" )
-    let s:statusLineGroupAttr["cterm"]     .=          ( synIDattr(synIDtrans(hlID("StatusLine")), "italic",      "cterm") ? "italic,"    : "" )
-    let s:statusLineGroupAttr["cterm"]     .=          ( synIDattr(synIDtrans(hlID("StatusLine")), "reverse",     "cterm") ? "reverse,"   : "" )
-  " let s:statusLineGroupAttr["cterm"]     .=          ( synIDattr(synIDtrans(hlID("StatusLine")), "inverse",     "cterm") ? "inverse,"   : "" )
-    let s:statusLineGroupAttr["cterm"]     .=          ( synIDattr(synIDtrans(hlID("StatusLine")), "standout",    "cterm") ? "standout,"  : "" )
-    let s:statusLineGroupAttr["cterm"]     .=          ( synIDattr(synIDtrans(hlID("StatusLine")), "underline",   "cterm") ? "underline," : "" )
-    let s:statusLineGroupAttr["cterm"]     .=          ( synIDattr(synIDtrans(hlID("StatusLine")), "undercurl",   "cterm") ? "undercurl," : "" )
-    let s:statusLineGroupAttr["ctermfg"]    = s:noNEG1( synIDattr(synIDtrans(hlID("StatusLine")), "fg",          "cterm") )
-    let s:statusLineGroupAttr["ctermbg"]    = s:noNEG1( synIDattr(synIDtrans(hlID("StatusLine")), "bg",          "cterm") )
-  " let s:statusLineGroupAttr["ctermsp"]    =          synIDattr(synIDtrans(hlID("StatusLine")), "sp",          "cterm")
-
-
-    let s:statusLineGroupAttr["gui"]        =          ( synIDattr(synIDtrans(hlID("StatusLine")), "bold",        "gui") ? "bold,"       : "" )
-    let s:statusLineGroupAttr["gui"]       .=          ( synIDattr(synIDtrans(hlID("StatusLine")), "italic",      "gui") ? "italic,"     : "" )
-    let s:statusLineGroupAttr["gui"]       .=          ( synIDattr(synIDtrans(hlID("StatusLine")), "reverse",     "gui") ? "reverse,"    : "" )
-  " let s:statusLineGroupAttr["gui"]       .=          ( synIDattr(synIDtrans(hlID("StatusLine")), "inverse",     "gui") ? "inverse,"    : "" )
-    let s:statusLineGroupAttr["gui"]       .=          ( synIDattr(synIDtrans(hlID("StatusLine")), "standout",    "gui") ? "standout,"   : "" )
-    let s:statusLineGroupAttr["gui"]       .=          ( synIDattr(synIDtrans(hlID("StatusLine")), "underline",   "gui") ? "underline,"  : "" )
-    let s:statusLineGroupAttr["gui"]       .=          ( synIDattr(synIDtrans(hlID("StatusLine")), "undercurl",   "gui") ? "undercurl,"  : "" )
-    let s:statusLineGroupAttr["guifg"]      =            synIDattr(synIDtrans(hlID("StatusLine")), "fg",          "gui")
-    let s:statusLineGroupAttr["guibg"]      =            synIDattr(synIDtrans(hlID("StatusLine")), "bg",          "gui")
-  " let s:statusLineGroupAttr["guisp"]      =            synIDattr(synIDtrans(hlID("StatusLine")), "sp",          "gui")
-  " let s:statusLineGroupAttr["guifg"]     .=            synIDattr(synIDtrans(hlID("StatusLine")), "fg#",         "gui")
-  " let s:statusLineGroupAttr["guibg"]     .=            synIDattr(synIDtrans(hlID("StatusLine")), "bg#",         "gui")
-  " let s:statusLineGroupAttr["guisp"]     .=            synIDattr(synIDtrans(hlID("StatusLine")), "sp#",         "gui")
-  " let s:statusLineGroupAttr["font"]       =            synIDattr(synIDtrans(hlID("StatusLine")), "font"              )
-
-    "Concatenate the resulting HighLight syntax
-    let l:result = ""
-    for [l:key, l:val] in items(s:statusLineGroupAttr)
-      if l:val != ""
-        let l:result .= l:key . "=" . l:val . " "
-      endif
-    endfo
-
-
-    "setup the global variable for this script
-    let s:statusLineHighlightExtract = l:result
-
-  "else
-  "  call Decho("s:statuslineHighlightConcat -> NONE")
-  "endif
-endfunction
-
-
-
 
 
 
 
 "2}}}
-" -------- YOUR COLORS ----------------{{{2
+" -------- Custom Colors --------------{{{2
 "
 " Define the 9 User{N} color themes (across "term", "cterm" and "gui") in one
 " go
@@ -332,41 +169,124 @@ endfunction
 " an (already) underlined statusbar highlight group, as per definition of your
 " current ColorScheme, won't do nothing more)
 function! s:defineUserColors()
-  "if !exists("g:tartify_updating")
-  "  call Decho("s:adaptativeHighlights -> RELOAD")
-    let s:adaptativeHighlights  = {
-          \'light': {
-            \ 1: {'hue': 'lightblue',   'format': 'underline,italic'},
-            \ 2: {'hue': 'blue',        'format': ''},
-            \ 3: {'hue': 'lightred',    'format': 'underline,italic'},
-            \ 4: {'hue': 'red',         'format': 'underline,italic'},
-            \ 5: {'hue': 'lightgreen',  'format': 'underline,italic'},
-            \ 6: {'hue': 'green',       'format': 'underline,italic'},
-            \ 7: {'hue': 'magenta',     'format': 'underline,italic'},
-            \ 8: {'hue': 'lightyellow', 'format': ''},
-            \ 9: {'hue': 'yellow',      'format': ''}
-            \ },
-        \'dark': {
-            \ 1: {'hue': 'blue',        'format': 'underline,italic'},
-            \ 2: {'hue': 'darkblue',    'format': ''},
-            \ 3: {'hue': 'red',         'format': 'underline,italic'},
-            \ 4: {'hue': 'darkred',     'format': 'underline,italic'},
-            \ 5: {'hue': 'green',       'format': 'underline,italic'},
-            \ 6: {'hue': 'darkgreen',   'format': 'underline,italic'},
-            \ 7: {'hue': 'magenta',     'format': 'underline,italic'},
-            \ 8: {'hue': 'yellow',      'format': ''},
-            \ 9: {'hue': 'darkyellow',  'format': ''}
-            \ }
-        \}
-  "else
-  "  call Decho("s:adaptativeHighlights -> NONE")
-  "endif
+"  "call Decho("-->Loading UserColors")
+  let s:adaptativeHighlights  = {
+        \'light': {
+          \ 1: {'hue': 'lightblue',   'format': 'underline,italic'},
+          \ 2: {'hue': 'blue',        'format': ''},
+          \ 3: {'hue': 'lightred',    'format': 'underline,italic'},
+          \ 4: {'hue': 'red',         'format': 'underline,italic'},
+          \ 5: {'hue': 'lightgreen',  'format': 'underline,italic'},
+          \ 6: {'hue': 'green',       'format': 'underline,italic'},
+          \ 7: {'hue': 'magenta',     'format': 'underline,italic'},
+          \ 8: {'hue': 'lightyellow', 'format': ''},
+          \ 9: {'hue': 'yellow',      'format': ''}
+          \ },
+      \'dark': {
+          \ 1: {'hue': 'blue',        'format': 'underline,italic'},
+          \ 2: {'hue': 'darkblue',    'format': ''},
+          \ 3: {'hue': 'red',         'format': 'underline,italic'},
+          \ 4: {'hue': 'darkred',     'format': 'underline,italic'},
+          \ 5: {'hue': 'green',       'format': 'underline,italic'},
+          \ 6: {'hue': 'darkgreen',   'format': 'underline,italic'},
+          \ 7: {'hue': 'magenta',     'format': 'underline,italic'},
+          \ 8: {'hue': 'yellow',      'format': ''},
+          \ 9: {'hue': 'darkyellow',  'format': ''}
+          \ }
+      \}
 endfunction
 
 
 
 "2}}}
-" -------- Inject Colorscheme ---------{{{2
+" -------- Leech ColorScheme ----------{{{2
+
+
+
+" WARN: For some reason, the call :
+"
+"   synIDattr(synIDtrans(hlID(GroupName)), {what}, {mode})
+"
+"  does not work as expected if {mode} equals "gui",in a FOR loop. It
+"  must have stg to do with the scope and my being an ass, but for the
+"  moment, we'll just process the following calls sequentially.
+"
+
+" avoid the "-1" value cause we can't feed it back to the Highlight command
+function! s:noNEG1(arg)
+  return (a:arg == "-1")? "" : a:arg
+endfunction
+
+
+function! s:statuslineHighlightConcat()"
+  " WHAT:
+  " "name", "fg", "bg", "font", "sp", "fg#", "bg#", "sp#",
+  " "bold", "italic", "reverse", "inverse", "standout",
+  " "underline", "undercurl"
+  " MODE:
+  " "term", "cterm", "gui"
+
+"  "call Decho("--> s:statuslineHighlightConcat -> RUNNING")
+
+  let s:statusLineGroupAttr = {}
+  let l:thisID = synIDtrans(hlID("StatusLine"))
+
+  let s:statusLineGroupAttr["term"]    =         ( synIDattr(l:thisID, "bold",        "term") ? "bold,"       : "" )
+  let s:statusLineGroupAttr["term"]   .=         ( synIDattr(l:thisID, "italic",      "term") ? "italic,"     : "" )
+  let s:statusLineGroupAttr["term"]   .=         ( synIDattr(l:thisID, "reverse",     "term") ? "reverse,"    : "" )
+" let s:statusLineGroupAttr["term"]   .=         ( synIDattr(l:thisID, "inverse",     "term") ? "inverse,"    : "" )
+  let s:statusLineGroupAttr["term"]   .=         ( synIDattr(l:thisID, "standout",    "term") ? "standout,"   : "" )
+  let s:statusLineGroupAttr["term"]   .=         ( synIDattr(l:thisID, "underline",   "term") ? "underline,"  : "" )
+  let s:statusLineGroupAttr["term"]   .=         ( synIDattr(l:thisID, "undercurl",   "term") ? "undercurl,"  : "" )
+
+  let s:statusLineGroupAttr["cterm"]   =         ( synIDattr(l:thisID, "bold",        "cterm") ? "bold,"      : "" )
+  let s:statusLineGroupAttr["cterm"]  .=         ( synIDattr(l:thisID, "italic",      "cterm") ? "italic,"    : "" )
+  let s:statusLineGroupAttr["cterm"]  .=         ( synIDattr(l:thisID, "reverse",     "cterm") ? "reverse,"   : "" )
+" let s:statusLineGroupAttr["cterm"]  .=         ( synIDattr(l:thisID, "inverse",     "cterm") ? "inverse,"   : "" )
+  let s:statusLineGroupAttr["cterm"]  .=         ( synIDattr(l:thisID, "standout",    "cterm") ? "standout,"  : "" )
+  let s:statusLineGroupAttr["cterm"]  .=         ( synIDattr(l:thisID, "underline",   "cterm") ? "underline," : "" )
+  let s:statusLineGroupAttr["cterm"]  .=         ( synIDattr(l:thisID, "undercurl",   "cterm") ? "undercurl," : "" )
+  let s:statusLineGroupAttr["ctermfg"] = s:noNEG1( synIDattr(l:thisID, "fg",          "cterm") )
+  let s:statusLineGroupAttr["ctermbg"] = s:noNEG1( synIDattr(l:thisID, "bg",          "cterm") )
+" let s:statusLineGroupAttr["ctermsp"] =          synIDattr(l:thisID, "sp",          "cterm")
+
+
+  let s:statusLineGroupAttr["gui"]     =         ( synIDattr(l:thisID, "bold",        "gui") ? "bold,"       : "" )
+  let s:statusLineGroupAttr["gui"]    .=         ( synIDattr(l:thisID, "italic",      "gui") ? "italic,"     : "" )
+  let s:statusLineGroupAttr["gui"]    .=         ( synIDattr(l:thisID, "reverse",     "gui") ? "reverse,"    : "" )
+" let s:statusLineGroupAttr["gui"]    .=         ( synIDattr(l:thisID, "inverse",     "gui") ? "inverse,"    : "" )
+  let s:statusLineGroupAttr["gui"]    .=         ( synIDattr(l:thisID, "standout",    "gui") ? "standout,"   : "" )
+  let s:statusLineGroupAttr["gui"]    .=         ( synIDattr(l:thisID, "underline",   "gui") ? "underline,"  : "" )
+  let s:statusLineGroupAttr["gui"]    .=         ( synIDattr(l:thisID, "undercurl",   "gui") ? "undercurl,"  : "" )
+  let s:statusLineGroupAttr["guifg"]   =           synIDattr(l:thisID, "fg",          "gui")
+  let s:statusLineGroupAttr["guibg"]   =           synIDattr(l:thisID, "bg",          "gui")
+" let s:statusLineGroupAttr["guisp"]   =           synIDattr(l:thisID, "sp",          "gui")
+" let s:statusLineGroupAttr["guifg"]  .=           synIDattr(l:thisID, "fg#",         "gui")
+" let s:statusLineGroupAttr["guibg"]  .=           synIDattr(l:thisID, "bg#",         "gui")
+" let s:statusLineGroupAttr["guisp"]  .=           synIDattr(l:thisID, "sp#",         "gui")
+" let s:statusLineGroupAttr["font"]    =           synIDattr(l:thisID, "font"              )
+
+  "Concatenate the resulting HighLight syntax
+  let l:result = ""
+  for [l:key, l:val] in items(s:statusLineGroupAttr)
+    if l:val != ""
+      let l:result .= l:key . "=" . l:val . " "
+    endif
+  endfo
+
+
+  "setup the global (script-scoped) variable
+  let s:statusLineHighlightExtract = l:result
+
+endfunction
+
+
+
+
+
+
+"2}}}
+" -------- RE-inject Colorscheme ------{{{2
 "
 "
 "
@@ -374,32 +294,28 @@ endfunction
 
 function! s:smartHighligths()
 
-  "if !exists("g:tartify_updating")
-  "  call Decho("s:smartHighligths -> RUNNING")
-    " using the global setting &background
-    for [l:nb, l:val] in items(s:adaptativeHighlights[&background])
+"  "call Decho("-->processing smartHighLights")
+  " using the global setting &background
+  for [l:nb, l:val] in items(s:adaptativeHighlights[&background])
 
-      "FIRST : inject the styles leeched from the current StatusLine highlight
-      "group (for current ColorScheme)
-      let l:highlight = s:statusLineHighlightExtract
+    "FIRST : inject the styles leeched from the current StatusLine highlight
+    "group (for current ColorScheme)
+    let l:highlight = s:statusLineHighlightExtract
 
-      "SECOND : inject our custom styles on top of that
-      if l:val.hue != ""
-        let l:highlight .= s:injectHue(l:val.hue)
-        "Decho( l:nb . " - hue:" . l:val.hue)
-      endif
-      if l:val.format != ""
-        let l:highlight .= s:injectFormat(l:val.format)
-        "Decho( l:nb . " - format:" . l:val.format)
-      endif
+    "SECOND : inject our custom styles on top of that
+    if l:val.hue != ""
+      let l:highlight .= s:injectHue(l:val.hue)
+"      "Decho( l:nb . " - hue:" . l:val.hue)
+    endif
+    if l:val.format != ""
+      let l:highlight .= s:injectFormat(l:val.format)
+"      "Decho( l:nb . " - format:" . l:val.format)
+    endif
 
-      "THIRD : load the composited highlight group
-      execute "highlight User" . l:nb . " " . l:highlight
-      "Decho(l:highlight)
-    endfo
-  "else
-  "  call Decho("s:smartHighligths -> NONE")
-  "endif
+    "THIRD : load the composited highlight group
+    execute "highlight User" . l:nb . " " . l:highlight
+"    "call Decho(l:highlight)
+  endfo
 endfunction
 
 
@@ -433,41 +349,93 @@ endfunction
 "
 " AUTOMATE: in case of ColorScheme change
 "
+"
+
+
+
+" NO CACHING
 function! s:resetTartification()
-  if !exists("g:tartify_updating")
-    call s:defineUserColors()
-    call s:statuslineHighlightConcat()
-    call s:smartHighligths()
-    "
-    " CACHING :
-    " next calls will exit
-    let g:tartify_updating = 1
-  endif
+  call s:statuslineHighlightConcat()
+  call s:smartHighligths()
 endfunction
 
 
 if has("autocmd")
   autocmd ColorScheme * call s:resetTartification()
-  "
-  " The s:resetTartification function is intensive, so we need to cache
-  " the result so that it's called only ONCE per "autocmd ColorScheme *"
-  " call
-
-  " we uset the "update in progress" variable as soon as the user has been iddle
-  " long enough in normal or insert mode
-  autocmd CursorHold,CursorHoldI,CursorMoved,CursorMovedI * unlet! g:tartify_updating
 endif
+
+
+call s:defineUserColors()
 call s:resetTartification()
 
 "2}}}
+" -------- (DEPREC: Auto Commands / CACHING ----{{{2
+"
+" AUTOMATE: in case of ColorScheme change
+"
+"
+" CACHING: the s:resetTartification function is intensive, so we need to
+" cache the result so that it's called only ONCE per "autocmd
+" ColorScheme *" call (ie : on the first autocmd call, as a colorscheme
+" event is triggered for each window (??))
+"
 
 
 
 
+"" Time based CACHING
+"let s:lastcallofTart = 0
+"function! s:resetTartification()
+"  let l:currTartificationCall = localtime()
+"  echo "l:currTartificationCall= " . l:currTartificationCall . ", difference=" . (l:currTartificationCall - s:lastcallofTart) . "            tuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu"
+
+"  if (l:currTartificationCall - s:lastcallofTart) >=2
+"    echo "-->l:currTartificationCall= " . l:currTartificationCall . "            tuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu"
+"    "call s:defineUserColors()
+"    call s:statuslineHighlightConcat()
+"    call s:smartHighligths()
+"    "
+"    " CACHING :
+"    " next calls will exit untill autocmd unlets variable
+"    let s:lastcallofTart = l:currTartificationCall
+"  else
+
+"    call s:smartHighligths()
+"  endif
+"endfunction
 
 
-"WARN: A VIRER!!
-hi User8 term=bold,reverse cterm=bold,reverse gui=bold,reverse guifg=#586e75 guibg=#ff7917
+
+
+"" Variable based CACHING
+"function! s:resetTartification()
+"  if !exists("g:tartify_updating")
+"    call s:defineUserColors()
+"    call s:statuslineHighlightConcat()
+"    call s:smartHighligths()
+"    "
+"    " CACHING :
+"    " next calls will exit untill autocmd unlets variable
+"    let g:tartify_updating = 1
+"  endif
+"endfunction
+
+
+"if has("autocmd")
+"  autocmd ColorScheme * call s:resetTartification()
+
+"  " we uset the "update in progress" variable as soon as the user has been iddle
+"  " long enough in normal or insert mode
+"  autocmd CursorHold,CursorHoldI,CursorMoved,CursorMovedI,CmdwinEnter,CmdwinLeave * unlet! g:tartify_updating
+"endif
+
+
+"unlet! g:tartify_updating
+"call s:defineUserColors()
+"call s:resetTartification()
+
+"2}}}
+
 
 
 
@@ -522,7 +490,7 @@ set statusline+=%*
 "set statusline+=%*
 
 
-set statusline+=%#ModeMsg#
+set statusline+=%1*
 set statusline+=%{StatuslineGitTartify('repository')}
 
 " here I wished to reproduct the colored approach to showing the
@@ -544,10 +512,10 @@ set statusline+=%{StatuslineGitTartify('branch','unpushedWithUntracked')}
 set statusline+=%{StatuslineGitTartify('branch','ok')}
 set statusline+=%{StatuslineGitTartify('branch','okWithUntracked')}
 
-set statusline+=%#DiffText#
+set statusline+=%3*
 set statusline+=%{StatuslineGitTartify('remotes')}
 
-set statusline+=%#NonText#
+set statusline+=%4*
 set statusline+=%{StatuslineGitTartify('stash')}
 
 set statusline+=%*
