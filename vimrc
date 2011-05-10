@@ -95,6 +95,7 @@ call pathogen#runtime_append_all_bundles()
 "1}}}
 "-----------Pathogen-BUNDLES-----------{{{1
 "
+"Static: tartify
 "Bundle: https://github.com/tpope/vim-fugitive.git
 "Bundle: https://github.com/taq/vim-git-branch-info.git
 "Bundle: https://github.com/wookiehangover/jshint.vim.git
@@ -109,7 +110,6 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: https://github.com/mhz/vim-matchit.git
 "Bundle: https://github.com/scrooloose/nerdcommenter.git
 "Bundle: https://github.com/plasticboy/vim-markdown.git
-"Bundle: https://github.com/robgleeson/vim-markdown-preview.git
 "Bundle: https://github.com/tpope/vim-surround.git
 "Bundle: https://github.com/vim-scripts/repeat.vim.git
 "Bundle: https://github.com/skammer/vim-css-color.git
@@ -122,8 +122,21 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: https://github.com/vim-scripts/ManPageView.git
 "Bundle: https://github.com/vim-scripts/Decho.git
 "Bundle: https://github.com/peterhost/svndiff.git
-"Bundle: https://github.com/vim-scripts/PreciseJump.git
+" Make this one static untill pull request is resolved
+" https://github.com/vim-scripts/PreciseJump/pull/1
+"Static: PreciseJump
+""Bundle: https://github.com/vim-scripts/PreciseJump.git
 "
+" ..........MARKDOWN PREVIEW...........
+" Best is markdown-preview, now called hammer. Only, I can't get hammer to
+" work, so in the meantim, let's just go with markdown-preview (cloned repo,
+" the original one does not exist anymore)
+""Bundle: https://github.com/robgleeson/hammer.vim.git
+"Bundle: https://github.com/peterhost/vim-markdown-preview.git
+" This one works too, but has pbs with utf8
+""Bundle: https://github.com/greyblake/vim-preview.git
+
+
 " ..........TAGLIST.PLUS................
 "  for JS goodness, you also need node.js & jsdoctor
 "  installed on your system (jsdoctor = jsctags)
@@ -169,7 +182,9 @@ call pathogen#runtime_append_all_bundles()
 " ----------MANUAL-INSTALL-------------
 
 
-
+" --------HAVE TO TRY IT SOON!!--------
+"" Comprehnsive auto-completion system (does ALL)
+"Bundle: https://github.com/Shougo/neocomplcache.git
 
 " --------CANT-GET-IT-TO-WORK----------
 "
@@ -245,6 +260,8 @@ set visualbell           " don't beep
 set noerrorbells         " don't beep
 set shortmess=t          " short messages in status line (filepath)
 
+set showcmd             " show abbrev command in command line as you type them
+
 " no backups please, use git
 set nobackup
 set noswapfile
@@ -255,7 +272,8 @@ set noswapfile
 " Show position in lower right
 ":set ruler
 
-
+" Better centered pipe symbol for window separation in Term & CTerm Vim
+set fillchars=vert:⏐
 
 
 " Awesome TAB completion for Command Mode
@@ -274,9 +292,14 @@ set wildmenu
 "                               VIEW/SESSION
 "------------------------------------------------------------------------------
 
-"{{{1
+" --------SessionOptions---------------{{{1
 
 set sessionoptions=blank,buffers,curdir,folds,help,options,tabpages,winsize
+
+
+"1}}}
+" --------View dir, options,cursor pos-{{{1
+
 
 " Remember last location in file
 if has("autocmd")
@@ -311,28 +334,13 @@ endif
 "                               FOLDING
 "------------------------------------------------------------------------------
 
-"------------General-------------------{{{1
+" --------General----------------------{{{1
 
 set foldenable
 set foldmethod=syntax
 
-
-"space to toggle FOLD
-nnoremap <space>  za
-"
-"BACKSPACE to FULL toggle fold
-nnoremap <BS>     zA
-"
-"SHIFT+BACKSPACE to expand ALL folds 1 level
-nnoremap <S-BS>   zr
-"
-"CMD+BACKSPACE to contract ALL folds 1 level
-nnoremap <C-BS>   zm
-
-"CMD+SHIFT+BACKSPACE to toggle ALL folds
-nnoremap <S-C-BS>   zi
 "1}}}
-" -----------VIM,VIMRC----------------{{{1
+" --------VIM,VIMRC-------------------{{{1
 if has("autocmd")
   autocmd FileType vim        setlocal foldmethod=marker
   autocmd BufRead *.vim       setlocal foldmethod=marker
@@ -345,7 +353,7 @@ let g:vimsyn_folding="afmpPrt"
 
 
 "1}}}
-" --------------SHELL-SOURCE-----------{{{1
+" --------BASH, SH,...-----------------{{{1
 
 "default shell to bash
 let g:is_bash=1
@@ -367,97 +375,16 @@ let g:sh_fold_enabled=7
 "
 set nospell
 
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"                               COLORING
-"------------------------------------------------------------------------------
-"
-" GOTCHA : carefull to always do 'colorscheme'ing before declaring custom
-"          highlight groups, as the colorscheme directive resets them
-"          (ex: status bar construction)
-"          NB : late coloring in section COLORING2
-"------------------------------------------------------------------------------
-
-" -------Syntax Highlightning----------{{{1
-
-if &t_Co >= 256 || has("gui_running")
-
-  "colorscheme mustang
-
-  colorscheme solarized
-  call togglebg#map("<F5>")       " F5 toggle background
-
-endif
-
-if &t_Co > 2 || has("gui_running")
-  " switch syntax highlighting on, when the terminal has colors
-  syntax on
-endif
-
-
-"1}}}
-" ----------Additional Syntax----------{{{1
-" JSON : js syntax suffices
-autocmd BufNewFile,BufRead *.json set ft=javascript
-
-
-"1}}}
-" ----------------MISC-----------------{{{1
-if has("gui_running") && has("autocmd")
-
-  "only highlight line in GUI mode (in terminal, it's distracting)
-  autocmd WinEnter * setlocal cursorline
-  autocmd WinLeave * setlocal nocursorline
-
-else
-  set nocursorline
-endif
-"1}}}
-" -----------TAB Detection-------------{{{1
-"
-" mark non-indent tabs, except on commented lines
-match errorMsg /[^"\t]\zs\t\+/
-
-
-
-"1}}}
-
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"                               COLORING2
-"------------------------------------------------------------------------------
-
-" ----------Long-Lines-Suck------------{{{1
-"
-" discrete marking of long lines (> 80)
-" (http://stackoverflow.com/questions/235439/vim-80-column-layout-concerns#answer-235970)
-" and make that compatible with colorschemes which have background (light,
-" dark) setup
-"
-if &background == "light"
-  highlight OverLength ctermbg=red ctermfg=white guibg=#efe9d6
-else
-  highlight OverLength ctermbg=red ctermfg=white guibg=#592929
-endif
-" NB : warning : for some reason, put this AFTER the 'set list' command
-" otherwise it won't work
-" match OverLength /\%81v.\+/
-
-
-
-"1}}}
-
-
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "                              INDENTATION
 "------------------------------------------------------------------------------
 
-
+" --------Expantab---------------------{{{1
 " filetype detection, plugin and indent : ON
 filetype plugin indent on
 
 
-set expandtab " tabs suck, no tabs, except for nazis like python
+set expandtab "soft tabs, except for languages where it makes sense (python)
 
 
 " actually show tabs for specific files
@@ -467,6 +394,7 @@ if has('autocmd')
   autocmd FileType python      set noexpandtab
 endif
 
+"1}}}
 "--------non-printable-characters------{{{1
 "
 " help: h listchars
@@ -485,10 +413,8 @@ if has('autocmd')
 endif
 
 "1}}}
-"--------trailing-whitespaces----------{{{1
+"--------WhitespaceWipers--------------{{{1
 
-" highlight trailing whitespaces so they are easier to spot
-match Todo /\s\+$/
 
 
 " delete all trailing whitespaces
@@ -496,53 +422,332 @@ match Todo /\s\+$/
 "   have meaningful trailing whitespaces
 " * carefull with commits so as not to scramble diffs : do this
 "   only once in a while
+function! s:enableWhitespaceWipers()
+  " in WHOLE FILE
+  map <silent> <S-F7>                 :%s/\s\+$//g<CR>
+  " on CURRENT LINE
+  nnoremap <silent> <leader><space>   :s/\s\+$//g<CR>
+  vnoremap <silent> <leader><space>   :s/\s\+$//g<CR>
+endfunction
 
-" in WHOLE FILE
-:map <S-F7>                 :%s/\s\+$//g<CR>
-" on CURRENT LINE
-:nnoremap <leader><space>   :s/\s\+$//g<CR>
-:vnoremap <leader><space>   :s/\s\+$//g<CR>
+" remove mappings wich suppress whitespace
+" (used later on for Markdown and Txt files)
+function! s:removeWhitespaceWipers()
+  " in WHOLE FILE
+  silent! map <S-F7>   :echo "disabled for markdown"<CR>
+  " on CURRENT LINE
+  silent! nnoremap <leader><space>   :echo "disabled for markdown"<CR>
+  silent! vnoremap <leader><space>   :echo "disabled for markdown"<CR>
+endfunction
+
+
+call s:enableWhitespaceWipers()
 
 "1}}}
 " --------Pase-in-insert-mode----------{{{1
 " disable AUTOindenting when doing big pastes
 set pastetoggle=<F10>
 
-match OverLength /\%81v.\+/
+
 "1}}}
+
+
+
+"##############################################################################
+"                               COLORING
+"##############################################################################
+"
+" GOTCHA : carefull to always declare User defined Colorscheme Groups such as
+" those you would use in a statusline (named "User1" to "User9" and called by
+" "set statusline+=%1*"), or others AFTER all the :colorscheme directives
+" present in your .vimrc
+"
+"------------------------------------------------------------------------------
+
+"
+" ~~~~~~~~~~~~~~~~~~PRE~ColorScheming~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" --------Custom Color Groups----------{{{1
+" http://vim.wikia.com/wiki/Highlight_unwanted_spaces
+
+" be aware that future colorscheme commands may clear all user-defined
+" highlight groups. Using,the following autocmds, before the first colorscheme
+" command will ensure that the highlight group gets created and is not cleared
+" by future colorscheme commands. Other option is to use an "autocmd" on
+" "ColorScheme" :help :colorscheme
+
+
+" --------|__Trailing Whitespace-------{{{2
+
+
+if has("autocmd")
+  :autocmd ColorScheme * highlight ExtraWhitespace ctermbg=red guibg=red
+endif
+
+highlight ExtraWhitespace ctermbg=red guibg=red
+
+
+"2}}}
+" --------|__Long Lines (>80)----------{{{2
+
+
+" discrete marking of long lines (> 80)
+" (http://stackoverflow.com/questions/235439/vim-80-column-layout-concerns#answer-235970)
+" and make that compatible with colorschemes which have background (light,
+" dark) setup
+
+function! s:setupLongLines()
+  if &background == "light"
+    highlight OverLength ctermbg=red ctermfg=white guibg=#efe9d6
+  else
+    highlight OverLength ctermbg=red ctermfg=white guibg=#592929
+  endif
+endfunction
+
+
+if has("autocmd")
+  "au ColorScheme match OverLength /\%81v.\+/
+  autocmd ColorScheme * call s:setupLongLines()
+endif
+
+call s:setupLongLines()
+
+
+
+
+" NB : warning : for some reason, put this AFTER the 'set list' command
+" otherwise it won't work
+" match OverLength /\%81v.\+/
+
+
+"2}}}
+" --------|__TABS----------------------{{{2
+
+
+" discrete marking of TABS when they are not used ONLY for indenting
+" and make that compatible with colorschemes which have background (light,
+" dark) setup
+
+function! s:setupInappropriateTabs()
+  if &background == "light"
+    highlight InappropriateTabs ctermbg=darkred ctermfg=white guibg=#e1d9bf
+  else
+    highlight InappropriateTabs ctermbg=darkred ctermfg=white guibg=#431616
+  endif
+endfunction
+
+
+if has("autocmd")
+  "au ColorScheme match OverLength /\%81v.\+/
+  autocmd ColorScheme * call s:setupInappropriateTabs()
+endif
+
+call s:setupInappropriateTabs()
+
+
+
+
+" NB : warning : for some reason, put this AFTER the 'set list' command
+" otherwise it won't work
+" match OverLength /\%81v.\+/
+
+
+"2}}}
+
+
+"1}}}
+" --------Match, 2match, 3match--------{{{1
+
+" Any ":match highlighting" applies only to the "current window". With the
+" following in your vimrc, the command will be applied to the first window,
+" and to any subsequent windows. The pattern * applies the highlight to all
+" files.
+" NB "only 3 matches" can be used (match, 2match, 3match)
+"
+" --------|__Trailing Whitespace-------{{{2
+
+  "" Show leading whitespace that includes spaces, and trailing whitespace.
+  "autocmd BufWinEnter * match ExtraWhitespace /^\s* \s*\|\s\+$/
+
+  " highlight trailing whitespaces so they are easier to spot
+if has("autocmd")
+  autocmd InsertEnter * match ExtraWhitespace /\s\+\%#\@<!$/
+  autocmd InsertLeave * match ExtraWhitespace /\s\+$/
+  autocmd BufWinEnter * match ExtraWhitespace /\s\+$/
+endif
+
+
+match ExtraWhitespace /\s\+\%#\@<!$/
+match ExtraWhitespace /\s\+$/
+match ExtraWhitespace /\s\+$/
+
+
+"2}}}
+" --------|__Long Lines (>80)----------{{{2
+
+
+if has("autocmd")
+  autocmd BufwinEnter * 2match OverLength /\%81v.\+/
+endif
+
+2match OverLength /\%81v.\+/
+
+
+
+"2}}}
+" --------|__TAB Detection-------------{{{2
+"
+" mark non-indent tabs, except on commented lines where we can do WTF we want
+
+if has("autocmd")
+  autocmd BufwinEnter * 3match InappropriateTabs /[^"\t]\zs\t\+/
+  autocmd BufwinEnter *.txt 3match none
+endif
+
+3match InappropriateTabs /[^"\t]\zs\t\+/
+
+
+"2}}}
+"1}}}
+" --------ClearMatches on BufWinLeave--{{{1
+"
+"
+" It seems that vim does not handle sucessive calls of the match command
+" gracefully. Since BufWinEnter commands are executed every time a buffer is
+" displayed (i.e., switching to another file), the match command is executed
+" many times during a vim session. This seems to lead to a memory leak which
+" slowly impacts performance (for example scrolling and writing become
+" unbearable slow). Include the following line to fix the issue:
+autocmd BufWinLeave * call clearmatches()
+
+
+
+"1}}}
+
+" ------Color Scheme-------------------{{{1
+
+if &t_Co >= 256 || has("gui_running")
+
+  "colorscheme mustang
+
+  colorscheme solarized
+  call togglebg#map("<F5>")       " F5 toggle background
+
+endif
+
+
+
+"1}}}
+
+
+" ~~~~~~~~~~~~~~~~~~POST~ColorScheming~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+" --------Additional Syntax (JSON)-----{{{1
+" JSON : js syntax suffices
+autocmd BufNewFile,BufRead *.json set ft=javascript
+
+
+"1}}}
+" --------CursorLine-------------------{{{1
+if has("gui_running") && has("autocmd")
+
+  "only highlight line in GUI mode (in terminal, it's distracting)
+  autocmd WinEnter * setlocal cursorline
+  autocmd WinLeave * setlocal nocursorline
+
+else
+  set nocursorline
+endif
+"1}}}
+" --------Syntax Highlightning---------{{{1
+" switch syntax highlighting on, when the terminal has colors
+" this has to happen AFTER the "set background" commands
+if &t_Co > 2 || has("gui_running")
+  ""this one resets all current color settings ('highlight' " command)
+  syntax on
+
+  "doesn't reset user defined highlights
+  "syntax enable
+endif
+
+
+"1}}}
+
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "                               STATUS LINE
 "------------------------------------------------------------------------------
 
-"{{{1
-if has("statusline") && has("autocmd")
-  source $HOME/.vim/lib/statusbar.vim
-  "au FocusLost * source $HOME/.vim/lib/statusbar.vim
-endif
+" --------(DEPREC)Source the StatusLine Script-{{{1
 
 
+"if has("statusline") && has("autocmd")
+"  autocmd Colorscheme * source $HOME/.vim/lib/statusbar.vim
+"  "source $HOME/.vim/lib/statusbar.vim
+"  "au FocusLost * source $HOME/.vim/lib/statusbar.vim
+"endif
+
+
+"source $HOME/.vim/lib/statusbar.vim
 
 
 "1}}}
+
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "                           PLUGIN SPECIFIC CONFIGS
 "------------------------------------------------------------------------------
 
-"{{{1
+" --------ShowMarks--------------------{{{1
 let g:showmarks_enable=0       "ShowMarks - disable by default
 let g:Tlist_Use_SingleClick=1  "TagList   - single click to 'goto' tag
 
+"1}}}
+" --------Command-T--------------------{{{1
 "Command-T configuration
 let g:CommandTMaxHeight=20
 
 
 
 "1}}}
+" --------Syntastic--------------------{{{1
 
+"Use this option to tell syntastic to use the |:sign| interface to mark syntax
+"errors:
+    let g:syntastic_enable_signs=1
+
+"Enable this option if you want the cursor to jump to the first detected error
+"when saving or opening a file:
+    let g:syntastic_auto_jump=1
+
+"Use this option to tell syntastic to automatically open and/or close the
+"|location-list| (see |syntastic-error-window|).
+
+"When set to 1 the error window will be automatically opened when errors are
+"detected, and closed when none are detected. >
+    let g:syntastic_auto_loc_list=1
+
+"When set to 2 the error window will be automatically closed when no errors
+"are detected, but not opened automatically.
+    let g:syntastic_auto_loc_list=2
+
+
+
+"1}}}
+" --------Tartify --------------------{{{1
+
+
+let g:tartify_auto_enable = 1
+map <silent> <leader>st    :call g:tartify_statusline_toggle()<CR>
+
+let g:tartify_adaptativeHighlights.light.9.hue = "red"
+
+let g:tartify_disabled = ['git', 'longlines', 'path', ]
+"call g:tartify_update_colors()
+
+"set statusline=%<%f%h%m%r%=%b\ 0x%B\ \ %l,%c%V\ %#warningmsg#%P
+
+"1}}}
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "                           FILES SPECIFIC CONFIGS
@@ -569,89 +774,35 @@ function! s:setupMarkup()
 endfunction
 
 
+if has("autocmd")
+  " md, markdown, and mk are markdown and define buffer-local preview
+  au BufRead,BufNewFile *.{md,markdown,mdown,mkd,mkdn} call s:setupMarkup()
+  au BufRead,BufNewFile *.txt call s:setupWrapping()
 
-" md, markdown, and mk are markdown and define buffer-local preview
-au BufRead,BufNewFile *.{md,markdown,mdown,mkd,mkdn} call s:setupMarkup()
-au BufRead,BufNewFile *.txt call s:setupWrapping()
-
-"1}}}
-
-
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"                           FILES SPECIFIC CONFIGS
-"------------------------------------------------------------------------------
-
-"{{{1
-" open real file instead of symlink
-function! UnSymLinkEdit(path)
-  let l:filetoedit = system( "ttmp=" . shellescape(a:path) . "; [ -L $ttmp ] && echo $(readlink $ttmp) || echo $ttmp" )
-  execute "edit " . l:filetoedit
-endfunction
+  " unset/re-set "whitespace removing mappings" when entering/leaving MD buffer
+  au BufEnter *.{md,markdown,mdown,mkd,mkdn} call s:removeWhitespaceWipers()
+  au BufLeave *.{md,markdown,mdown,mkd,mkdn} call s:enableWhitespaceWipers()
+endif
 
 "1}}}
-
-
-"{{{1
-" Edit vimrc
-nmap <silent> <leader>ev :call UnSymLinkEdit($MYVIMRC)<CR>
-"nmap <silent> <leader>ev :e $MYVIMRC<CR>
-" Quickly edit/reload the vimrc file
-" (mapc & mapc! to clear all mappings before reloading)
-nmap <silent> <leader>sv :mapc<CR>:mapc!<CR>:so $MYVIMRC<CR>
-" Quickly edit/reload the bashrc file
-nmap <silent> <leader>eb :call UnSymLinkEdit($HOME . "/.bashrc")<CR>
-" Same for the statusLine
-nmap <silent> <leader>es :e $HOME/.vim/lib/statusbar.vim<CR>
-nmap <silent> <leader>ss :so $HOME/.vim/lib/statusbar.vim<CR>
-
-
-
-
-
-
-
-
-"1}}}
-
-
-
-
-
-""{{{1
-"" Edit vimrc
-"nmap <silent> <leader>ev :e $HOME/.vim/vimrc<CR>
-""nmap <silent> <leader>ev :e $MYVIMRC<CR>
-"" Quickly edit/reload the vimrc file
-"" (mapc & mapc! to clear all mappings before reloading)
-"nmap <silent> <leader>sv :mapc<CR>:mapc!<CR>:so $MYVIMRC<CR>
-"" Quickly edit/reload the bashrc file
-"nmap <silent> <leader>eb :e $HOME/.bashrc<CR>
-"" Same for the statusLine
-"nmap <silent> <leader>es :e $HOME/.vim/lib/statusbar.vim<CR>
-"nmap <silent> <leader>ss :so $HOME/.vim/lib/statusbar.vim<CR>
-
-
-
-
-
-
-
-
-""1}}}
-
 
 
 
 "##############################################################################
 "                           --MAPING--
 "##############################################################################
-
-
 "------------------------------------------------------------------------------
 "                           GENERAL
 "------------------------------------------------------------------------------
 
-"{{{1
+" --------autoMAX window (DISABLED)----{{{1
+"" automatically maximize active window
+"set winminheight=0     "minimized window only shows title"
+
+"set winheight=999     "hack to avoid <C-W>_
+
+"1}}}
+" --------MISC-------------------------{{{1
 " Use Q for formatting the current paragraph (or selection)
 vmap Q gq
 nmap Q gqap
@@ -666,12 +817,6 @@ nmap <C-S-space>    <C-W>16_    " ctrl+shift+space to set current window to 16 l
 "requires set wildmode=full   and set wildmenu
 nmap <A-space> :colorscheme<space>
 
-" automatically maximize active window
-set winminheight=0     "minimized window only shows title"
-
-set winheight=999     "hack to avoid <C-W>_
-
-
 " Forgot to sudo : save with w!!
 cmap w!! w !sudo tee % >/dev/null
 
@@ -684,10 +829,8 @@ nmap <Leader>x      :Kwbd<CR>
 " Close buffer & window
 nmap <leader>X      :bd<CR>
 " Close window
-nmap <leader><c-x>   :clo<CR>
+nmap <leader><s-x>   :clo<CR>
 "1}}}
-
-
 " --------WINDOW RESIZING--------------{{{1
 
 "Vertical resizing to ,< AND ,>, and faster
@@ -713,10 +856,11 @@ map <left> <C-w>h
 map <right> <C-w>l
 
 
-"nmap <C-h> <C-w>h<C-W>_
-"nmap <C-j> <C-w>j<C-W>_
-"nmap <C-k> <C-w>k<C-W>_
-"nmap <C-l> <C-w>l<C-W>_
+
+"nmap <C-left> <C-w>h<C-W>_
+"nmap <C-down> <C-w>j<C-W>_
+"nmap <C-up> <C-w>k<C-W>_
+"nmap <C-right> <C-w>l<C-W>_
 
 "map <up> <C-w>k<C-W>_
 "map <down> <C-w>j<C-W>_
@@ -811,6 +955,7 @@ endif
 " (insert, command, operator-pending)
 imap fj <C-c>
 cmap fj <C-c>
+vmap fj <C-c>
 
 "1}}}
 "--------SEARCH------------------------{{{1
@@ -888,6 +1033,104 @@ endif
 
 
 "1}}}
+" --------SOURCE/EDIT vimrc,bashrc-----{{{1
+" open real file instead of symlink
+function! UnSymLinkEdit(path)
+  let l:filetoedit = system( "ttmp=" . shellescape(a:path) . "; [ -L $ttmp ] && echo $(readlink $ttmp) || echo $ttmp" )
+  execute "edit " . l:filetoedit
+endfunction
+
+
+
+" Edit vimrc
+nmap <silent> <leader>ev :call UnSymLinkEdit($MYVIMRC)<CR>
+"nmap <silent> <leader>ev :e $MYVIMRC<CR>
+" Quickly edit/reload the vimrc file
+" (mapc & mapc! to clear all mappings before reloading)
+nmap <silent> <leader>sv :mapc<CR>:mapc!<CR>:so $MYVIMRC<CR>
+" Quickly edit/reload the bashrc file
+nmap <silent> <leader>eb :call UnSymLinkEdit($HOME . "/.bashrc")<CR>
+" Same for the statusLine
+nmap <silent> <leader>es :e $HOME/.vim/bundle/tartify/plugin/tartify.vim<CR>
+nmap <silent> <leader>ss :so $HOME/.vim/bundle/tartify/plugin/tartify.vim<CR>
+
+
+
+" display all Highlight Groups in a separate window
+nmap <silent> <leader>sc  :so $VIMRUNTIME/syntax/hitest.vim<CR>
+
+
+"1}}}
+" --------INDENT in visual mode--------{{{1
+" https://github.com/mikewest/homedir/blob/master/.vimrc
+" Indent in visual mode remains in visual mode: allows multiple indents
+    vnoremap <silent> > >gv
+    vnoremap <silent> < <gv
+
+
+"1}}}
+" --------SEARCH in visual mode-------{{{1
+" Really useful!
+"  In visual mode when you press * or # to search for the current selection
+vnoremap <silent> * :call VisualSearch('f')<CR>
+vnoremap <silent> # :call VisualSearch('b')<CR>
+
+
+"TODO : inquire how this works, lol
+" When you press gv you vimgrep after the selected text
+vnoremap <silent> gv :call VisualSearch('gv')<CR>
+map <leader>g :vimgrep // **/*.<left><left><left><left><left><left><left>
+
+
+function! CmdLine(str)
+    exe "menu Foo.Bar :" . a:str
+    emenu Foo.Bar
+    unmenu Foo
+endfunction
+
+" From an idea by Michael Naumann
+function! VisualSearch(direction) range
+    let l:saved_reg = @"
+    execute "normal! vgvy"
+
+    let l:pattern = escape(@", '\\/.*$^~[]')
+    let l:pattern = substitute(l:pattern, "\n$", "", "")
+
+    if a:direction == 'b'
+        execute "normal ?" . l:pattern . "^M"
+    elseif a:direction == 'gv'
+        call CmdLine("vimgrep " . '/'. l:pattern . '/' . ' **/*.')
+    elseif a:direction == 'f'
+        execute "normal /" . l:pattern . "^M"
+    endif
+
+    let @/ = l:pattern
+    let @" = l:saved_reg
+endfunction
+
+
+"1}}}
+" --------Folding----------------------{{{1
+
+
+"space to toggle FOLD
+nnoremap <space>  za
+"
+"BACKSPACE to FULL toggle fold
+nnoremap <BS>     zA
+"
+"SHIFT+BACKSPACE to expand ALL folds 1 level
+nnoremap <S-BS>   zr
+"
+"CMD+BACKSPACE to contract ALL folds 1 level
+nnoremap <C-BS>   zm
+
+"CMD+SHIFT+BACKSPACE to toggle ALL folds
+nnoremap <S-C-BS>   zi
+
+
+
+"1}}}
 
 "------------------------------------------------------------------------------
 "                           PLUGINS
@@ -919,9 +1162,9 @@ map <leader><C-t> :execute 'NERDTreeToggle ' . getcwd()<CR>
 "---------FuGITive---------------------{{{1
 " GIT (fugitive)
 "
-"  20_ --> give status window height
-nmap <leader>gs  :Gstatus<CR><C-w>20_
-"nmap <leader>gs  :Gstatus<CR>
+""  20_ --> give status window height
+"nmap <leader>gs  :Gstatus<CR><C-w>20_
+nmap <leader>gs  :Gstatus<CR>
 
 nmap <leader>gc  :Gcommit<CR>
 nmap <leader>gg  :Ggrep
@@ -1005,33 +1248,35 @@ nmap <leader>ds       :call Svndiff("show")<CR>
 let g:svndiff_autoupdate=1
 
 "1}}}
+" -------- Decho Debugger -------------{{{1
+
+
+nmap <leader>Dh     :Dhide<CR>
+nmap <leader>Ds     :Dshow<CR>
+nmap <leader>Do     :DechoOn<CR>
+nmap <leader>DO     :DechoOff<CR>
+let g:decho_winheight=16
+
+"  1}}}
 " ---------PreciseJump-----------------{{{1
 "
-nmap <leader>j        _f
-nmap <leader>J        _F
+
+" set this to 1 if you want PreciseJump to overrride default "f" and "F"
+" mappings
+" "f" : whole file
+" "F" : line
 let g:PreciseJump_I_am_brave=1
-"1}}}
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"                       MACVIM SPECIFIC STUFF
-"                   (that you wouldn't put in gvimrc)
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
-"{{{1
-
-if has("gui_macvim")
-  " set macvim specific stuff
-endif
-
-
+"set of "target keys" better suited to an AZERTY keyboard
+let g:PreciseJump_target_keys = "abcdefghijklmnopqrstuwxz123456789;',./ABCDEFGHIJKLMNOPQRSTUWXZ:\"<>?!@#$%^&*()_+é§èçàù"
 "1}}}
 
 
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"                       USERS' LOCAL CONFIG
-"
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"##############################################################################
+"                       --ADDITIONAL RC files--
+"##############################################################################
 
-"{{{1
+" --------LOCAL VIMRC(s)---------------{{{1
 " Include user's local vim config
 if filereadable(expand("~/.vimrc.local"))
   source ~/.vimrc.local
@@ -1045,14 +1290,20 @@ endif
 
 
 "1}}}
+" --------MACVIM SPECIFIC STUFF--------{{{1
+
+if has("gui_macvim")
+  " set macvim specific stuff
+endif
 
 
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"                               MEMO
-"
-"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-"                               PLUGINS
-"------------------------------------------------------------------------------
+"1}}}
+
+"##############################################################################
+"                               --MEMO--
+"##############################################################################
+
+" -------- PLUGINS---------------------{{{1
 "
 " --------------BUFFERS----------------
 " LustyBuffers  : ,lj   -> asdfg... or -> 12345...
@@ -1088,12 +1339,12 @@ endif
 " EJECT     -> forward delete
 " CAPS LOCK -> ESC
 "
-"
-"------------------------------------------------------------------------------
-"                               MISC
-"------------------------------------------------------------------------------
+"1}}}
+" -------- MISC------------------------{{{1
 "
 "       VIM DIFF MODE
 "
 " do : diff obtain --> Modify the current buffer to undo difference with another buffer
 " dp : diff put    --> Modify another buffer to undo differences with th ecurrent buffer
+"1}}}
+" vim:foldmethod=marker
