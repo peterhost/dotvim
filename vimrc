@@ -809,22 +809,10 @@ endif
 "                           GENERAL
 "------------------------------------------------------------------------------
 
-" --------autoMAX window (DISABLED)----{{{1
-"" automatically maximize active window
-"set winminheight=0     "minimized window only shows title"
-
-"set winheight=999     "hack to avoid <C-W>_
-
-"1}}}
 " --------MISC-------------------------{{{1
 " Use Q for formatting the current paragraph (or selection)
 vmap Q gq
 nmap Q gqap
-
-
-" Quick window-size changers
-nmap <S-space>      <C-W>_      " space to maximize current window
-nmap <C-S-space>    <C-W>16_    " ctrl+shift+space to set current window to 16 lines
 
 
 " ALT+space to quickly switch colorschemes
@@ -847,11 +835,60 @@ nmap <leader><s-x>   :clo<CR>
 "1}}}
 " --------WINDOW RESIZING--------------{{{1
 
-"Vertical resizing to ,< AND ,>, and faster
-" (shorter than C-w C-<, C-w C->)
+set winminheight=1     "minimized window only shows title
+
+" Manual (horizontal) Resizing
+" ( ",<" AND ",>" are shorter than "C-w C-<" AND "C-w C->" )
 :nnoremap ,< <C-W><<C-W><<C-W><<C-W><
 :nnoremap ,> <C-W>><C-W>><C-W>><C-W>>
 
+" MINIMIZING
+" when a window is minimized, it will remember its state
+" (w:thisWinWasMinimized variable), then :
+"
+"     - when entered : it will be resized 16 line high
+"     - when exited  : it will resume its minimized state
+"
+
+autocmd WinEnter * if winheight(0) <= &winminheight | let w:thisWinWasMinimized = 1 | resize 16 | endif
+
+autocmd WinLeave * if  exists("w:thisWinWasMinimized") | resize 0 | unlet w:thisWinWasMinimized | endif
+
+
+" The following mappings reset w:thisWinWasMinimized, as we
+" chose to "unminimized" the window
+
+function! g:wipeMinimizedState()
+  unlet! w:thisWinWasMinimized
+  call Decho("TOTO")
+endfunction
+
+"    space to maximize current window
+nmap <S-space>      :call g:wipeMinimizedState()<CR><C-W>_
+"nmap <S-space>      <C-W>_
+
+"    ctrl+shift+space to set current window to 16 lines
+nmap <C-S-space>    :call g:wipeMinimizedState()<CR><C-W>16_
+"nmap <C-S-space>    <C-W>16_
+
+"    ctrl+shift+alt+space to set current window to 32 lines
+nmap <C-S-A-space>    :call g:wipeMinimizedState()<CR><C-W>32_
+"nmap <C-S-space>    <C-W>16_
+
+
+
+
+
+"1}}}
+" --------autoMAX window (DISABLED)----{{{1
+
+"" automatically maximize active window
+"
+""minimized window only shows title
+"set winminheight=0
+"
+""hack to avoid <C-W>_
+"set winheight=999
 
 
 "1}}}
@@ -859,16 +896,16 @@ nmap <leader><s-x>   :clo<CR>
 " use CTRL hjkl to navigate in different modes
 
 " NORMAL : Window navigation
+" (don't leave homerow)
 nmap <C-h> <C-w>h
 nmap <C-j> <C-w>j
 nmap <C-k> <C-w>k
 nmap <C-l> <C-w>l
-
+" (also arrows, in all modes)
 map <up> <C-w>k
 map <down> <C-w>j
 map <left> <C-w>h
 map <right> <C-w>l
-
 
 
 "nmap <C-left> <C-w>h<C-W>_
