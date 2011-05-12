@@ -1306,7 +1306,7 @@ nmap <leader>Dh     :Dhide<CR>
 nmap <leader>Ds     :Dshow<CR>
 nmap <leader>Do     :DechoOn<CR>
 nmap <leader>DO     :DechoOff<CR>
-let g:decho_winheight=16
+let g:decho_winheight=10
 
 "  1}}}
 " ---------PreciseJump-----------------{{{1
