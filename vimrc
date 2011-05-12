@@ -699,11 +699,15 @@ endif
 "------------------------------------------------------------------------------
 
 " --------ShowMarks--------------------{{{1
+
+
 let g:showmarks_enable=0       "ShowMarks - disable by default
 let g:Tlist_Use_SingleClick=1  "TagList   - single click to 'goto' tag
 
 "1}}}
 " --------Command-T--------------------{{{1
+
+
 "Command-T configuration
 let g:CommandTMaxHeight=20
 
@@ -740,12 +744,22 @@ let g:CommandTMaxHeight=20
 let g:tartify_auto_enable = 1
 map <silent> <leader>st    :call g:tartify_statusline_toggle()<CR>
 
-let g:tartify_adaptativeHighlights.light.9.hue = "red"
+" Overwrite statusline colors with your own
+if exists("g:tartify_forceColor")
+  let g:tartify_forceColor.light.9.hue = "red"
+  let g:tartify_forceColor.light.9.format = "undercurl"
+endif
+
+let g:tartify_forceTheme = "solarized"
 
 let g:tartify_disabled = ['git', 'longlines', 'path', ]
-"call g:tartify_update_colors()
+" StatusLine Elements :
+"   git, longlines,path,...
+" FileType statusline
+"   help, plug:fugitive,plug:NERDTree,...
+"
 
-"set statusline=%<%f%h%m%r%=%b\ 0x%B\ \ %l,%c%V\ %#warningmsg#%P
+set statusline=%<%f%h%m%r%=%b\ 0x%B\ \ %l,%c%V\ %#warningmsg#%P
 
 "1}}}
 
