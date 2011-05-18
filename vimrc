@@ -176,11 +176,10 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: https://github.com/ervandew/supertab.git
 "
 "Bundle: https://github.com/vim-scripts/SearchComplete.git
-"Bundle: https://github.com/vim-scripts/ShowMarks.git
 ""Bundle: https://github.com/vim-scripts/AutoComplPop.git
 "Bundle: https://github.com/vim-scripts/L9.git
 "Bundle: https://github.com/vim-scripts/FuzzyFinder.git
-
+""Bundle: https://github.com/vim-scripts/upAndDown.git
 
 " ----------MANUAL-INSTALL-------------
 
@@ -201,6 +200,8 @@ call pathogen#runtime_append_all_bundles()
 
 " ----------(NOT NEEDED)---------------
 "
+""Bundle: https://github.com/vim-scripts/ShowMarks.git
+
 "" ........AUTOALIGN SUITE.............
 ""Bundle: https://github.com/vim-scripts/Align.git
 ""Bundle: https://github.com/vim-scripts/AutoAlign.git
