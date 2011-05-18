@@ -298,7 +298,9 @@ set wildmenu
 
 " --------SessionOptions---------------{{{1
 
-set sessionoptions=blank,buffers,curdir,folds,help,options,tabpages,winsize
+set sessionoptions=blank,buffers,curdir,folds,help,localoptions,tabpages,winsize
+"set sessionoptions=blank,buffers,curdir,folds,help,options,tabpages,winsize
+"set sessionoptions=blank,buffers,curdir,folds,help,localoptions,options,tabpages,winsize
 
 
 "1}}}
@@ -429,6 +431,7 @@ endif
 function! s:enableWhitespaceWipers()
   " in WHOLE FILE
   map <silent> <S-F7>                 :%s/\s\+$//g<CR>
+  map <silent> <leader> <S-space>       :%s/\s\+$//g<CR>
   " on CURRENT LINE
   nnoremap <silent> <leader><space>   :s/\s\+$//g<CR>
   vnoremap <silent> <leader><space>   :s/\s\+$//g<CR>
@@ -627,7 +630,7 @@ autocmd BufWinLeave * call clearmatches()
 
 "1}}}
 
-" ------Color Scheme-------------------{{{1
+" --------Color Scheme-------------------{{{1
 
 if &t_Co >= 256 || has("gui_running")
 
@@ -705,7 +708,7 @@ endif
 " --------ShowMarks--------------------{{{1
 
 
-let g:showmarks_enable=0       "ShowMarks - disable by default
+"let g:showmarks_enable=0       "ShowMarks - disable by default
 let g:Tlist_Use_SingleClick=1  "TagList   - single click to 'goto' tag
 
 "1}}}
@@ -755,6 +758,27 @@ if exists("g:tartify_forceColor")
 endif
 
 let g:tartify_forceTheme = "solarized"
+
+
+
+" SEQUENCE: the sequence of elements present in the statusline is by default
+" defined by the plugin. If the current ColorScheme defines an alternative
+" default sequence, this one is used instead. If the user defines his own
+" sequence (a 'user' key exists in the g:tartify_sequence dictionnary), that
+" sequence overrides the other two.
+"
+" In order to never use any theme's default squence, you can set the following
+" variable :
+"
+"   let g:tartify_sequence_ignore   = "theme"
+"
+" NB: a "user" sequence will always overrride the default sequence
+"
+"
+
+"let g:tartify_sequence_ignore   = "theme"
+
+
 
 let g:tartify_disabled = ['git', 'longlines', 'path', ]
 " StatusLine Elements :
@@ -827,15 +851,16 @@ nmap <A-space> :colorscheme<space>
 cmap w!! w !sudo tee % >/dev/null
 
 
+
 " Buffer/Window closing
 "
-" Close buffer without closing window (using plugin function Kwbd)
+" Close buffer without closing window (using sequence Kwbd)
 " (http://vim.wikia.com/wiki/VimTip165)
 nmap <Leader>x      :Kwbd<CR>
 " Close buffer & window
 nmap <leader>X      :bd<CR>
 " Close window
-nmap <leader><s-x>   :clo<CR>
+nmap <leader><D-x>   :clo<CR>
 "1}}}
 " --------WINDOW RESIZING--------------{{{1
 
@@ -847,38 +872,67 @@ set winminheight=1     "minimized window only shows title
 :nnoremap ,> <C-W>><C-W>><C-W>><C-W>>
 
 " MINIMIZING
+" Auto-collapsible minimized windows
+"
 " when a window is minimized, it will remember its state
-" (w:thisWinWasMinimized variable), then :
+" (b:autoCollapsible variable), then :
 "
 "     - when entered : it will be resized 16 line high
 "     - when exited  : it will resume its minimized state
 "
 
-autocmd WinEnter * if winheight(0) <= &winminheight | let w:thisWinWasMinimized = 1 | resize 16 | endif
+autocmd BufEnter * if winheight(0) <= &winminheight | let b:autoCollapsible = 1 | resize 16 | endif
 
-autocmd WinLeave * if  exists("w:thisWinWasMinimized") | resize 0 | unlet w:thisWinWasMinimized | endif
+autocmd BufLeave * if  exists("b:autoCollapsible") | resize 0 | endif
 
 
-" The following mappings reset w:thisWinWasMinimized, as we
+"autocmd WinEnter * if winheight(0) <= &winminheight | let b:autoCollapsible = 1 | resize 16 | endif
+
+"autocmd WinLeave * if  exists("b:autoCollapsible") | resize 0 | endif
+""autocmd WinLeave * if  exists("b:autoCollapsible") | resize 0 | unlet b:autoCollapsible | endif
+
+
+" The following mappings reset b:autoCollapsible, as we
 " chose to "unminimized" the window
 
 function! g:wipeMinimizedState()
-  unlet! w:thisWinWasMinimized
-  call Decho("TOTO")
+  unlet! b:autoCollapsible
+  call Decho("MINIMIZED state WIPED")
 endfunction
+
+function! g:toggleAutoCollapsible()
+  if exists("b:autoCollapsible")
+    unlet b:autoCollapsible
+  else
+    let b:autoCollapsible = 1
+  endif
+endfunction
+
+"    Set Buffer to Auto-collapsible
+
+nmap <leader>mc     :call g:toggleAutoCollapsible()<CR>
+"nmap <leader>mc     :let b:autoCollapsible = 1<CR>
 
 "    space to maximize current window
 nmap <S-space>      :call g:wipeMinimizedState()<CR><C-W>_
-"nmap <S-space>      <C-W>_
+
+nmap <leader>ml      :call g:wipeMinimizedState()<CR><C-W>_
+
+"    Minimize current window
+nmap <leader>mm    :call g:wipeMinimizedState()<CR><C-W>1_
+
+"    set current window to 8 lines
+nmap <leader>m&    :call g:wipeMinimizedState()<CR><C-W>8_
 
 "    ctrl+shift+space to set current window to 16 lines
 nmap <C-S-space>    :call g:wipeMinimizedState()<CR><C-W>16_
-"nmap <C-S-space>    <C-W>16_
+
+nmap <leader>mé    :call g:wipeMinimizedState()<CR><C-W>16_
 
 "    ctrl+shift+alt+space to set current window to 32 lines
 nmap <C-S-A-space>    :call g:wipeMinimizedState()<CR><C-W>32_
-"nmap <C-S-space>    <C-W>16_
 
+nmap <leader>m"    :call g:wipeMinimizedState()<CR><C-W>32_
 
 
 
@@ -1029,13 +1083,13 @@ imap <C-BS> <C-W>
 "
 " DIRECT ACCESS to usefull keys on AZERTY keyboards
 " in NORMAL and VISUAL mode
-nmap è  [
-nmap ç  ]
+nmap '  [
+nmap -  ]
 nmap §  {
 nmap à  }
 
-vmap è  [
-vmap ç  ]
+vmap '  [
+vmap -  ]
 vmap §  {
 vmap à  }
 
@@ -1186,6 +1240,83 @@ nnoremap <S-C-BS>   zi
 
 
 "1}}}
+"--------gv & gV (select Visual mode)-{{{1
+
+
+
+" Visually select the text that was last edited/pasted
+" (more generic than gv)
+nmap gV `[v`]
+
+
+
+
+
+"1}}}
+"--------Line Bubbling----------------{{{1
+"
+"SOURCE: http://vim.wikia.com/wiki/VimTip191
+"
+function! MoveLineUp()
+  call MoveLineOrVisualUp(".", "")
+endfunction
+
+function! MoveLineDown()
+  call MoveLineOrVisualDown(".", "")
+endfunction
+
+function! MoveVisualUp()
+  call MoveLineOrVisualUp("'<", "'<,'>")
+  normal gv
+endfunction
+
+function! MoveVisualDown()
+  call MoveLineOrVisualDown("'>", "'<,'>")
+  normal gv
+endfunction
+
+function! MoveLineOrVisualUp(line_getter, range)
+  let l_num = line(a:line_getter)
+  if l_num - v:count1 - 1 < 0
+    let move_arg = "0"
+  else
+    let move_arg = a:line_getter." -".(v:count1 + 1)
+  endif
+  call MoveLineOrVisualUpOrDown(a:range."move ".move_arg)
+endfunction
+
+function! MoveLineOrVisualDown(line_getter, range)
+  let l_num = line(a:line_getter)
+  if l_num + v:count1 > line("$")
+    let move_arg = "$"
+  else
+    let move_arg = a:line_getter." +".v:count1
+  endif
+  call MoveLineOrVisualUpOrDown(a:range."move ".move_arg)
+endfunction
+
+function! MoveLineOrVisualUpOrDown(move_arg)
+  let col_num = virtcol(".")
+  execute "silent! ".a:move_arg
+  execute "normal! ".col_num."|"
+endfunction
+
+nnoremap <silent> <S-k> :<C-u>call MoveLineUp()<CR>
+nnoremap <silent> <S-j> :<C-u>call MoveLineDown()<CR>
+nnoremap <silent> <D-k> :<C-u>call MoveLineUp()<CR>
+nnoremap <silent> <D-j> :<C-u>call MoveLineDown()<CR>
+inoremap <silent> <D-k> <C-o>:<C-u>call MoveLineUp()<CR>
+inoremap <silent> <D-j> <C-o>:<C-u>call MoveLineDown()<CR>
+vnoremap <silent> <S-k> :<C-u>call MoveVisualUp()<CR>
+vnoremap <silent> <S-j> :<C-u>call MoveVisualDown()<CR>
+vnoremap <silent> <D-k> :<C-u>call MoveVisualUp()<CR>
+vnoremap <silent> <D-j> :<C-u>call MoveVisualDown()<CR>
+
+
+
+
+
+"1}}}
 
 "------------------------------------------------------------------------------
 "                           PLUGINS
@@ -1230,6 +1361,11 @@ nmap <leader>gdh :Gdiff HEAD<CR>
 nmap <leader>gdo :Gdiff ORIG_HEAD<CR>
 nmap <leader>gb  :Gbrowse<CR>
 
+" autoclean fugitive buffers
+" (http://vimcasts.org/episodes/fugitive-vim-browsing-the-git-object-database/)
+autocmd BufReadPost fugitive://* set bufhidden=delete
+
+
 "1}}}
 "---------YankRing---------------------{{{1
 nmap <leader>y :YRShow<CR>
@@ -1258,6 +1394,7 @@ nmap <leader>Y :YRToggle<CR>
 ":nmap <leader>fq     :FufQuickfix<CR>
 ":nmap <leader>fl     :FufLine<CR>
  :nmap <leader>fh     :FufHelp<CR>
+ :nmap <leader>fr     :FufRenewCache<CR>:echo "cache renewed"<CR>
 
 let g:fuf_keyOpenSplit = '<C-j>'
 let g:fuf_keyOpenVsplit = '<C-k>'
@@ -1324,6 +1461,25 @@ let g:PreciseJump_I_am_brave=1
 
 "set of "target keys" better suited to an AZERTY keyboard
 let g:PreciseJump_target_keys = "abcdefghijklmnopqrstuwxz123456789;',./ABCDEFGHIJKLMNOPQRSTUWXZ:\"<>?!@#$%^&*()_+é§èçàù"
+"1}}}
+" ---------(DISAB)Unimpaired Line Bubbl-{{{1
+
+
+""FROM: http://vimcasts.org/episodes/bubbling-text/
+"" Bubble single lines
+"nmap <D-k> [e
+"nmap <D-j> ]e
+"nmap <S-Up> [e
+"nmap <S-Down> ]e
+""" (not working)Bubble in insert mode
+""imap <D-k> <esc>[eki
+""imap <D-j> <esc>]eji
+"" Bubble multiple lines
+"vmap <D-k> [egv
+"vmap <D-j> ]egv
+"vmap <S-Up> [egv
+"vmap <S-Down> ]egv
+
 "1}}}
 
 
