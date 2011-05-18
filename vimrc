@@ -122,6 +122,9 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: https://github.com/vim-scripts/ManPageView.git
 "Bundle: https://github.com/vim-scripts/Decho.git
 "Bundle: https://github.com/peterhost/svndiff.git
+"Bundle: https://github.com/tpope/vim-unimpaired.git
+"Bundle: https://github.com/tpope/vim-git.git
+"
 " Make this one static untill pull request is resolved
 " https://github.com/vim-scripts/PreciseJump/pull/1
 "Static: PreciseJump
