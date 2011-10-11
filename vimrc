@@ -103,7 +103,7 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: https://github.com/scrooloose/nerdtree
 "Bundle: https://github.com/godlygeek/csapprox.git
 "Bundle: https://github.com/slack/vim-bufexplorer.git
-"Bundle: https://github.com/vim-scripts/Gundo.git
+""Bundle: https://github.com/vim-scripts/Gundo.git
 "Bundle: https://github.com/vim-scripts/LustyJuggler.git
 "Bundle: https://github.com/scrooloose/syntastic.git
 "Bundle: https://github.com/vim-scripts/Gist.vim.git
@@ -180,6 +180,7 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: https://github.com/vim-scripts/L9.git
 "Bundle: https://github.com/vim-scripts/FuzzyFinder.git
 ""Bundle: https://github.com/vim-scripts/upAndDown.git
+"Bundle: https://github.com/cakebaker/scss-syntax.vim.git
 
 " ----------MANUAL-INSTALL-------------
 
@@ -287,7 +288,7 @@ set fillchars=vert:⏐
 set wildmode=full
 set wildmenu
 
-
+set formatoptions+=croql
 
 "1}}}
 
@@ -431,7 +432,7 @@ endif
 function! s:enableWhitespaceWipers()
   " in WHOLE FILE
   map <silent> <S-F7>                 :%s/\s\+$//g<CR>
-  map <silent> <leader> <S-space>       :%s/\s\+$//g<CR>
+  map <silent> <leader> <S-space>     :%s/\s\+$//g<CR>
   " on CURRENT LINE
   nnoremap <silent> <leader><space>   :s/\s\+$//g<CR>
   vnoremap <silent> <leader><space>   :s/\s\+$//g<CR>
@@ -763,7 +764,7 @@ let g:tartify_forceTheme = "solarized"
 
 " SEQUENCE: the sequence of elements present in the statusline is by default
 " defined by the plugin. If the current ColorScheme defines an alternative
-" default sequence, this one is used instead. If the user defines his own
+" default sequence, it will be used instead. If the user defines his own
 " sequence (a 'user' key exists in the g:tartify_sequence dictionnary), that
 " sequence overrides the other two.
 "
@@ -801,7 +802,7 @@ set statusline=%<%f%h%m%r%=%b\ 0x%B\ \ %l,%c%V\ %#warningmsg#%P
 
 function! s:setupWrapping()
   set wrap
-  set wm=2
+  "set wm=2
   set textwidth=72
   if has ("gui_running")
     set spell
@@ -827,11 +828,20 @@ if has("autocmd")
 endif
 
 "1}}}
+"--------SCSS syntax ------------------{{{1
+"
+au BufRead,BufNewFile *.scss set filetype=scss
 
+"1}}}
+"--------Vim Diff tweaks---------------{{{1
+if &diff
+  colorscheme solarized
+endif
 
+"1}}}
 
 "##############################################################################
-"                           --MAPING--
+"                           --MAPPING--
 "##############################################################################
 "------------------------------------------------------------------------------
 "                           GENERAL
@@ -841,6 +851,7 @@ endif
 " Use Q for formatting the current paragraph (or selection)
 vmap Q gq
 nmap Q gqap
+
 
 
 " ALT+space to quickly switch colorschemes
@@ -858,9 +869,9 @@ cmap w!! w !sudo tee % >/dev/null
 " (http://vim.wikia.com/wiki/VimTip165)
 nmap <Leader>x      :Kwbd<CR>
 " Close buffer & window
-nmap <leader>X      :bd<CR>
+nmap <leader><S-x>      :bd<CR>
 " Close window
-nmap <leader><D-x>   :clo<CR>
+nmap <leader><C-x>   :clo<CR>
 "1}}}
 " --------WINDOW RESIZING--------------{{{1
 
@@ -875,43 +886,43 @@ set winminheight=1     "minimized window only shows title
 " Auto-collapsible minimized windows
 "
 " when a window is minimized, it will remember its state
-" (b:autoCollapsible variable), then :
+" (w:autoCollapsible variable), then :
 "
 "     - when entered : it will be resized 16 line high
 "     - when exited  : it will resume its minimized state
 "
 
-autocmd BufEnter * if winheight(0) <= &winminheight | let b:autoCollapsible = 1 | resize 16 | endif
+autocmd WinEnter * if winheight(0) <= &winminheight | let w:autoCollapsible = 1 | resize 16 | endif
 
-autocmd BufLeave * if  exists("b:autoCollapsible") | resize 0 | endif
-
-
-"autocmd WinEnter * if winheight(0) <= &winminheight | let b:autoCollapsible = 1 | resize 16 | endif
-
-"autocmd WinLeave * if  exists("b:autoCollapsible") | resize 0 | endif
-""autocmd WinLeave * if  exists("b:autoCollapsible") | resize 0 | unlet b:autoCollapsible | endif
+autocmd WinLeave * if  exists("w:autoCollapsible") | resize 0 | endif
 
 
-" The following mappings reset b:autoCollapsible, as we
+"autocmd WinEnter * if winheight(0) <= &winminheight | let w:autoCollapsible = 1 | resize 16 | endif
+
+"autocmd WinLeave * if  exists("w:autoCollapsible") | resize 0 | endif
+""autocmd WinLeave * if  exists("w:autoCollapsible") | resize 0 | unlet w:autoCollapsible | endif
+
+
+" The following mappings reset w:autoCollapsible, as we
 " chose to "unminimized" the window
 
 function! g:wipeMinimizedState()
-  unlet! b:autoCollapsible
+  unlet! w:autoCollapsible
   call Decho("MINIMIZED state WIPED")
 endfunction
 
 function! g:toggleAutoCollapsible()
-  if exists("b:autoCollapsible")
-    unlet b:autoCollapsible
+  if exists("w:autoCollapsible")
+    unlet w:autoCollapsible
   else
-    let b:autoCollapsible = 1
+    let w:autoCollapsible = 1
   endif
 endfunction
 
-"    Set Buffer to Auto-collapsible
+"    Set Window to Auto-collapsible
 
 nmap <leader>mc     :call g:toggleAutoCollapsible()<CR>
-"nmap <leader>mc     :let b:autoCollapsible = 1<CR>
+"nmap <leader>mc     :let w:autoCollapsible = 1<CR>
 
 "    space to maximize current window
 nmap <S-space>      :call g:wipeMinimizedState()<CR><C-W>_
@@ -959,6 +970,12 @@ nmap <C-h> <C-w>h
 nmap <C-j> <C-w>j
 nmap <C-k> <C-w>k
 nmap <C-l> <C-w>l
+" VISUAL/SELECT : Window navigation
+" (don't leave homerow)
+vmap <C-h> <C-w>h
+vmap <C-j> <C-w>j
+vmap <C-k> <C-w>k
+vmap <C-l> <C-w>l
 " (also arrows, in all modes)
 map <up> <C-w>k
 map <down> <C-w>j
@@ -1101,6 +1118,10 @@ vmap ù  %
 
 nmap ; .
 omap ; .
+
+"last edit point
+nmap `; `.
+
 "1}}}
 "--------help-buffer------------------{{{1
 
@@ -1301,8 +1322,8 @@ function! MoveLineOrVisualUpOrDown(move_arg)
   execute "normal! ".col_num."|"
 endfunction
 
-nnoremap <silent> <S-k> :<C-u>call MoveLineUp()<CR>
-nnoremap <silent> <S-j> :<C-u>call MoveLineDown()<CR>
+"nnoremap <silent> <S-k> :<C-u>call MoveLineUp()<CR>
+"nnoremap <silent> <S-j> :<C-u>call MoveLineDown()<CR>
 nnoremap <silent> <D-k> :<C-u>call MoveLineUp()<CR>
 nnoremap <silent> <D-j> :<C-u>call MoveLineDown()<CR>
 inoremap <silent> <D-k> <C-o>:<C-u>call MoveLineUp()<CR>
@@ -1313,6 +1334,23 @@ vnoremap <silent> <D-k> :<C-u>call MoveVisualUp()<CR>
 vnoremap <silent> <D-j> :<C-u>call MoveVisualDown()<CR>
 
 
+
+
+
+"1}}}
+"--------Case -------------------------{{{1
+
+function! TwiddleCase(str)
+  if a:str ==# toupper(a:str)
+    let result = tolower(a:str)
+  elseif a:str ==# tolower(a:str)
+    let result = substitute(a:str,'\(\<\w\+\>\)', '\u\1', 'g')
+  else
+    let result = toupper(a:str)
+  endif
+  return result
+endfunction
+vnoremap ~ ygv"=TwiddleCase(@")<CR>Pgv
 
 
 
@@ -1341,6 +1379,12 @@ nmap <leader>l   :LustyJuggler<CR>
 nmap <leader>T   :TlistToggle<CR>
 
 
+"---------Syntastic-------------------{{{1
+
+" Map :Errors command to <leader>E
+nmap <leader>E  :Errors<CR>
+
+"1}}}
 "---------NERDTree--------------------{{{1
 map <leader><C-t> :execute 'NERDTreeToggle ' . getcwd()<CR>
 
@@ -1404,7 +1448,7 @@ let g:fuf_keyOpenTabpage = '<C-l>'
 "1}}}
 "---------vim-session------------------{{{1
 
-nmap <leader>ws       :SaveSession 
+nmap <leader>ws       :SaveSession
 
 nmap <leader>wo       :OpenSession 
 nmap <leader>ww       :OpenSession 
