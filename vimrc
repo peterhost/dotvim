@@ -908,7 +908,7 @@ autocmd WinLeave * if  exists("w:autoCollapsible") | resize 0 | endif
 
 function! g:wipeMinimizedState()
   unlet! w:autoCollapsible
-  call Decho("MINIMIZED state WIPED")
+  "call Decho("MINIMIZED state WIPED")
 endfunction
 
 function! g:toggleAutoCollapsible()
@@ -1448,7 +1448,7 @@ let g:fuf_keyOpenTabpage = '<C-l>'
 "1}}}
 "---------vim-session------------------{{{1
 
-nmap <leader>ws       :SaveSession
+nmap <leader>ws       :SaveSession 
 
 nmap <leader>wo       :OpenSession 
 nmap <leader>ww       :OpenSession 
