@@ -114,21 +114,30 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: https://github.com/vim-scripts/repeat.vim.git
 "Bundle: https://github.com/skammer/vim-css-color.git
 "Bundle: http://github.com/pangloss/vim-javascript.git
-"Bundle: https://github.com/vim-scripts/Conque-Shell.git
+""Bundle: https://github.com/vim-scripts/Conque-Shell.git
 "Bundle: https://github.com/vim-scripts/YankRing.vim.git
 "Bundle: https://github.com/vim-scripts/session.vim--Odding.git
 "Bundle: https://github.com/altercation/vim-colors-solarized.git
 "Bundle: https://github.com/cespare/vim-bclose.git
 "Bundle: https://github.com/vim-scripts/ManPageView.git
 "Bundle: https://github.com/vim-scripts/Decho.git
-"Bundle: https://github.com/peterhost/svndiff.git
+""Bundle: https://github.com/peterhost/svndiff.git
 "Bundle: https://github.com/tpope/vim-unimpaired.git
 "Bundle: https://github.com/tpope/vim-git.git
+"Bundle: https://github.com/vim-scripts/FuzzyFinder.git
 "
 " Make this one static untill pull request is resolved
 " https://github.com/vim-scripts/PreciseJump/pull/1
 "Static: PreciseJump
 ""Bundle: https://github.com/vim-scripts/PreciseJump.git
+"
+"
+" ..........COMPLETION ................
+"" Comprehnsive auto-completion system (does ALL)
+"Bundle: https://github.com/Shougo/neocomplcache.git
+"
+" this is the latest supertab (supertab-continued on vim-script)
+""Bundle: https://github.com/ervandew/supertab.git
 "
 " ..........MARKDOWN PREVIEW...........
 " Best is markdown-preview, now called hammer. Only, I can't get hammer to
@@ -162,23 +171,20 @@ call pathogen#runtime_append_all_bundles()
 ""      $ /System/Library/Frameworks/Ruby.framework/Versions/Current/usr/bin/ruby extconf.rb
 ""      $ make
 ""
-"" Bundle: git://git.wincent.com/command-t.git
-"" Bundle-Command: rake make
-" Static:  command-t
+""" Bundle: git://git.wincent.com/command-t.git
+""" Bundle-Command: rake make
+"" Static:  command-t
 
 
 " --------(DISABLED in GUI mode)-------
-"Bundle: https://github.com/vim-scripts/buftabs.git
+""Bundle: https://github.com/vim-scripts/buftabs.git
 
 
 " ----------NOT SURE-------------------
-" this is the latest supertab (supertab-continued on vim-script)
-"Bundle: https://github.com/ervandew/supertab.git
 "
 "Bundle: https://github.com/vim-scripts/SearchComplete.git
 ""Bundle: https://github.com/vim-scripts/AutoComplPop.git
-"Bundle: https://github.com/vim-scripts/L9.git
-"Bundle: https://github.com/vim-scripts/FuzzyFinder.git
+""Bundle: https://github.com/vim-scripts/L9.git
 ""Bundle: https://github.com/vim-scripts/upAndDown.git
 "Bundle: https://github.com/cakebaker/scss-syntax.vim.git
 
@@ -186,8 +192,6 @@ call pathogen#runtime_append_all_bundles()
 
 
 " --------HAVE TO TRY IT SOON!!--------
-"" Comprehnsive auto-completion system (does ALL)
-"Bundle: https://github.com/Shougo/neocomplcache.git
 
 " --------CANT-GET-IT-TO-WORK----------
 "
@@ -640,6 +644,9 @@ if &t_Co >= 256 || has("gui_running")
   colorscheme solarized
   call togglebg#map("<F5>")       " F5 toggle background
 
+else
+  colorscheme default
+  call togglebg#map("<F5>")       " F5 toggle background
 endif
 
 
