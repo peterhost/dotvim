@@ -1426,6 +1426,12 @@ vnoremap ~ ygv"=TwiddleCase(@")<CR>Pgv
 
 
 "1}}}
+"--------Edit ------------------------{{{1
+
+map <S-Enter> O<ESC> " awesome, inserts new line without going into insert mode
+
+
+"1}}}
 
 "------------------------------------------------------------------------------
 "                           PLUGINS
