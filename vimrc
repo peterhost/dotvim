@@ -302,43 +302,64 @@ if has("gui")
   " Default FONT
   "
   set guifont=Century\ Schoolbook\ Monospace\ BT:h14
+  set guifont=set guifont=DejaVu\ Sans\ Mono:h11
+  "set guifont=Menlo\ Regular:h14
 
+  "nnoremap <silent> <S-Up> :silent! let &guifont = substitute(
+  nnoremap <silent> <leader>+ :silent! let &guifont = substitute(
+  \ &guifont,
+  \ ':h\zs\d\+',
+  \ '\=eval(submatch(0)+1)',
+  \ '')<CR>
+  "nnoremap <silent> <S-Down> :silent! let &guifont = substitute(
+  nnoremap <silent> <leader>- :silent! let &guifont = substitute(
+  \ &guifont,
+  \ ':h\zs\d\+',
+  \ '\=eval(submatch(0)-1)',
+  \ '')<CR>
 
-  "
-  " FONTSIZE changer
-  " from: http://vim.wikia.com/wiki/Change_font_size_quickly
-  "
-  let s:pattern = '^\(.* \)\([1-9][0-9]*\)$'
-  let s:minfontsize = 6
-  let s:maxfontsize = 16
-  function! AdjustFontSize(amount)
-    if has("gui_gtk2") && has("gui_running")
-      let fontname = substitute(&guifont, s:pattern, '\1', '')
-      let cursize = substitute(&guifont, s:pattern, '\2', '')
-      let newsize = cursize + a:amount
-      if (newsize >= s:minfontsize) && (newsize <= s:maxfontsize)
-        let newfont = fontname . newsize
-        let &guifont = newfont
-      endif
-    else
-      echoerr "You need to run the GTK2 version of Vim to use this function."
-    endif
-  endfunction
+  "nnoremap <silent> <leader>+  :let &guifont="Century\ Schoolbook\ Monospace\ BT:h14"<CR>
+  "vnoremap <silent> <leader>-  :let &guifont="Century\ Schoolbook\ Monospace\ BT:h10"<CR>
 
-  function! LargerFont()
-    call AdjustFontSize(1)
-  endfunction
-  command! LargerFont call LargerFont()
+  ""
+  "" FONTSIZE changer
+  "" from: http://vim.wikia.com/wiki/Change_font_size_quickly
+  ""
+  "let s:pattern = '^\(.* \)\([1-9][0-9]*\)$'
+  "let s:minfontsize = 6
+  "let s:maxfontsize = 16
+  "function! AdjustFontSize(amount)
+  "  "if has("gui_gtk2") && has("gui_running")
+  "  if has("gui") && has("gui_running")
+  "    echoerr "you can change font sizes!."
+  "    let fontname = substitute(&guifont, s:pattern, '\1', '')
+  "    let cursize = substitute(&guifont, s:pattern, '\2', '')
+  "    let newsize = cursize + a:amount
+  "    if (newsize >= s:minfontsize) && (newsize <= s:maxfontsize)
+  "      let newfont = fontname . newsize
+  "      echoerr "new size accepted!." + newfont
+  "      let &guifont = newfont
+  "    endif
+  "  else
+  "    "echoerr "You need to run the GTK2 version of Vim to use this function."
+  "    echoerr "You need to run the GUI version of Vim to use this function."
+  "  endif
+  "endfunction
 
-  function! SmallerFont()
-    call AdjustFontSize(-1)
-  endfunction
-  command! SmallerFont call SmallerFont()
+  "function! LargerFont()
+  "  call AdjustFontSize(1)
+  "endfunction
+  "command! LargerFont call LargerFont()
 
-  nnoremap <silent> <leader>+  :call LargerFont()<CR>
-  vnoremap <silent> <leader>+  :call LargerFont()<CR>
-  nnoremap <silent> <leader>-  :call SmallerFont()<CR>
-  vnoremap <silent> <leader>-  :call SmallerFont()<CR>
+  "function! SmallerFont()
+  "  call AdjustFontSize(-1)
+  "endfunction
+  "command! SmallerFont call SmallerFont()
+
+  "nnoremap <silent> <leader>+  :call LargerFont()<CR>
+  "vnoremap <silent> <leader>+  :call LargerFont()<CR>
+  "nnoremap <silent> <leader>-  :call SmallerFont()<CR>
+  "vnoremap <silent> <leader>-  :call SmallerFont()<CR>
 
 endif
 "1}}}
