@@ -690,9 +690,6 @@ if &t_Co >= 256 || has("gui_running")
   colorscheme solarized
   call togglebg#map("<F5>")       " F5 toggle background
 
-else
-  colorscheme default
-  call togglebg#map("<F5>")       " F5 toggle background
 endif
 
 
