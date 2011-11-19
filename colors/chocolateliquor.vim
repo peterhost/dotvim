@@ -188,6 +188,7 @@ elseif has("gui_running") || (&t_Co == 256 && (&term ==# "xterm" || &term =~# "^
     CSAHi Question term=NONE cterm=bold ctermbg=bg ctermfg=46 gui=bold guibg=bg guifg=#00ff00
     CSAHi StatusLine term=reverse,bold cterm=bold ctermbg=131 ctermfg=231 gui=reverse,bold guibg=#ffffff guifg=#8b4726
     CSAHi StatusLineNC term=reverse cterm=NONE ctermbg=250 ctermfg=16 gui=NONE guibg=#bebebe guifg=#000000
+    "CSAHi StatusLineNC term=reverse cterm=NONE ctermbg=250 ctermfg=16 gui=reverse guibg=#bebebe guifg=#000000
     CSAHi vimAugroup term=NONE cterm=NONE ctermbg=bg ctermfg=fg gui=NONE guibg=bg guifg=fg
     CSAHi vimAugroupError term=NONE cterm=NONE ctermbg=bg ctermfg=fg gui=NONE guibg=bg guifg=fg
     CSAHi Visual term=reverse cterm=NONE ctermbg=248 ctermfg=fg gui=NONE guibg=#a9a9a9 guifg=fg

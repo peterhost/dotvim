@@ -77,22 +77,11 @@ if has( "statusline" ) == 0
 endif
 
 
-"TODO: DO that with an ENV variable, STUPID!
-" Bail if we can't find our friggin shell functions
-let s:tartifyTestShell = [ "__gitps1_branch",
-                         \ "__gitps1_remote",
-                         \ "__gitps1_repo_name",
-                         \ "__gitps1_stash"
-                         \  ]
-for s:test in s:tartifyTestShell
-  if system("type " . s:test . " >/dev/null 2>&1; echo $?") == 1
-    call s:errmsg("shell function " . s:test . " not found. Not loading Tartify")
-    finish
-  endif
-endfo
-
-
-
+" Bail if the environment does not contain the "Tartify shell functions"
+if $__tartify_shell_loaded != 1
+    call s:errmsg("It seems that your environment does not contain Tartify's predefined functions. Tartify disabled (:h tartify for more)")
+  finish
+endif
 
 
 
@@ -101,7 +90,7 @@ endfo
 
 
 " -------- SMART User{N} Colors -------{{{1
-" -------- ABOUT StatusLine coloring --{{{2
+" -------- ABOUT Auto-StatusL coloring {{{2
 " --------------------------------------------------------------------------
 "
 " PROBLEM1: When coloring Vim's StatusLine, we have two options :
@@ -112,9 +101,9 @@ endfo
 "     - Define our own User{N} highlight groups
 "
 " PROBLEM2: However hard you try, you always break the default
-"           statusline's background color, creating UGLY HOLES in it
-"           that break its visual continuity, hence destroying it's
-"           "STATUSLINE-NESS"
+"           statusline's background color, creating DISRUPTING HOLES
+"           in it, thus breaking its visual continuity and sortif destroying
+"           it's "STATUSLI-NE-NESS"
 "
 " PROBLEM3: When using standard Highlight groups, there is no way of
 "           handling the fact that the background color for the
@@ -125,14 +114,13 @@ endfo
 "
 " SOLUTION: Define "User{N}" highlight groups which adapt to
 "
+"  - Use the current Colorcheme's own predefined StatusLine parameters
+"    (especially background color, but try to catch as much as possible) for
+"    the custom "User{N}" highlight groups
+"
 "  - Dark/Light background (maximize our chances of them looking good
 "    everywhere)
 "
-"  - Use the current Colorcheme's own predefined StatusLine parameters
-"    (especially background color) for our custom "User{N}" highlight
-"    groups
-"
-"  - Try to cache as much as possible cause that's heavy on refresh time
 "
 " WARN: BIG GOTCHA
 "
@@ -169,8 +157,7 @@ endfo
 " an (already) underlined statusbar highlight group, as per definition of your
 " current ColorScheme, won't do nothing more)
 function! s:defineUserColors()
-"  "call Decho("-->Loading UserColors")
-  let s:adaptativeHighlights  = {
+  let g:tartify_adaptativeHighlights  = {
         \'light': {
           \ 1: {'hue': 'lightblue',   'format': 'underline,italic'},
           \ 2: {'hue': 'blue',        'format': ''},
@@ -226,7 +213,6 @@ function! s:statuslineHighlightConcat()"
   " MODE:
   " "term", "cterm", "gui"
 
-"  "call Decho("--> s:statuslineHighlightConcat -> RUNNING")
 
   let s:statusLineGroupAttr = {}
   let l:thisID = synIDtrans(hlID("StatusLine"))
@@ -294,9 +280,8 @@ endfunction
 
 function! s:smartHighligths()
 
-"  "call Decho("-->processing smartHighLights")
   " using the global setting &background
-  for [l:nb, l:val] in items(s:adaptativeHighlights[&background])
+  for [l:nb, l:val] in items(g:tartify_adaptativeHighlights[&background])
 
     "FIRST : inject the styles leeched from the current StatusLine highlight
     "group (for current ColorScheme)
@@ -305,16 +290,13 @@ function! s:smartHighligths()
     "SECOND : inject our custom styles on top of that
     if l:val.hue != ""
       let l:highlight .= s:injectHue(l:val.hue)
-"      "Decho( l:nb . " - hue:" . l:val.hue)
     endif
     if l:val.format != ""
       let l:highlight .= s:injectFormat(l:val.format)
-"      "Decho( l:nb . " - format:" . l:val.format)
     endif
 
     "THIRD : load the composited highlight group
     execute "highlight User" . l:nb . " " . l:highlight
-"    "call Decho(l:highlight)
   endfo
 endfunction
 
@@ -346,14 +328,11 @@ endfunction
 
 "2}}}
 " -------- Auto Commands --------------{{{2
+
 "
 " AUTOMATE: in case of ColorScheme change
 "
 "
-
-
-
-" NO CACHING
 function! s:resetTartification()
   call s:statuslineHighlightConcat()
   call s:smartHighligths()
@@ -364,75 +343,17 @@ if has("autocmd")
   autocmd ColorScheme * call s:resetTartification()
 endif
 
-
 call s:defineUserColors()
 call s:resetTartification()
 
-"2}}}
-" -------- (DEPREC: Auto Commands / CACHING ----{{{2
+
 "
-" AUTOMATE: in case of ColorScheme change
+" GLOBAL_FUNCTION: : overload original styles with
+" user-defined ones (for vimrc & such)
 "
-"
-" CACHING: the s:resetTartification function is intensive, so we need to
-" cache the result so that it's called only ONCE per "autocmd
-" ColorScheme *" call (ie : on the first autocmd call, as a colorscheme
-" event is triggered for each window (??))
-"
-
-
-
-
-"" Time based CACHING
-"let s:lastcallofTart = 0
-"function! s:resetTartification()
-"  let l:currTartificationCall = localtime()
-"  echo "l:currTartificationCall= " . l:currTartificationCall . ", difference=" . (l:currTartificationCall - s:lastcallofTart) . "            tuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu"
-
-"  if (l:currTartificationCall - s:lastcallofTart) >=2
-"    echo "-->l:currTartificationCall= " . l:currTartificationCall . "            tuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu"
-"    "call s:defineUserColors()
-"    call s:statuslineHighlightConcat()
-"    call s:smartHighligths()
-"    "
-"    " CACHING :
-"    " next calls will exit untill autocmd unlets variable
-"    let s:lastcallofTart = l:currTartificationCall
-"  else
-
-"    call s:smartHighligths()
-"  endif
-"endfunction
-
-
-
-
-"" Variable based CACHING
-"function! s:resetTartification()
-"  if !exists("g:tartify_updating")
-"    call s:defineUserColors()
-"    call s:statuslineHighlightConcat()
-"    call s:smartHighligths()
-"    "
-"    " CACHING :
-"    " next calls will exit untill autocmd unlets variable
-"    let g:tartify_updating = 1
-"  endif
-"endfunction
-
-
-"if has("autocmd")
-"  autocmd ColorScheme * call s:resetTartification()
-
-"  " we uset the "update in progress" variable as soon as the user has been iddle
-"  " long enough in normal or insert mode
-"  autocmd CursorHold,CursorHoldI,CursorMoved,CursorMovedI,CmdwinEnter,CmdwinLeave * unlet! g:tartify_updating
-"endif
-
-
-"unlet! g:tartify_updating
-"call s:defineUserColors()
-"call s:resetTartification()
+function g:tartify_update_colors()
+  call s:resetTartification()
+endfunction
 
 "2}}}
 
@@ -868,3 +789,5 @@ endfunction
 
 
 "1}}}
+" vim:foldmethod=marker
+s:errmsg("TARTIFY LOADED !")
