@@ -119,11 +119,12 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: https://github.com/vim-scripts/session.vim--Odding.git
 "Bundle: https://github.com/altercation/vim-colors-solarized.git
 "Bundle: https://github.com/cespare/vim-bclose.git
-"Bundle: https://github.com/vim-scripts/ManPageView.git
 "Bundle: https://github.com/vim-scripts/Decho.git
 ""Bundle: https://github.com/peterhost/svndiff.git
 "Bundle: https://github.com/tpope/vim-unimpaired.git
 "Bundle: https://github.com/tpope/vim-git.git
+"(fuzzyFinder depends on L9)
+"Bundle: https://github.com/vim-scripts/L9.git
 "Bundle: https://github.com/vim-scripts/FuzzyFinder.git
 "
 " Make this one static untill pull request is resolved
@@ -184,7 +185,6 @@ call pathogen#runtime_append_all_bundles()
 "
 "Bundle: https://github.com/vim-scripts/SearchComplete.git
 ""Bundle: https://github.com/vim-scripts/AutoComplPop.git
-""Bundle: https://github.com/vim-scripts/L9.git
 ""Bundle: https://github.com/vim-scripts/upAndDown.git
 "Bundle: https://github.com/cakebaker/scss-syntax.vim.git
 
@@ -303,10 +303,16 @@ if has("gui")
   "
   set guifont=Century\ Schoolbook\ Monospace\ BT:h14
   set guifont=set guifont=DejaVu\ Sans\ Mono:h11
-  "set guifont=Menlo\ Regular:h14
+  set guifont=Menlo\ Regular:h11
+  nnoremap <silent> <leader>+ :silent! set guifont=Century\ Schoolbook\ Monospace\ BT:h14<CR>
+  nnoremap <silent> <leader>_ :silent! set guifont=DejaVu\ Sans\ Mono:h11<CR>
 
+  ""
+  "" FONTSIZE changer
+  "" from: http://vim.wikia.com/wiki/Change_font_size_quickly
+  ""
   "nnoremap <silent> <S-Up> :silent! let &guifont = substitute(
-  nnoremap <silent> <leader>+ :silent! let &guifont = substitute(
+  nnoremap <silent> <leader>= :silent! let &guifont = substitute(
   \ &guifont,
   \ ':h\zs\d\+',
   \ '\=eval(submatch(0)+1)',
@@ -318,48 +324,6 @@ if has("gui")
   \ '\=eval(submatch(0)-1)',
   \ '')<CR>
 
-  "nnoremap <silent> <leader>+  :let &guifont="Century\ Schoolbook\ Monospace\ BT:h14"<CR>
-  "vnoremap <silent> <leader>-  :let &guifont="Century\ Schoolbook\ Monospace\ BT:h10"<CR>
-
-  ""
-  "" FONTSIZE changer
-  "" from: http://vim.wikia.com/wiki/Change_font_size_quickly
-  ""
-  "let s:pattern = '^\(.* \)\([1-9][0-9]*\)$'
-  "let s:minfontsize = 6
-  "let s:maxfontsize = 16
-  "function! AdjustFontSize(amount)
-  "  "if has("gui_gtk2") && has("gui_running")
-  "  if has("gui") && has("gui_running")
-  "    echoerr "you can change font sizes!."
-  "    let fontname = substitute(&guifont, s:pattern, '\1', '')
-  "    let cursize = substitute(&guifont, s:pattern, '\2', '')
-  "    let newsize = cursize + a:amount
-  "    if (newsize >= s:minfontsize) && (newsize <= s:maxfontsize)
-  "      let newfont = fontname . newsize
-  "      echoerr "new size accepted!." + newfont
-  "      let &guifont = newfont
-  "    endif
-  "  else
-  "    "echoerr "You need to run the GTK2 version of Vim to use this function."
-  "    echoerr "You need to run the GUI version of Vim to use this function."
-  "  endif
-  "endfunction
-
-  "function! LargerFont()
-  "  call AdjustFontSize(1)
-  "endfunction
-  "command! LargerFont call LargerFont()
-
-  "function! SmallerFont()
-  "  call AdjustFontSize(-1)
-  "endfunction
-  "command! SmallerFont call SmallerFont()
-
-  "nnoremap <silent> <leader>+  :call LargerFont()<CR>
-  "vnoremap <silent> <leader>+  :call LargerFont()<CR>
-  "nnoremap <silent> <leader>-  :call SmallerFont()<CR>
-  "vnoremap <silent> <leader>-  :call SmallerFont()<CR>
 
 endif
 "1}}}
@@ -422,6 +386,8 @@ set foldmethod=syntax
 if has("autocmd")
   autocmd FileType vim        setlocal foldmethod=marker
   autocmd BufRead *.vim       setlocal foldmethod=marker
+  autocmd FileType html        setlocal foldmethod=marker
+  autocmd BufRead *.html       setlocal foldmethod=marker
 endif
 
 "au BufReadPre * setlocal foldmethod=indent
@@ -444,6 +410,12 @@ let g:is_bash=1
 "let g:sh_fold_enabled= 4     (enable if/do/for folding)
 
 let g:sh_fold_enabled=7
+"1}}}
+" --------HTML-------------------------{{{1
+
+" enable html tag folding with ,f
+nnoremap <leader><C-space> Vatzf
+
 "1}}}
 
 
@@ -817,7 +789,7 @@ let g:CommandTMaxHeight=20
 
 
 "1}}}
-" --------Tartify --------------------{{{1
+" --------Tartify ---------------------{{{1
 
 
 let g:tartify_auto_enable = 1
@@ -1148,11 +1120,11 @@ else
   cmap <C-Space> <C-c>
 endif
 
-" remap fj to ESC in modes that don't use the 'j' key for navigation
+" remap jf to ESC in modes that don't use the 'j' key for navigation
 " (insert, command, operator-pending)
-imap fj <C-c>
-cmap fj <C-c>
-vmap fj <C-c>
+imap jf <C-c>
+cmap jf <C-c>
+vmap jf <C-c>
 
 "1}}}
 "--------SEARCH------------------------{{{1
