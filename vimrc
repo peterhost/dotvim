@@ -96,71 +96,71 @@ call pathogen#runtime_append_all_bundles()
 "-----------Pathogen-BUNDLES-----------{{{1
 "
 "Static: tartify
-"Bundle: https://github.com/tpope/vim-fugitive.git
-"Bundle: https://github.com/taq/vim-git-branch-info.git
-"Bundle: https://github.com/wookiehangover/jshint.vim.git
+"Bundle: git://github.com/tpope/vim-fugitive.git
+"Bundle: git://github.com/taq/vim-git-branch-info.git
+"Bundle: git://github.com/wookiehangover/jshint.vim.git
 ""Bundle-command: rake
-"Bundle: https://github.com/scrooloose/nerdtree
-"Bundle: https://github.com/godlygeek/csapprox.git
-"Bundle: https://github.com/slack/vim-bufexplorer.git
-""Bundle: https://github.com/vim-scripts/Gundo.git
-"Bundle: https://github.com/vim-scripts/LustyJuggler.git
-"Bundle: https://github.com/scrooloose/syntastic.git
-"Bundle: https://github.com/vim-scripts/Gist.vim.git
-"Bundle: https://github.com/mhz/vim-matchit.git
-"Bundle: https://github.com/scrooloose/nerdcommenter.git
-"Bundle: https://github.com/plasticboy/vim-markdown.git
-"Bundle: https://github.com/tpope/vim-surround.git
-"Bundle: https://github.com/vim-scripts/repeat.vim.git
-"Bundle: https://github.com/skammer/vim-css-color.git
-"Bundle: http://github.com/pangloss/vim-javascript.git
-""Bundle: https://github.com/vim-scripts/Conque-Shell.git
-"Bundle: https://github.com/vim-scripts/YankRing.vim.git
-"Bundle: https://github.com/vim-scripts/session.vim--Odding.git
-"Bundle: https://github.com/altercation/vim-colors-solarized.git
-"Bundle: https://github.com/cespare/vim-bclose.git
-"Bundle: https://github.com/vim-scripts/Decho.git
-""Bundle: https://github.com/peterhost/svndiff.git
-"Bundle: https://github.com/tpope/vim-unimpaired.git
-"Bundle: https://github.com/tpope/vim-git.git
+"Bundle: git://github.com/scrooloose/nerdtree
+"Bundle: git://github.com/godlygeek/csapprox.git
+"Bundle: git://github.com/slack/vim-bufexplorer.git
+""Bundle: git://github.com/vim-scripts/Gundo.git
+"Bundle: git://github.com/vim-scripts/LustyJuggler.git
+"Bundle: git://github.com/scrooloose/syntastic.git
+"Bundle: git://github.com/vim-scripts/Gist.vim.git
+"Bundle: git://github.com/mhz/vim-matchit.git
+"Bundle: git://github.com/scrooloose/nerdcommenter.git
+"Bundle: git://github.com/plasticboy/vim-markdown.git
+"Bundle: git://github.com/tpope/vim-surround.git
+"Bundle: git://github.com/vim-scripts/repeat.vim.git
+"Bundle: git://github.com/skammer/vim-css-color.git
+"Bundle: git://github.com/pangloss/vim-javascript.git
+""Bundle: git://github.com/vim-scripts/Conque-Shell.git
+"Bundle: git://github.com/vim-scripts/YankRing.vim.git
+"Bundle: git://github.com/vim-scripts/session.vim--Odding.git
+"Bundle: git://github.com/altercation/vim-colors-solarized.git
+"Bundle: git://github.com/cespare/vim-bclose.git
+"Bundle: git://github.com/vim-scripts/Decho.git
+""Bundle: git://github.com/peterhost/svndiff.git
+"Bundle: git://github.com/tpope/vim-unimpaired.git
+"Bundle: git://github.com/tpope/vim-git.git
 "(fuzzyFinder depends on L9)
-"Bundle: https://github.com/vim-scripts/L9.git
-"Bundle: https://github.com/vim-scripts/FuzzyFinder.git
+"Bundle: git://github.com/vim-scripts/L9.git
+"Bundle: git://github.com/vim-scripts/FuzzyFinder.git
 "
 " Make this one static untill pull request is resolved
-" https://github.com/vim-scripts/PreciseJump/pull/1
+" git://github.com/vim-scripts/PreciseJump/pull/1
 "Static: PreciseJump
-""Bundle: https://github.com/vim-scripts/PreciseJump.git
+""Bundle: git://github.com/vim-scripts/PreciseJump.git
 "
 "
 " ..........COMPLETION ................
 "" Comprehnsive auto-completion system (does ALL)
-"Bundle: https://github.com/Shougo/neocomplcache.git
+"Bundle: git://github.com/Shougo/neocomplcache.git
 "
 " this is the latest supertab (supertab-continued on vim-script)
-""Bundle: https://github.com/ervandew/supertab.git
+""Bundle: git://github.com/ervandew/supertab.git
 "
 " ..........MARKDOWN PREVIEW...........
 " Best is markdown-preview, now called hammer. Only, I can't get hammer to
 " work, so in the meantim, let's just go with markdown-preview (cloned repo,
 " the original one does not exist anymore)
-""Bundle: https://github.com/robgleeson/hammer.vim.git
-"Bundle: https://github.com/peterhost/vim-markdown-preview.git
+""Bundle: git://github.com/robgleeson/hammer.vim.git
+"Bundle: git://github.com/peterhost/vim-markdown-preview.git
 " This one works too, but has pbs with utf8
-""Bundle: https://github.com/greyblake/vim-preview.git
+""Bundle: git://github.com/greyblake/vim-preview.git
 
 
 " ..........TAGLIST.PLUS................
 "  for JS goodness, you also need node.js & jsdoctor
 "  installed on your system (jsdoctor = jsctags)
-""Bundle: https://github.com/vim-scripts/taglist.vim.git
-"Bundle: https://github.com/int3/vim-taglist-plus.git
+""Bundle: git://github.com/vim-scripts/taglist.vim.git
+"Bundle: git://github.com/int3/vim-taglist-plus.git
 
 
 " ..........SNIPMATE...................
-"Bundle: https://github.com/vim-scripts/snipMate.git
+"Bundle: git://github.com/vim-scripts/snipMate.git
 """ Replacement snippets for snipmate
-"" Bundle: https://github.com/scrooloose/snipmate-snippets.git
+"" Bundle: git://github.com/scrooloose/snipmate-snippets.git
 "" Bundle-Command: rake deploy_local
 
 " ..........COMMAND.T..................
@@ -178,15 +178,15 @@ call pathogen#runtime_append_all_bundles()
 
 
 " --------(DISABLED in GUI mode)-------
-""Bundle: https://github.com/vim-scripts/buftabs.git
+""Bundle: git://github.com/vim-scripts/buftabs.git
 
 
 " ----------NOT SURE-------------------
 "
-"Bundle: https://github.com/vim-scripts/SearchComplete.git
-""Bundle: https://github.com/vim-scripts/AutoComplPop.git
-""Bundle: https://github.com/vim-scripts/upAndDown.git
-"Bundle: https://github.com/cakebaker/scss-syntax.vim.git
+"Bundle: git://github.com/vim-scripts/SearchComplete.git
+""Bundle: git://github.com/vim-scripts/AutoComplPop.git
+""Bundle: git://github.com/vim-scripts/upAndDown.git
+"Bundle: git://github.com/cakebaker/scss-syntax.vim.git
 
 " ----------MANUAL-INSTALL-------------
 
@@ -195,21 +195,21 @@ call pathogen#runtime_append_all_bundles()
 
 " --------CANT-GET-IT-TO-WORK----------
 "
-""Bundle: https://github.com/mrtazz/simplenote.vim.git
+""Bundle: git://github.com/mrtazz/simplenote.vim.git
 
 
 " ------(NICE BUT PROBLEMATIC)---------
 
-""Bundle: https://github.com/Raimondi/delimitMate.git
-""Bundle: https://github.com/int3/vim-extradite.git           "extends fugitive
+""Bundle: git://github.com/Raimondi/delimitMate.git
+""Bundle: git://github.com/int3/vim-extradite.git           "extends fugitive
 
 " ----------(NOT NEEDED)---------------
 "
-""Bundle: https://github.com/vim-scripts/ShowMarks.git
+""Bundle: git://github.com/vim-scripts/ShowMarks.git
 
 "" ........AUTOALIGN SUITE.............
-""Bundle: https://github.com/vim-scripts/Align.git
-""Bundle: https://github.com/vim-scripts/AutoAlign.git
+""Bundle: git://github.com/vim-scripts/Align.git
+""Bundle: git://github.com/vim-scripts/AutoAlign.git
 
 "1}}}
 
