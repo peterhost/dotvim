@@ -45,12 +45,6 @@ if !has('gui_running')
 endif
 
 
-if has('gui_running')
-  call add(g:pathogen_disabled, 'buftabs')
-  " we don't want tabs in statusbar when using GUI
-endif
-
-
 if !has('gui') || &t_Co < 256
   call add(g:pathogen_disabled, 'csapprox')
   "csapprox need Vim compiled with gui support to work
@@ -98,7 +92,7 @@ call pathogen#runtime_append_all_bundles()
 
 
 "1}}}
-"-----------Pathogen-BUNDLES-----------{{{1
+"------Pathogen-BUNDLES---------------{{{1
 "
 ""Was : Static: tartify
 "Bundle: git://github.com/peterhost/tartify.git
@@ -106,13 +100,10 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: git://github.com/taq/vim-git-branch-info.git
 "Bundle: git://github.com/wookiehangover/jshint.vim.git
 ""Bundle-command: rake
-"Bundle: git://github.com/scrooloose/nerdtree
 "Bundle: git://github.com/godlygeek/csapprox.git
 "Bundle: git://github.com/slack/vim-bufexplorer.git
-""Bundle: git://github.com/vim-scripts/Gundo.git
 "Bundle: git://github.com/vim-scripts/LustyJuggler.git
 "Bundle: git://github.com/scrooloose/syntastic.git
-"Bundle: git://github.com/vim-scripts/Gist.vim.git
 "Bundle: git://github.com/mhz/vim-matchit.git
 "Bundle: git://github.com/scrooloose/nerdcommenter.git
 "Bundle: git://github.com/plasticboy/vim-markdown.git
@@ -120,15 +111,15 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: git://github.com/vim-scripts/repeat.vim.git
 "Bundle: git://github.com/skammer/vim-css-color.git
 "Bundle: git://github.com/pangloss/vim-javascript.git
-""Bundle: git://github.com/vim-scripts/Conque-Shell.git
 "Bundle: git://github.com/vim-scripts/YankRing.vim.git
 "Bundle: git://github.com/vim-scripts/session.vim--Odding.git
 "Bundle: git://github.com/altercation/vim-colors-solarized.git
 "Bundle: git://github.com/cespare/vim-bclose.git
 "Bundle: git://github.com/vim-scripts/Decho.git
-""Bundle: git://github.com/peterhost/svndiff.git
 "Bundle: git://github.com/tpope/vim-unimpaired.git
 "Bundle: git://github.com/tpope/vim-git.git
+"Bundle: git://github.com/cakebaker/scss-syntax.vim.git
+"Bundle: git://github.com/othree/html5-syntax.vim.git
 "(fuzzyFinder depends on L9)
 "Bundle: git://github.com/vim-scripts/L9.git
 "Bundle: git://github.com/vim-scripts/FuzzyFinder.git
@@ -136,8 +127,8 @@ call pathogen#runtime_append_all_bundles()
 " ..........PRECISEJUMP ...............
 " Make this one static untill pull request is resolved
 " https://github.com/vim-scripts/PreciseJump/pull/1
-" was ""Bundle: git://github.com/vim-scripts/PreciseJump.git
-""Static: PreciseJump
+" was Bundle: git://github.com/vim-scripts/PreciseJump.git
+" was Static: PreciseJump
 " EDIT : use my fork instead
 "Bundle: git@github.com:peterhost/PreciseJump.git
 "
@@ -145,7 +136,9 @@ call pathogen#runtime_append_all_bundles()
 " ..........COMPLETION ................
 "" Comprehnsive auto-completion system (does ALL)
 "Bundle: git://github.com/Shougo/neocomplcache.git
-"
+
+"Bundle: git://github.com/vim-scripts/SearchComplete.git
+
 " this is the latest supertab (supertab-continued on vim-script)
 ""Bundle: git://github.com/ervandew/supertab.git
 "
@@ -154,7 +147,9 @@ call pathogen#runtime_append_all_bundles()
 " work, so in the meantim, let's just go with markdown-preview (cloned repo,
 " the original one does not exist anymore)
 ""Bundle: git://github.com/robgleeson/hammer.vim.git
+
 "Bundle: git://github.com/peterhost/vim-markdown-preview.git
+
 " This one works too, but has pbs with utf8
 ""Bundle: git://github.com/greyblake/vim-preview.git
 
@@ -163,6 +158,7 @@ call pathogen#runtime_append_all_bundles()
 "  for JS goodness, you also need node.js & jsdoctor
 "  installed on your system (jsdoctor = jsctags)
 ""Bundle: git://github.com/vim-scripts/taglist.vim.git
+
 "Bundle: git://github.com/int3/vim-taglist-plus.git
 
 
@@ -172,31 +168,11 @@ call pathogen#runtime_append_all_bundles()
 "" Bundle: git://github.com/scrooloose/snipmate-snippets.git
 "" Bundle-Command: rake deploy_local
 
-" ..........COMMAND.T..................
-"" MACOS : conflict native Ruby / homebrew Ruby -> do this Manually
-"" (https://wincent.com/forums/command-t/topics/425#comment_6536)
-""      Download the bundle, then :
-""      $ cd ~/.vim/bundle/command-t/ruby/command-t/
-""      Compile it with RUBY 1.8 !! (not homebrew's ruby)
-""      $ /System/Library/Frameworks/Ruby.framework/Versions/Current/usr/bin/ruby extconf.rb
-""      $ make
-""
-""" Bundle: git://git.wincent.com/command-t.git
-""" Bundle-Command: rake make
-"" Static:  command-t
-
-
-" --------(DISABLED in GUI mode)-------
-""Bundle: git://github.com/vim-scripts/buftabs.git
-
 
 " ----------NOT SURE-------------------
 "
-"Bundle: git://github.com/vim-scripts/SearchComplete.git
 ""Bundle: git://github.com/vim-scripts/AutoComplPop.git
 ""Bundle: git://github.com/vim-scripts/upAndDown.git
-"Bundle: git://github.com/cakebaker/scss-syntax.vim.git
-"Bundle: git://github.com/othree/html5-syntax.vim.git
 
 " ----------MANUAL-INSTALL-------------
 
@@ -212,6 +188,12 @@ call pathogen#runtime_append_all_bundles()
 " ----------(NOT NEEDED)---------------
 "
 ""Bundle: git://github.com/vim-scripts/ShowMarks.git
+
+""Bundle: git://github.com/vim-scripts/Gundo.git
+""Bundle: git://github.com/scrooloose/nerdtree
+""Bundle: git://github.com/vim-scripts/Gist.vim.git
+""Bundle: git://github.com/vim-scripts/Conque-Shell.git
+""Bundle: git://github.com/peterhost/svndiff.git
 
 "" ........AUTOALIGN SUITE.............
 ""Bundle: git://github.com/vim-scripts/Align.git
@@ -760,6 +742,12 @@ endif
 
 "let g:showmarks_enable=0       "ShowMarks - disable by default
 let g:Tlist_Use_SingleClick=1  "TagList   - single click to 'goto' tag
+
+"1}}}
+" --------NeoComplCache----------------{{{1
+
+
+let g:neocomplcache_enable_at_startup = 1
 
 "1}}}
 " --------Command-T--------------------{{{1
