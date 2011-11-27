@@ -26,6 +26,11 @@ filetype off
 
 " ----- Load/Unload plugins RULES -----{{{1
 
+
+runtime bundle/vim-pathogen/autoload/pathogen.vim
+" Bundle: tpope/vim-pathogen
+call pathogen#infect()
+
 " CUSTOM logic
 " To disable a plugin, add it's bundle name to the following list
 "let g:pathogen_disabled = ['command-t']
@@ -187,6 +192,7 @@ call pathogen#runtime_append_all_bundles()
 ""Bundle: git://github.com/vim-scripts/AutoComplPop.git
 ""Bundle: git://github.com/vim-scripts/upAndDown.git
 "Bundle: git://github.com/cakebaker/scss-syntax.vim.git
+"Bundle: git://github.com/othree/html5-syntax.vim.git
 
 " ----------MANUAL-INSTALL-------------
 
@@ -786,7 +792,8 @@ let g:CommandTMaxHeight=20
 "are detected, but not opened automatically.
     let g:syntastic_auto_loc_list=2
 
-
+" Disable for HTML as it doesn't play nicely
+    let g:syntastic_disabled_filetypes = ['html']
 
 "1}}}
 " --------Tartify ---------------------{{{1
