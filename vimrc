@@ -781,6 +781,8 @@ let g:CommandTMaxHeight=20
     let g:syntastic_auto_loc_list=2
 
 " Disable for HTML as it doesn't play nicely
+" (cf. http://stackoverflow.com/questions/5237275/how-can-i-validate-html5-directly-in-vim)
+" SEE HTML5 validation further on
     let g:syntastic_disabled_filetypes = ['html']
 
 "1}}}
@@ -1397,6 +1399,11 @@ vnoremap ~ ygv"=TwiddleCase(@")<CR>Pgv
 
 map <S-Enter> O<ESC> " awesome, inserts new line without going into insert mode
 
+
+"1}}}
+"--------HTML5 validation--------------{{{1
+"check html
+map ,5 :!html5check %<CR>
 
 "1}}}
 
