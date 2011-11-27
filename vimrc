@@ -100,7 +100,8 @@ call pathogen#runtime_append_all_bundles()
 "1}}}
 "-----------Pathogen-BUNDLES-----------{{{1
 "
-"Static: tartify
+""Was : Static: tartify
+"Bundle: git://github.com/peterhost/tartify.git
 "Bundle: git://github.com/tpope/vim-fugitive.git
 "Bundle: git://github.com/taq/vim-git-branch-info.git
 "Bundle: git://github.com/wookiehangover/jshint.vim.git
@@ -132,10 +133,13 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: git://github.com/vim-scripts/L9.git
 "Bundle: git://github.com/vim-scripts/FuzzyFinder.git
 "
+" ..........PRECISEJUMP ...............
 " Make this one static untill pull request is resolved
-" git://github.com/vim-scripts/PreciseJump/pull/1
-"Static: PreciseJump
-""Bundle: git://github.com/vim-scripts/PreciseJump.git
+" https://github.com/vim-scripts/PreciseJump/pull/1
+" was ""Bundle: git://github.com/vim-scripts/PreciseJump.git
+""Static: PreciseJump
+" EDIT : use my fork instead
+"Bundle: git@github.com:peterhost/PreciseJump.git
 "
 "
 " ..........COMPLETION ................
@@ -196,13 +200,9 @@ call pathogen#runtime_append_all_bundles()
 
 " ----------MANUAL-INSTALL-------------
 
-
 " --------HAVE TO TRY IT SOON!!--------
 
 " --------CANT-GET-IT-TO-WORK----------
-"
-""Bundle: git://github.com/mrtazz/simplenote.vim.git
-
 
 " ------(NICE BUT PROBLEMATIC)---------
 
