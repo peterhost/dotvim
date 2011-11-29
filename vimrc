@@ -173,6 +173,7 @@ call pathogen#runtime_append_all_bundles()
 "
 ""Bundle: git://github.com/vim-scripts/AutoComplPop.git
 ""Bundle: git://github.com/vim-scripts/upAndDown.git
+"Bundle: git://github.com/vim-scripts/Gist.vim.git
 
 " ----------MANUAL-INSTALL-------------
 
@@ -191,7 +192,6 @@ call pathogen#runtime_append_all_bundles()
 
 ""Bundle: git://github.com/vim-scripts/Gundo.git
 ""Bundle: git://github.com/scrooloose/nerdtree
-""Bundle: git://github.com/vim-scripts/Gist.vim.git
 ""Bundle: git://github.com/vim-scripts/Conque-Shell.git
 ""Bundle: git://github.com/peterhost/svndiff.git
 
@@ -1574,6 +1574,61 @@ let g:PreciseJump_target_keys = "abcdefghijklmnopqrstuwxz123456789;',./ABCDEFGHI
 "vmap <D-j> ]egv
 "vmap <S-Up> [egv
 "vmap <S-Down> ]egv
+
+"1}}}
+"---------Gist-------------------------{{{1
+
+" Open the gist in browser after post
+let g:gist_open_browser_after_post = 1
+
+"QUIX: edit/save the QUIX (bookmarklets on steroids) config on gist.github.com
+nmap <leader>eq      :Gist 1397755<CR>
+nmap <leader>sq      :Gist -e<CR>
+nmap <leader>Gq      :Gist 1397755<CR>
+nmap <leader>Gs      :Gist -e<CR>
+
+  ":Gist
+    "post whole text to gist.
+
+  ":'<,'>Gist
+    "post selected text to gist.
+
+  ":Gist -p
+    "post whole text to gist with private.
+    "if you got empty gist list, try :Gist --abandon 
+
+  ":Gist -a
+    "post whole text to gist with anonymous.
+
+  ":Gist -m
+    "post multi buffer to gist.
+
+  ":Gist -e
+    "edit the gist. (shoud be work on gist buffer)
+    "you can update the gist with :w command on gist buffer.
+
+  ":Gist -e foo.js
+    "edit the gist with name 'foo.js'. (shoud be work on gist buffer)
+
+  ":Gist -d
+    "delete the gist. (should be work on gist buffer)
+    "password authentication is needed.
+
+  ":Gist -f
+    "fork the gist. (should be work on gist buffer)
+    "password authentication is needed.
+
+  ":Gist XXXXX
+    "get gist XXXXX.
+
+  ":Gist -c XXXXX.
+    "get gist XXXXX and put to clipboard.
+
+  ":Gist -l
+    "list gists from mine.
+
+  ":Gist -la
+    "list gists from all.
 
 "1}}}
 
