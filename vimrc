@@ -45,10 +45,10 @@ if !has('gui_running')
 endif
 
 
-if !has('gui') || &t_Co < 256
-  call add(g:pathogen_disabled, 'csapprox')
-  "csapprox need Vim compiled with gui support to work
-endif
+"if !has('gui') || &t_Co < 256
+"  call add(g:pathogen_disabled, 'csapprox')
+"  "csapprox need Vim compiled with gui support to work
+"endif
 
 
 if  !has('ruby')
@@ -100,7 +100,7 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: git://github.com/taq/vim-git-branch-info.git
 "Bundle: git://github.com/wookiehangover/jshint.vim.git
 ""Bundle-command: rake
-"Bundle: git://github.com/godlygeek/csapprox.git
+""Bundle: git://github.com/godlygeek/csapprox.git
 "Bundle: git://github.com/slack/vim-bufexplorer.git
 "Bundle: git://github.com/vim-scripts/LustyJuggler.git
 "Bundle: git://github.com/scrooloose/syntastic.git
