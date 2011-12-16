@@ -25,9 +25,6 @@
 [submodule "bundle/vim-surround"]
 	path = bundle/vim-surround
 	url = git://github.com/tpope/vim-surround.git
-[submodule "bundle/repeat.vim"]
-	path = bundle/repeat.vim
-	url = git://github.com/vim-scripts/repeat.vim.git
 [submodule "bundle/vim-css-color"]
 	path = bundle/vim-css-color
 	url = git://github.com/skammer/vim-css-color.git
