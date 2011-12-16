@@ -29,7 +29,6 @@ filetype off
 
 runtime bundle/vim-pathogen/autoload/pathogen.vim
 " Bundle: tpope/vim-pathogen
-call pathogen#infect()
 
 " CUSTOM logic
 " To disable a plugin, add it's bundle name to the following list
@@ -82,6 +81,7 @@ endif
 
 
 " It is essential that these lines are called before enabling filetype detection
+call pathogen#infect()
 call pathogen#helptags()
 call pathogen#runtime_append_all_bundles()
 
@@ -1465,6 +1465,9 @@ if hasmapto(":LustyJuggler")
   silent! nunmap <leader>lj
 endif
 nmap <leader>l   :LustyJuggler<CR>
+
+"" suppress LustyJuggler ruby warning
+"let g:LustyJugglerSuppressRubyWarning = 1
 
 "1}}}
 "---------Syntastic-------------------{{{1
