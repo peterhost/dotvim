@@ -33,7 +33,6 @@ call pathogen#infect()
 
 " CUSTOM logic
 " To disable a plugin, add it's bundle name to the following list
-"let g:pathogen_disabled = ['command-t']
 let g:pathogen_disabled = ['']
 "let g:pathogen_disabled = ['Decho', 'svndiff', 'ManPageView', 'vim-blcose', 'SearchComplete', 'supertab', 'vim-fugitive', 'ShowTabs', 'vim-colors-solarized' ]
 
@@ -95,7 +94,7 @@ call pathogen#runtime_append_all_bundles()
 "------Pathogen-BUNDLES---------------{{{1
 "
 ""Was : Static: tartify
-"Bundle: git://github.com/peterhost/tartify.git
+""Bundle: git://github.com/peterhost/tartify.git
 "Bundle: git://github.com/tpope/vim-fugitive.git
 "Bundle: git://github.com/taq/vim-git-branch-info.git
 "Bundle: git://github.com/wookiehangover/jshint.vim.git
@@ -104,13 +103,13 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: git://github.com/slack/vim-bufexplorer.git
 "Bundle: git://github.com/vim-scripts/LustyJuggler.git
 "Bundle: git://github.com/scrooloose/syntastic.git
-"Bundle: git://github.com/mhz/vim-matchit.git
-"Bundle: git://github.com/scrooloose/nerdcommenter.git
+"DEPREC"Bundle: git://github.com/mhz/vim-matchit.git
+"Bundle: git://github.com/tsaleh/vim-matchit.git
+"Bundle: git://github.com/peterhost/nerdcommenter.git
+"DEPREC until scss & jade fixed "Bundle: git://github.com/scrooloose/nerdcommenter.git
 "Bundle: git://github.com/plasticboy/vim-markdown.git
 "Bundle: git://github.com/tpope/vim-surround.git
-"Bundle: git://github.com/vim-scripts/repeat.vim.git
-"Bundle: git://github.com/skammer/vim-css-color.git
-"Bundle: git://github.com/pangloss/vim-javascript.git
+"Bundle: git://github.com/tpope/vim-repeat.git
 "Bundle: git://github.com/vim-scripts/YankRing.vim.git
 "Bundle: git://github.com/vim-scripts/session.vim--Odding.git
 "Bundle: git://github.com/altercation/vim-colors-solarized.git
@@ -118,11 +117,17 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: git://github.com/vim-scripts/Decho.git
 "Bundle: git://github.com/tpope/vim-unimpaired.git
 "Bundle: git://github.com/tpope/vim-git.git
-"Bundle: git://github.com/cakebaker/scss-syntax.vim.git
-"Bundle: git://github.com/othree/html5-syntax.vim.git
 "(fuzzyFinder depends on L9)
 "Bundle: git://github.com/vim-scripts/L9.git
 "Bundle: git://github.com/vim-scripts/FuzzyFinder.git
+"
+" ..........SYNTAXES...................
+"Bundle: git://github.com/cakebaker/scss-syntax.vim.git
+"Bundle: git://github.com/digitaltoad/vim-jade.git
+"Bundle: git://github.com/wavded/vim-stylus.git
+"Bundle: git://github.com/othree/html5-syntax.vim.git
+"Bundle: git://github.com/pangloss/vim-javascript.git
+"Bundle: git://github.com/skammer/vim-css-color.git
 "
 " ..........PRECISEJUMP ...............
 " Make this one static untill pull request is resolved
@@ -135,12 +140,21 @@ call pathogen#runtime_append_all_bundles()
 "
 " ..........COMPLETION ................
 "" Comprehnsive auto-completion system (does ALL)
-"Bundle: git://github.com/Shougo/neocomplcache.git
+""Bundle: git://github.com/Shougo/neocomplcache.git
 
-"Bundle: git://github.com/vim-scripts/SearchComplete.git
+""Bundle: git://github.com/vim-scripts/SearchComplete.git
 
 " this is the latest supertab (supertab-continued on vim-script)
-""Bundle: git://github.com/ervandew/supertab.git
+"Bundle: git://github.com/ervandew/supertab.git
+"
+"
+" ..........SNIPMATE...................
+"Bundle: git://github.com/vim-scripts/snipMate.git
+"
+"" Alternate set of snippets for snipmate
+" Bundle: git://github.com/scrooloose/snipmate-snippets.git
+"" Bundle-Command: rake deploy_local
+"
 "
 " ..........MARKDOWN PREVIEW...........
 " Best is markdown-preview, now called hammer. Only, I can't get hammer to
@@ -152,22 +166,15 @@ call pathogen#runtime_append_all_bundles()
 
 " This one works too, but has pbs with utf8
 ""Bundle: git://github.com/greyblake/vim-preview.git
-
-
+"
+"
 " ..........TAGLIST.PLUS................
 "  for JS goodness, you also need node.js & jsdoctor
 "  installed on your system (jsdoctor = jsctags)
-""Bundle: git://github.com/vim-scripts/taglist.vim.git
-
-"Bundle: git://github.com/int3/vim-taglist-plus.git
-
-
-" ..........SNIPMATE...................
-"Bundle: git://github.com/vim-scripts/snipMate.git
-""" Replacement snippets for snipmate
-"" Bundle: git://github.com/scrooloose/snipmate-snippets.git
-"" Bundle-Command: rake deploy_local
-
+""Bundle: git://github.com/int3/vim-taglist-plus.git
+"
+"NOW USING TAGBAR
+"Bundle: git://github.com/majutsushi/tagbar.git
 
 " ----------NOT SURE-------------------
 "
@@ -376,6 +383,8 @@ if has("autocmd")
   autocmd BufRead *.vim       setlocal foldmethod=marker
   autocmd FileType html        setlocal foldmethod=marker
   autocmd BufRead *.html       setlocal foldmethod=marker
+  autocmd FileType jade        setlocal foldmethod=marker
+  autocmd BufRead *.jade       setlocal foldmethod=marker
 endif
 
 "au BufReadPre * setlocal foldmethod=indent
@@ -517,9 +526,18 @@ set pastetoggle=<F10>
 
 " --------|__Trailing Whitespace-------{{{2
 
+"MESSY: not optimal!!! (todo)
+function! s:lightenTrailingWhitespace()
+  highlight ExtraWhitespace ctermbg=gray guibg=gray
+  :autocmd ColorScheme * highlight ExtraWhitespace ctermbg=gray guibg=gray
+endfunction
+
 
 if has("autocmd")
   :autocmd ColorScheme * highlight ExtraWhitespace ctermbg=red guibg=red
+
+  " make it lighter for formats which DO USE trailing spaces
+  :autocmd BufRead,BufNewFile *.{md,markdown,mdown,mkd,mkdn,jade} call s:lightenTrailingWhitespace()
 endif
 
 highlight ExtraWhitespace ctermbg=red guibg=red
@@ -671,6 +689,11 @@ if &t_Co >= 256 || has("gui_running")
   colorscheme solarized
   call togglebg#map("<F5>")       " F5 toggle background
 
+  " in terminal choose DARK background
+  if !has("gui")
+    let &background = "dark"
+  endif
+
 endif
 
 
@@ -737,26 +760,10 @@ endif
 "                           PLUGIN SPECIFIC CONFIGS
 "------------------------------------------------------------------------------
 
-" --------ShowMarks--------------------{{{1
-
-
-"let g:showmarks_enable=0       "ShowMarks - disable by default
-let g:Tlist_Use_SingleClick=1  "TagList   - single click to 'goto' tag
-
-"1}}}
 " --------NeoComplCache----------------{{{1
 
 
 let g:neocomplcache_enable_at_startup = 1
-
-"1}}}
-" --------Command-T--------------------{{{1
-
-
-"Command-T configuration
-let g:CommandTMaxHeight=20
-
-
 
 "1}}}
 " --------Syntastic--------------------{{{1
@@ -829,6 +836,39 @@ let g:tartify_disabled = ['git', 'longlines', 'path', ]
 "
 
 set statusline=%<%f%h%m%r%=%b\ 0x%B\ \ %l,%c%V\ %#warningmsg#%P
+
+"1}}}
+" --------snipMate---------------------{{{1
+
+
+"use alternate snippets (scroolooze's)
+"let g:snipp
+
+
+
+"1}}}
+" --------ShowMarks(x)-----------------{{{1
+
+
+""let g:showmarks_enable=0       "ShowMarks - disable by default
+"let g:Tlist_Use_SingleClick=1  "TagList   - single click to 'goto' tag
+
+"1}}}
+" --------Command-T(x)-----------------{{{1
+
+
+""Command-T configuration
+"let g:CommandTMaxHeight=20
+
+
+
+"1}}}
+" --------TagBar(TODO?)----------------{{{1
+
+"if has("macunix")
+"  au BufRead,BufNewFile *.js let g:tagbar_ctags_bin="/usr/local/bin/jsctags"
+"endif
+
 
 "1}}}
 
@@ -1425,11 +1465,6 @@ endif
 nmap <leader>l   :LustyJuggler<CR>
 
 "1}}}
-"---------TagList----------------------{{{1
-" taglist to ,T
-nmap <leader>T   :TlistToggle<CR>
-
-
 "---------Syntastic-------------------{{{1
 
 " Map :Errors command to <leader>E
@@ -1557,7 +1592,7 @@ let g:PreciseJump_I_am_brave=1
 "set of "target keys" better suited to an AZERTY keyboard
 let g:PreciseJump_target_keys = "abcdefghijklmnopqrstuwxz123456789;',./ABCDEFGHIJKLMNOPQRSTUWXZ:\"<>?!@#$%^&*()_+é§èçàù"
 "1}}}
-" ---------(DISAB)Unimpaired Line Bubbl-{{{1
+" ---------Unimpaired Line Bubbl(x)-----{{{1
 
 
 ""FROM: http://vimcasts.org/episodes/bubbling-text/
@@ -1576,6 +1611,15 @@ let g:PreciseJump_target_keys = "abcdefghijklmnopqrstuwxz123456789;',./ABCDEFGHI
 "vmap <S-Down> ]egv
 
 "1}}}
+"---------TagList(x)-------------------{{{1
+"" taglist to ,T
+"nmap <leader>T   :TlistToggle<CR>
+
+
+"---------TagBAR-----------------------{{{1
+"" tagbar to ,t
+nmap <leader>t :TagbarToggle<CR>
+
 "---------Gist-------------------------{{{1
 
 " Open the gist in browser after post
@@ -1595,7 +1639,7 @@ nmap <leader>Gs      :Gist -e<CR>
 
   ":Gist -p
     "post whole text to gist with private.
-    "if you got empty gist list, try :Gist --abandon 
+    "if you got empty gist list, try :Gist --abandon
 
   ":Gist -a
     "post whole text to gist with anonymous.
@@ -1629,6 +1673,12 @@ nmap <leader>Gs      :Gist -e<CR>
 
   ":Gist -la
     "list gists from all.
+
+"1}}}
+"---------Repeat-----------------------{{{1
+"
+silent! call repeat#set("\<Plug>surround", v:count)
+silent! call repeat#set("\<Plug>unimpaired", v:count)
 
 "1}}}
 

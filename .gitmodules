@@ -1,9 +1,6 @@
 [submodule "bundle/vim-pathogen"]
 	path = bundle/vim-pathogen
 	url = https://github.com/tpope/vim-pathogen.git
-[submodule "bundle/tartify"]
-	path = bundle/tartify
-	url = git://github.com/peterhost/tartify.git
 [submodule "bundle/vim-fugitive"]
 	path = bundle/vim-fugitive
 	url = git://github.com/tpope/vim-fugitive.git
@@ -13,9 +10,6 @@
 [submodule "bundle/jshint.vim"]
 	path = bundle/jshint.vim
 	url = git://github.com/wookiehangover/jshint.vim.git
-[submodule "bundle/csapprox"]
-	path = bundle/csapprox
-	url = git://github.com/godlygeek/csapprox.git
 [submodule "bundle/vim-bufexplorer"]
 	path = bundle/vim-bufexplorer
 	url = git://github.com/slack/vim-bufexplorer.git
@@ -25,12 +19,6 @@
 [submodule "bundle/syntastic"]
 	path = bundle/syntastic
 	url = git://github.com/scrooloose/syntastic.git
-[submodule "bundle/vim-matchit"]
-	path = bundle/vim-matchit
-	url = git://github.com/mhz/vim-matchit.git
-[submodule "bundle/nerdcommenter"]
-	path = bundle/nerdcommenter
-	url = git://github.com/scrooloose/nerdcommenter.git
 [submodule "bundle/vim-markdown"]
 	path = bundle/vim-markdown
 	url = git://github.com/plasticboy/vim-markdown.git
@@ -79,24 +67,39 @@
 [submodule "bundle/FuzzyFinder"]
 	path = bundle/FuzzyFinder
 	url = git://github.com/vim-scripts/FuzzyFinder.git
-[submodule "bundle/PreciseJump"]
-	path = bundle/PreciseJump
-	url = git@github.com:peterhost/PreciseJump.git
-[submodule "bundle/neocomplcache"]
-	path = bundle/neocomplcache
-	url = git://github.com/Shougo/neocomplcache.git
-[submodule "bundle/SearchComplete"]
-	path = bundle/SearchComplete
-	url = git://github.com/vim-scripts/SearchComplete.git
 [submodule "bundle/vim-markdown-preview"]
 	path = bundle/vim-markdown-preview
 	url = git://github.com/peterhost/vim-markdown-preview.git
-[submodule "bundle/vim-taglist-plus"]
-	path = bundle/vim-taglist-plus
-	url = git://github.com/int3/vim-taglist-plus.git
 [submodule "bundle/snipMate"]
 	path = bundle/snipMate
 	url = git://github.com/vim-scripts/snipMate.git
 [submodule "bundle/Gist.vim"]
 	path = bundle/Gist.vim
 	url = git://github.com/vim-scripts/Gist.vim.git
+[submodule "bundle/vim-stylus"]
+	path = bundle/vim-stylus
+	url = git://github.com/wavded/vim-stylus.git
+[submodule "bundle/vim-matchit"]
+	path = bundle/vim-matchit
+	url = git://github.com/tsaleh/vim-matchit.git
+[submodule "bundle/vim-jade"]
+	path = bundle/vim-jade
+	url = git://github.com/digitaltoad/vim-jade.git
+[submodule "bundle/nerdcommenter"]
+	path = bundle/nerdcommenter
+	url = git://github.com/peterhost/nerdcommenter.git
+[submodule "bundle/PreciseJump"]
+	path = bundle/PreciseJump
+	url = git@github.com:peterhost/PreciseJump.git
+[submodule "bundle/snipmate-snippets"]
+	path = bundle/snipmate-snippets
+	url = git://github.com/scrooloose/snipmate-snippets.git
+[submodule "bundle/supertab"]
+	path = bundle/supertab
+	url = git://github.com/ervandew/supertab.git
+[submodule "bundle/tagbar"]
+	path = bundle/tagbar
+	url = git://github.com/majutsushi/tagbar.git
+[submodule "bundle/vim-repeat"]
+	path = bundle/vim-repeat
+	url = git://github.com/tpope/vim-repeat.git
