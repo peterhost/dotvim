@@ -9,3 +9,4 @@ logfile
 ftplugin/*
 !ftplugin/help.vim
 simplenoterc
+.netrwhist
