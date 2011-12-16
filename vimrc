@@ -682,19 +682,21 @@ autocmd BufWinLeave * call clearmatches()
 
 " --------Color Scheme-------------------{{{1
 
-if &t_Co >= 256 || has("gui_running")
+" in terminal choose DARK background
+if has("gui")
+  if &t_Co >= 256 || has("gui_running")
 
-  "colorscheme mustang
 
-  colorscheme solarized
-  call togglebg#map("<F5>")       " F5 toggle background
+    colorscheme solarized
+    call togglebg#map("<F5>")       " F5 toggle background
 
-  " in terminal choose DARK background
-  if !has("gui")
-    let &background = "dark"
   endif
 
+else
+  colorscheme mustang
+  let &background = "dark"
 endif
+
 
 
 
