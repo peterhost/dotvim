@@ -1,4 +1,10 @@
 #bundle/*
+
+#eclim
+eclim/*
+plugin/*
+
+#Others
 doc/*
 session/*
 sessions/*
