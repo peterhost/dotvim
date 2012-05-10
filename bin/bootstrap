@@ -24,7 +24,7 @@ echo "making new symlink"
 ln -s $pathToHere/../gvimrc.local $HOME/.gvimrc.local
 
 
-. $pathToHere/update
+. $pathToHere/myUpdateBundles
 
 if  ! which node >/dev/null 2>&1  ||  ! which jsctags >/dev/null 2>&1 ;then
 	echo "

@@ -1,0 +1,26 @@
+#!/bin/sh
+
+# go to project root
+cd ..
+
+
+printf "$__UN_%s$__NN_" "______________________________________"
+printf "$__EMG_%s$__NN_" " Pulling current origin/master for"
+printf "$__EMG_%s$__NN_" " ALL submodules"
+printf "$__UN_%s$__NN_" "______________________________________"
+
+git submodule foreach git pull origin master
+
+printf "$__UN_%s$__NN_" "______________________________________"
+printf "$__EMG_%s$__NN_" " New Commit indicating submodules"
+printf "$__EMG_%s$__NN_" " have been updated in superproject"
+printf "$__UN_%s$__NN_" "______________________________________"
+
+git add bundle/
+git commit -m "[$(whoami)] bundles : updated to latest version ($(date +%d-%m-%y))"
+
+
+printf "$__UN_%s$__NN_" "______________________________________"
+printf "$__EMG_%s$__NN_" "    FINISHED updating submodules"
+printf "$__UN_%s$__NN_" "______________________________________"
+
