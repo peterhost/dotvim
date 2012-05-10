@@ -110,7 +110,8 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: git://github.com/plasticboy/vim-markdown.git
 "Bundle: git://github.com/tpope/vim-surround.git
 "Bundle: git://github.com/tpope/vim-repeat.git
-"Bundle: git://github.com/vim-scripts/YankRing.vim.git
+"""NO MORE UPDATED : Bundle: git://github.com/vim-scripts/YankRing.vim.git
+"Bundle: git@github.com:peterhost/YankRing.vim.git
 "Bundle: git://github.com/vim-scripts/session.vim--Odding.git
 "Bundle: git://github.com/altercation/vim-colors-solarized.git
 "Bundle: git://github.com/cespare/vim-bclose.git
@@ -1509,6 +1510,15 @@ nmap <leader>Y :YRToggle<CR>
 " (https://github.com/sjbach/lusty/issues/16)
 " to resolve the issue, issue <leader>Y two times to let
 " dd & such work again
+
+"TODO: REMOVE that as soon as yankring is updated
+"IN ORDER TO SOLVE THIS ERROR :
+"Error detected while processing function <SNR>61_YRPaste:
+"line    1:
+"E121: Undefined variable: g:yankring_manual_clipboard_check
+"E15: Invalid expression: g:yankring_manual_clipboard_check == 1
+  "let g:yankring_manual_clipboard_check = 0
+
 
 "1}}}
 "---------FuzzyFinder------------------{{{1
