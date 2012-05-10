@@ -1,4 +1,4 @@
 all:install
 
 install:
-	bin/bootstrap
+	bash bin/bootstrap
