@@ -25,7 +25,7 @@ printf "$__UN_%s$__NN_\n" "______________________________________"
 
 git status
 
-if test -z $(git status | grep 'nothing to commit'); then
+if test -z "$(git status | grep 'nothing to commit')"; then
   __confirm "Do you wish to commit the updating of modules in the .vim repo ?"
   git commit -m "[$(whoami)] bundles : updated to latest version ($(date +%d-%m-%y))"
 
