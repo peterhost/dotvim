@@ -1511,15 +1511,6 @@ nmap <leader>Y :YRToggle<CR>
 " to resolve the issue, issue <leader>Y two times to let
 " dd & such work again
 
-"TODO: REMOVE that as soon as yankring is updated
-"IN ORDER TO SOLVE THIS ERROR :
-"Error detected while processing function <SNR>61_YRPaste:
-"line    1:
-"E121: Undefined variable: g:yankring_manual_clipboard_check
-"E15: Invalid expression: g:yankring_manual_clipboard_check == 1
-  "let g:yankring_manual_clipboard_check = 0
-
-
 "1}}}
 "---------FuzzyFinder------------------{{{1
 
