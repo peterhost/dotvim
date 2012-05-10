@@ -11,6 +11,14 @@ printf "$__UN_%s$__NN_\n" "______________________________________"
 git pull origin master
 
 printf "$__UN_%s$__NN_\n" "______________________________________"
+printf "$__EMG_%s$__NN_\n" " re-init & update all submodules"
+printf "$__UN_%s$__NN_\n" "______________________________________"
+
+git submodule init
+git submodule update
+
+printf "$__UN_%s$__NN_\n" "______________________________________"
+printf "$__UN_%s$__NN_\n" "______________________________________"
 printf "$__EMG_%s$__NN_\n" " Pulling current origin/master for"
 printf "$__EMG_%s$__NN_\n" " ALL submodules"
 printf "$__UN_%s$__NN_\n" "______________________________________"
