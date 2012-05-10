@@ -43,8 +43,8 @@
 	url = git://github.com/pangloss/vim-javascript.git
   ignore = dirty
 [submodule "bundle/YankRing.vim"]
-  path = bundle/YankRing.vim
-  url = git@github.com:peterhost/YankRing.vim.git
+	path = bundle/YankRing.vim
+	url = git@github.com:peterhost/YankRing.vim.git
   ignore = dirty
 [submodule "bundle/session.vim--Odding"]
 	path = bundle/session.vim--Odding
