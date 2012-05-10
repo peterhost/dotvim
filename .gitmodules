@@ -44,7 +44,7 @@
   ignore = dirty
 [submodule "bundle/YankRing.vim"]
 	path = bundle/YankRing.vim
-	url = git://github.com/vim-scripts/YankRing.vim.git
+	url = git@github.com:peterhost/YankRing.vim.git
   ignore = dirty
 [submodule "bundle/session.vim--Odding"]
 	path = bundle/session.vim--Odding
