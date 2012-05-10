@@ -11,10 +11,15 @@ printf "$__UN_%s$__NN_\n" "______________________________________"
 git pull origin master
 
 printf "$__UN_%s$__NN_\n" "______________________________________"
-printf "$__EMG_%s$__NN_\n" " re-init & update all submodules"
+printf "$__EMG_%s$__NN_\n" " re-init all submodules"
 printf "$__UN_%s$__NN_\n" "______________________________________"
 
 git submodule init
+
+printf "$__UN_%s$__NN_\n" "______________________________________"
+printf "$__EMG_%s$__NN_\n" " re-update all submodules"
+printf "$__UN_%s$__NN_\n" "______________________________________"
+
 git submodule update
 
 printf "$__UN_%s$__NN_\n" "______________________________________"
@@ -40,15 +45,16 @@ printf "$__UN_%s$__NN_\n" "______________________________________"
 git status
 
 if test -z "$(git status | grep 'nothing to commit')"; then
-  __confirm "Do you wish to commit the updating of modules in the .vim repo ?"
-  git commit -m "[$(whoami)] bundles : updated to latest version ($(date +%d-%m-%y))"
+  if __confirm "Do you wish to commit the updating of modules in the .vim repo ?"; then
+    git commit -m "[$(whoami)] bundles : updated to latest version ($(date +%d-%m-%y))"
 
 
-  if __confirm "Do you wish to push your changes to the remote branch ?"; then
-    if test -z "$(cat .git/HEAD | grep master)"; then
-      echo "Not on branch 'master' !! push to 'origin master' aborted'"
-    else
-      git push origin master
+    if __confirm "Do you wish to push your changes to the remote branch ?"; then
+      if test -z "$(cat .git/HEAD | grep master)"; then
+        echo "Not on branch 'master' !! push to 'origin master' aborted'"
+      else
+        git push origin master
+      fi
     fi
   fi
 
