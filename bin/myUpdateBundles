@@ -5,6 +5,12 @@ cd $( git rev-parse --show-toplevel)
 
 
 printf "$__UN_%s$__NN_\n" "______________________________________"
+printf "$__EMG_%s$__NN_\n" " Pulling last version of master REPO"
+printf "$__UN_%s$__NN_\n" "______________________________________"
+
+git pull origin master
+
+printf "$__UN_%s$__NN_\n" "______________________________________"
 printf "$__EMG_%s$__NN_\n" " Pulling current origin/master for"
 printf "$__EMG_%s$__NN_\n" " ALL submodules"
 printf "$__UN_%s$__NN_\n" "______________________________________"
