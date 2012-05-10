@@ -2,6 +2,36 @@
 
 pathToHere=$(cd "$(dirname "$0")"; pwd)
 
+#_____________________
+# Define som functions
+#_____________________
+
+  # CONFIRM
+  # issues a [Y/N] confirm dialog
+  # returns 0 if yes, 1 if no
+    function __confirm() {
+      #? confirm [y/n]
+      local confirm_
+      local msg=$1
+      echo -ne "${__R_}${msg}" : "${__EMR_}Are you sure ?${__R_} [Y/N]"
+      read confirm_
+      if [[ "$confirm_" =~ ^y|Y$ ]]
+      then
+        echo -ne "${__C_}->${__Y_} proceeding...\n"
+        return 0
+      else
+        echo -ne "${__R_}... ABORTED\n"
+        return 1
+      fi
+
+    }
+
+
+
+#_____________________
+# GO FOR IT !
+#_____________________
+
 # DESTRUCTIVE !
 echo "deleting .vimrc symlink"
 rm -f "$HOME/.vimrc"
@@ -45,3 +75,7 @@ if  ! which html5check >/dev/null 2>&1 ;then
          HTML5 files (syntastic's based on tidy and is broken)
 "
 fi
+
+
+
+:next
