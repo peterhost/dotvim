@@ -134,3 +134,7 @@
 	path = bundle/vim-repeat
 	url = git://github.com/tpope/vim-repeat.git
   ignore = dirty
+[submodule "bundle/tartify"]
+	path = bundle/tartify
+	url = git@github.com:peterhost/tartify.git
+  ignore = dirty
