@@ -37,10 +37,16 @@ let g:pathogen_disabled = ['']
 
 
 if !has('gui_running')
-  call add(g:pathogen_disabled, 'css-color')
+  "call add(g:pathogen_disabled, 'css-color')
   " for some reason the csscolor plugin is very slow when run on the terminal
   " but not in GVim, so disable it if no GUI is running
 endif
+
+if !has("gui_macvim")
+  "the PEEPOPEN program is a Macos specific Command-T
+  call add(g:pathogen_disabled, 'vim-peepopen')
+end
+
 
 
 "if !has('gui') || &t_Co < 256
@@ -105,8 +111,8 @@ call pathogen#runtime_append_all_bundles()
 "Bundle: git://github.com/scrooloose/syntastic.git
 "DEPREC"Bundle: git://github.com/mhz/vim-matchit.git
 "Bundle: git://github.com/tsaleh/vim-matchit.git
-"Bundle: git://github.com/peterhost/nerdcommenter.git
-"DEPREC until scss & jade fixed "Bundle: git://github.com/scrooloose/nerdcommenter.git
+""Bundle: git://github.com/scrooloose/nerdcommenter.git
+""WAS USED before scss & jade fixed  Bundle: git://github.com/peterhost/nerdcommenter.git
 "Bundle: git://github.com/plasticboy/vim-markdown.git
 "Bundle: git://github.com/tpope/vim-surround.git
 "Bundle: git://github.com/tpope/vim-repeat.git
