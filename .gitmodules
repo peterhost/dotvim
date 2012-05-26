@@ -112,7 +112,7 @@
   ignore = dirty
 [submodule "bundle/nerdcommenter"]
 	path = bundle/nerdcommenter
-	url = git://github.com/peterhost/nerdcommenter.git
+	url = git://github.com/scrooloose/nerdcommenter.git
   ignore = dirty
 [submodule "bundle/PreciseJump"]
 	path = bundle/PreciseJump
@@ -137,4 +137,8 @@
 [submodule "bundle/tartify"]
 	path = bundle/tartify
 	url = git@github.com:peterhost/tartify.git
+  ignore = dirty
+[submodule "bundle/vim-peepopen"]
+	path = bundle/vim-peepopen
+	url = git://github.com/shemerey/vim-peepopen.git
   ignore = dirty
