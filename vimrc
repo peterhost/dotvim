@@ -284,7 +284,7 @@ set noswapfile
 ":set ruler
 
 " Better centered pipe symbol for window separation in Term & CTerm Vim
-set fillchars=vert:⏐
+"set fillchars=vert:⏐
 
 
 " Awesome TAB completion for Command Mode
