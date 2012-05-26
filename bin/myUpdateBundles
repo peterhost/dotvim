@@ -1,68 +1,107 @@
 #!/bin/sh
 
-# go to project root
-cd $( git rev-parse --show-toplevel)
+
+# HELPER FUNC
+# CONFIRM
+# issues a [Y/N] confirm dialog
+# returns 0 if yes, 1 if no
+  function ___confirm() {
+    #? confirm [y/n]
+    local confirm_
+    local msg=$1
+    echo -ne "${__R_}${msg}" : "${__EMR_}Are you sure ?${__R_} [Y/N]"
+    read confirm_
+    if [[ "$confirm_" =~ ^y|Y$ ]]
+    then
+      echo  " ${__G_}-> proceeding...${__NN_}"
+      echo
+      return 0
+    else
+      echo -ne "${__R_}... ABORTED\n${__NN_}"
+      echo
+      return 1
+    fi
+
+  }
 
 
-printf "$__UN_%s$__NN_\n" "______________________________________"
-printf "$__EMG_%s$__NN_\n" " Pulling last version of master REPO"
-printf "$__UN_%s$__NN_\n" "______________________________________"
+function doyourshit(){
 
-git pull origin master
-
-printf "$__UN_%s$__NN_\n" "______________________________________"
-printf "$__EMG_%s$__NN_\n" " re-init all submodules"
-printf "$__UN_%s$__NN_\n" "______________________________________"
-
-git submodule init
-
-printf "$__UN_%s$__NN_\n" "______________________________________"
-printf "$__EMG_%s$__NN_\n" " re-update all submodules"
-printf "$__UN_%s$__NN_\n" "______________________________________"
-
-git submodule update
-
-printf "$__UN_%s$__NN_\n" "______________________________________"
-printf "$__UN_%s$__NN_\n" "______________________________________"
-printf "$__EMG_%s$__NN_\n" " Pulling current origin/master for"
-printf "$__EMG_%s$__NN_\n" " ALL submodules"
-printf "$__UN_%s$__NN_\n" "______________________________________"
-
-git submodule foreach git pull origin master
-
-printf "$__UN_%s$__NN_\n" "______________________________________"
-printf "$__EMG_%s$__NN_\n" " New Commit indicating submodules"
-printf "$__EMG_%s$__NN_\n" " have been updated in superproject"
-printf "$__UN_%s$__NN_\n" "______________________________________"
-
-git add bundle/
+  # go to project root
+  cd $( git rev-parse --show-toplevel)
 
 
-printf "$__UN_%s$__NN_\n" "______________________________________"
-printf "$__EMG_%s$__NN_\n" "    Changes to be commited"
-printf "$__UN_%s$__NN_\n" "______________________________________"
-
-git status
-
-if test -z "$(git status | grep 'nothing to commit')"; then
-  if __confirm "Do you wish to commit the updating of modules in the .vim repo ?"; then
-    git commit -m "[$(whoami)] bundles : updated to latest version ($(date +%d-%m-%y))"
+  printf "$__UN_%s$__NN_\n" "______________________________________"
+  printf "$__EMG_%s$__NN_\n" " Pulling last version of master REPO"
+  printf "$__UN_%s$__NN_\n" "______________________________________"
 
 
-    if __confirm "Do you wish to push your changes to the remote branch ?"; then
-      if test -z "$(cat .git/HEAD | grep master)"; then
-        echo "Not on branch 'master' !! push to 'origin master' aborted'"
-      else
-        git push origin master
+  #do some checks before pulling
+  [ -n "$(git ls-files --others --exclude-standard)" >/dev/null 2>&1 ] && ___confirm "there are untracked files in this repo" || return 1  #UNTRACKED FILES
+  git diff --no-ext-diff --quiet --exit-code || { echo "$__EMR_ unstaged modifications in some of your files : clean that before"; return 1; } # unstaged modifications
+  git remote -v update
+  [ "$(git rev-list origin/master..HEAD 2>/dev/null | awk 'END {print NR}')" = 0 ] || { echo "$__EMR_ We are ahead pf origin/master : push before continuing"; return 1; } #AHEAD of origin/master
+
+
+  git pull --rebase origin master
+
+  printf "$__UN_%s$__NN_\n" "______________________________________"
+  printf "$__EMG_%s$__NN_\n" " re-init all submodules"
+  printf "$__UN_%s$__NN_\n" "______________________________________"
+
+  git submodule init
+
+  printf "$__UN_%s$__NN_\n" "______________________________________"
+  printf "$__EMG_%s$__NN_\n" " re-update all submodules"
+  printf "$__UN_%s$__NN_\n" "______________________________________"
+
+  git submodule update
+
+  printf "$__UN_%s$__NN_\n" "______________________________________"
+  printf "$__UN_%s$__NN_\n" "______________________________________"
+  printf "$__EMG_%s$__NN_\n" " Pulling current origin/master for"
+  printf "$__EMG_%s$__NN_\n" " ALL submodules"
+  printf "$__UN_%s$__NN_\n" "______________________________________"
+
+  git submodule foreach git pull origin master
+
+  printf "$__UN_%s$__NN_\n" "______________________________________"
+  printf "$__EMG_%s$__NN_\n" " New Commit indicating submodules"
+  printf "$__EMG_%s$__NN_\n" " have been updated in superproject"
+  printf "$__UN_%s$__NN_\n" "______________________________________"
+
+  git add bundle/
+
+
+  printf "$__UN_%s$__NN_\n" "______________________________________"
+  printf "$__EMG_%s$__NN_\n" "    Changes to be commited"
+  printf "$__UN_%s$__NN_\n" "______________________________________"
+
+  git status
+
+  if test -z "$(git status | grep 'nothing to commit')"; then
+    if __confirm "Do you wish to commit the updating of modules in the .vim repo ?"; then
+      git commit -m "[$(whoami)] bundles : updated to latest version ($(date +%d-%m-%y))"
+
+
+      if __confirm "Do you wish to push your changes to the remote branch ?"; then
+        if test -z "$(cat .git/HEAD | grep master)"; then
+          echo "Not on branch 'master' !! push to 'origin master' aborted'"
+        else
+          git push origin master
+        fi
       fi
     fi
+
+  else
+    printf "$__EMG_%s$__NN_\n" "No changes to commit. All done"
   fi
 
-else
-  printf "$__EMG_%s$__NN_\n" "No changes to commit. All done"
-fi
+  printf "$__UN_%s$__NN_\n" "______________________________________"
+  printf "$__EMG_%s$__NN_\n" "    FINISHED updating submodules"
+  printf "$__UN_%s$__NN_\n" "______________________________________"
 
-printf "$__UN_%s$__NN_\n" "______________________________________"
-printf "$__EMG_%s$__NN_\n" "    FINISHED updating submodules"
-printf "$__UN_%s$__NN_\n" "______________________________________"
+}
 
+
+doyourshit
