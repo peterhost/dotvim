@@ -5,24 +5,36 @@
 # CONFIRM
 # issues a [Y/N] confirm dialog
 # returns 0 if yes, 1 if no
-  function ___confirm() {
-    #? confirm [y/n]
-    local confirm_
-    local msg=$1
-    echo -ne "${__R_}${msg}" : "${__EMR_}Are you sure ?${__R_} [Y/N]"
-    read confirm_
-    if [[ "$confirm_" =~ ^y|Y$ ]]
-    then
-      echo  " ${__G_}-> proceeding...${__NN_}"
-      echo
-      return 0
-    else
-      echo -ne "${__R_}... ABORTED\n${__NN_}"
-      echo
-      return 1
-    fi
+function ___confirm() {
+  #? confirm [y/n]
+  local confirm_
+  local msg=$1
+  echo -ne "${__R_}${msg}" : "${__EMR_}Are you sure ?${__R_} [Y/N]"
+  read confirm_
+  if [[ "$confirm_" =~ ^y|Y$ ]]
+  then
+    echo  " ${__G_}-> proceeding...${__NN_}"
+    echo
+    #return 0
+  else
+    echo -ne "${__R_}... ABORTED\n${__NN_}"
+    echo
+    return 1
+  fi
 
-  }
+}
+
+function errorAndExit() {
+  echo "$__EMR_
+
+  ERROR : $1
+"
+  #exit the script
+  kill -SIGINT $$
+}
+
+
+
 
 
 function doyourshit(){
@@ -35,12 +47,11 @@ function doyourshit(){
   printf "$__EMG_%s$__NN_\n" " Pulling last version of master REPO"
   printf "$__UN_%s$__NN_\n" "______________________________________"
 
-
   #do some checks before pulling
-  [ -n "$(git ls-files --others --exclude-standard)" >/dev/null 2>&1 ] && ___confirm "there are untracked files in this repo" || return 1  #UNTRACKED FILES
-  git diff --no-ext-diff --quiet --exit-code || { echo "$__EMR_ unstaged modifications in some of your files : clean that before"; return 1; } # unstaged modifications
+  [ -n "$( git ls-files --others --exclude-standard)" ] || ___confirm "there are untracked files in this repo" || errorAndExit "aborted by user"
+  git diff --no-ext-diff --quiet --exit-code || errorAndExit "$__EMR_ unstaged modifications in some of your files : clean that before"
   git remote -v update
-  [ "$(git rev-list origin/master..HEAD 2>/dev/null | awk 'END {print NR}')" = 0 ] || { echo "$__EMR_ We are ahead pf origin/master : push before continuing"; return 1; } #AHEAD of origin/master
+  [ "$(git rev-list origin/master..HEAD 2>/dev/null | awk 'END {print NR}')" = 0 ] || errorAndExit "$__EMR_ We are ahead pf origin/master : push before continuing"
 
 
   git pull --rebase origin/master
