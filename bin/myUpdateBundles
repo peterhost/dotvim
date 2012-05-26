@@ -43,7 +43,7 @@ function doyourshit(){
   [ "$(git rev-list origin/master..HEAD 2>/dev/null | awk 'END {print NR}')" = 0 ] || { echo "$__EMR_ We are ahead pf origin/master : push before continuing"; return 1; } #AHEAD of origin/master
 
 
-  git pull --rebase origin master
+  git pull --rebase origin/master
 
   printf "$__UN_%s$__NN_\n" "______________________________________"
   printf "$__EMG_%s$__NN_\n" " re-init all submodules"
