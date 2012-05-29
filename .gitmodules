@@ -94,9 +94,9 @@
 	path = bundle/snipMate
 	url = git://github.com/vim-scripts/snipMate.git
   ignore = dirty
-[submodule "bundle/snipMate_msanders"]
-	path = bundle/snipMate_msanders
-	url = git://github.com/msanders/snipmate.vim.git
+[submodule "bundle/vim-snipmate"]
+	path = bundle/vim-snipmate
+	url = git://github.com/garbas/vim-snipmate.git
   ignore = dirty
 [submodule "bundle/Gist.vim"]
 	path = bundle/Gist.vim
