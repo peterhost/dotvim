@@ -134,3 +134,7 @@
 	path = bundle/vim-peepopen
 	url = git://github.com/shemerey/vim-peepopen.git
   ignore = dirty
+[submodule "bundle/xptemplate"]
+	path = bundle/xptemplate
+	url = git://github.com/drmingdrmer/xptemplate.git
+  ignore = dirty
