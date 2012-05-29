@@ -92,9 +92,6 @@ call pathogen#helptags()
 call pathogen#runtime_append_all_bundles()
 
 
-"disable snipmate and prefer msanders version
-
-  call add(g:pathogen_disabled, 'snipMate')
 
 
 
@@ -155,14 +152,6 @@ call pathogen#runtime_append_all_bundles()
 
 " this is the latest supertab (supertab-continued on vim-script)
 "Bundle: git://github.com/ervandew/supertab.git
-"
-"
-" ..........SNIPMATE...................
-"Bundle: git://github.com/vim-scripts/snipMate.git
-"
-"" Alternate set of snippets for snipmate
-" Bundle: git://github.com/scrooloose/snipmate-snippets.git
-"" Bundle-Command: rake deploy_local
 "
 "
 " ..........MARKDOWN PREVIEW...........
@@ -875,11 +864,9 @@ let g:tartify_disabled = ['git', 'longlines', 'path', ]
 set statusline=%<%f%h%m%r%=%b\ 0x%B\ \ %l,%c%V\ %#warningmsg#%P
 
 "1}}}
-" --------snipMate---------------------{{{1
+" --------xptemplate--------------------{{{1
 
 
-"name of the default author in snippets that require it
-let g:snips_author = 'Pierre Lhoste'
 
 
 
@@ -913,7 +900,8 @@ let g:tagbar_type_javascript ="jsctags"
 "1}}}
 " --------Supertab---------------------{{{1
 
-"let supertab play well with snipmate
+"let supertab play well with other tools like snipmate, and xptemplate (?)
+"FIXME : maybe this is not needed anymore
 
 let g:SuperTabDefaultCompletionType = "context"
 
@@ -1193,7 +1181,7 @@ imap <C-l> <right>
 "    2) on *NIX (linux, macosX,...) in terminal, remap to <Nul> instead of <C-Space>
 "
 
-"WARN: abandonned I prefer to use <c-space> for snipmate instead
+"WARN: abandonned I prefer to use <c-space> for xptemplate instead
 "" map CTRL+SPACE to ESC in ALL modes
 "" (normal, visual, select, operator pending)
 "if has('unix') && !has('gui_running')
@@ -1735,11 +1723,11 @@ silent! call repeat#set("\<Plug>surround", v:count)
 silent! call repeat#set("\<Plug>unimpaired", v:count)
 
 "1}}}
-" --------snipMate---------------------{{{1
+" --------xptemplate---------------------{{{1
 
 
-" prefer 
-let g:snips_trigger_key='<c-space>'
+let g:xptemplate_key = '<Tab>'
+"let g:xptemplate_key = '<c-space>'
 
 
 "1}}}
