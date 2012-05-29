@@ -92,7 +92,9 @@ call pathogen#helptags()
 call pathogen#runtime_append_all_bundles()
 
 
+"disable snipmate and prefer msanders version
 
+  call add(g:pathogen_disabled, 'snipMate')
 
 
 
@@ -909,6 +911,16 @@ let g:tagbar_type_javascript ="jsctags"
 
 
 "1}}}
+" --------Supertab---------------------{{{1
+
+"let supertab play well with snipmate
+
+let g:SuperTabDefaultCompletionType = "context"
+
+
+
+"1}}}
+
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "                           FILES SPECIFIC CONFIGS
