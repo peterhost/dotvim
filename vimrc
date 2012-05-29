@@ -878,8 +878,8 @@ set statusline=%<%f%h%m%r%=%b\ 0x%B\ \ %l,%c%V\ %#warningmsg#%P
 " --------snipMate---------------------{{{1
 
 
-"use alternate snippets (scroolooze's)
-"let g:snipp
+"name of the default author in snippets that require it
+let g:snips_author = 'Pierre Lhoste'
 
 
 
@@ -1193,19 +1193,20 @@ imap <C-l> <right>
 "    2) on *NIX (linux, macosX,...) in terminal, remap to <Nul> instead of <C-Space>
 "
 
-" map CTRL+SPACE to ESC in ALL modes
-" (normal, visual, select, operator pending)
-if has('unix') && !has('gui_running')
-  imap <Nul> <Esc>
-  vmap <Nul> <Esc>
-  nmap <Nul> <Esc>
-  cnoremap <Nul> <C-c>  "hacky, right ?
-else
-  imap <C-space> <Esc>
-  vmap <C-space> <Esc>
-  nmap <C-Space> <ESC>
-  cmap <C-Space> <C-c>
-endif
+"WARN: abandonned I prefer to use <c-space> for snipmate instead
+"" map CTRL+SPACE to ESC in ALL modes
+"" (normal, visual, select, operator pending)
+"if has('unix') && !has('gui_running')
+"  imap <Nul> <Esc>
+"  vmap <Nul> <Esc>
+"  nmap <Nul> <Esc>
+"  cnoremap <Nul> <C-c>  "hacky, right ?
+"else
+"  imap <C-space> <Esc>
+"  vmap <C-space> <Esc>
+"  nmap <C-Space> <ESC>
+"  cmap <C-Space> <C-c>
+"endif
 
 " remap jf to ESC in modes that don't use the 'j' key for navigation
 " (insert, command, operator-pending)
@@ -1734,7 +1735,14 @@ silent! call repeat#set("\<Plug>surround", v:count)
 silent! call repeat#set("\<Plug>unimpaired", v:count)
 
 "1}}}
+" --------snipMate---------------------{{{1
 
+
+" prefer 
+let g:snips_trigger_key='<c-space>'
+
+
+"1}}}
 
 "##############################################################################
 "                       --ADDITIONAL RC files--
