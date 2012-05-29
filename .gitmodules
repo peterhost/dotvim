@@ -90,10 +90,6 @@
 	path = bundle/vim-markdown-preview
 	url = git://github.com/peterhost/vim-markdown-preview.git
   ignore = dirty
-[submodule "bundle/snipMate"]
-	path = bundle/snipMate
-	url = git://github.com/vim-scripts/snipMate.git
-  ignore = dirty
 [submodule "bundle/vim-snipmate"]
 	path = bundle/vim-snipmate
 	url = git://github.com/garbas/vim-snipmate.git
