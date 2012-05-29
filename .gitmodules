@@ -142,3 +142,9 @@
 	path = bundle/vim-peepopen
 	url = git://github.com/shemerey/vim-peepopen.git
   ignore = dirty
+[submodule "bundle/vim-addon-mw-utils"]
+	path = bundle/vim-addon-mw-utils
+	url = git://github.com/MarcWeber/vim-addon-mw-utils.git
+[submodule "bundle/tlib_vim"]
+	path = bundle/tlib_vim
+	url = git://github.com/tomtom/tlib_vim.git
