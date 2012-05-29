@@ -90,10 +90,6 @@
 	path = bundle/vim-markdown-preview
 	url = git://github.com/peterhost/vim-markdown-preview.git
   ignore = dirty
-[submodule "bundle/vim-snipmate"]
-	path = bundle/vim-snipmate
-	url = git://github.com/garbas/vim-snipmate.git
-  ignore = dirty
 [submodule "bundle/Gist.vim"]
 	path = bundle/Gist.vim
 	url = git://github.com/vim-scripts/Gist.vim.git
@@ -137,16 +133,4 @@
 [submodule "bundle/vim-peepopen"]
 	path = bundle/vim-peepopen
 	url = git://github.com/shemerey/vim-peepopen.git
-  ignore = dirty
-[submodule "bundle/vim-addon-mw-utils"]
-	path = bundle/vim-addon-mw-utils
-	url = git://github.com/MarcWeber/vim-addon-mw-utils.git
-  ignore = dirty
-[submodule "bundle/tlib_vim"]
-	path = bundle/tlib_vim
-	url = git://github.com/tomtom/tlib_vim.git
-  ignore = dirty
-[submodule "bundle/snipmate-snippets"]
-	path = bundle/snipmate-snippets
-	url = git://github.com/honza/snipmate-snippets.git
   ignore = dirty
