@@ -506,6 +506,25 @@ set pastetoggle=<F10>
 
 "1}}}
 
+" --------PHP autoindent----------------{{{1
+" autoindent PHP code (included in vim 703,
+" otherwise, try this module :
+" https://github.com/2072/PHP-Indenting-for-VIm
+"
+if v:version >= '703'
+  let g:PHP_autoformatcomment = 0
+  let g:PHP_default_indenting = 1
+  "let g:PHP_outdentphpescape = 0
+endif
+
+"1}}}
+" --------re-indent anyfile------------{{{1
+" map <F8> to reindent file
+noremap <F8> mzgg=G`z
+inoremap <F8> <ESC>mzgg=G`z<Insert>
+
+"1}}}
+
 
 
 "##############################################################################
@@ -684,6 +703,13 @@ endif
 autocmd BufWinLeave * call clearmatches()
 
 
+
+"1}}}
+" --------Special addit keywords (TODO,...)--{{{1
+"
+"
+syn match   myTodo   contained   "\<\(TODO\|FIXME\|REMARK\|WARNING\|REMEMBER\):"
+hi def link myTodo Todo
 
 "1}}}
 
@@ -877,6 +903,9 @@ set statusline=%<%f%h%m%r%=%b\ 0x%B\ \ %l,%c%V\ %#warningmsg#%P
 "if has("macunix")
 "  au BufRead,BufNewFile *.js let g:tagbar_ctags_bin="/usr/local/bin/jsctags"
 "endif
+
+let g:tagbar_type_javascript ="jsctags"
+
 
 
 "1}}}
@@ -1546,13 +1575,13 @@ let g:fuf_keyOpenTabpage = '<C-l>'
 "1}}}
 "---------vim-session------------------{{{1
 
-nmap <leader>ws       :SaveSession
+nmap <leader>ws       :SaveSession 
 
-nmap <leader>wo       :OpenSession
-nmap <leader>ww       :OpenSession
+nmap <leader>wo       :OpenSession 
+nmap <leader>ww       :OpenSession 
 nmap <leader>wl       :OpenSession<CR>
 nmap <leader>wx       :CloseSession<CR>
-nmap <leader>wd       :DeleteSession
+nmap <leader>wd       :DeleteSession 
 nmap <leader>wv       :ViewSession<CR>
 nmap <leader>wr       :RestartVim<CR>
 
@@ -1760,7 +1789,7 @@ endif
 " -------MACOS KeyRemap4Macbook--------
 "
 " EJECT     -> forward delete
-" CAPS LOCK -> ESC
+" CAPS LOCK -> LEFT CTRL
 "
 "1}}}
 " -------- MISC------------------------{{{1
