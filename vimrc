@@ -412,6 +412,14 @@ let g:sh_fold_enabled=7
 nnoremap <leader><C-space> Vatzf
 
 "1}}}
+" --------XML--------------------------{{{1
+
+" enable html tag folding with ,f
+let g:xml_syntax_folding=1
+au FileType xml setlocal foldmethod=syntax
+
+"1}}}
+
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
