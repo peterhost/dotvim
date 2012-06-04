@@ -1734,7 +1734,7 @@ silent! call repeat#set("\<Plug>unimpaired", v:count)
 " --------xptemplate---------------------{{{1
 
 
-let g:xptemplate_key = '<Tab>'
+let g:xptemplate_key = '<s-Tab>'
 "let g:xptemplate_key = '<c-space>'
 
 
