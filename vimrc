@@ -1566,7 +1566,7 @@ nmap <leader>E  :Errors<CR>
 
 "1}}}
 "---------NERDTree--------------------{{{1
-map <leader><C-t> :execute 'NERDTreeToggle ' . getcwd()<CR>
+map <leader>t :execute 'NERDTreeToggle ' . getcwd()<CR>
 
 "1}}}
 "---------FuGITive---------------------{{{1
@@ -1712,7 +1712,7 @@ let g:PreciseJump_target_keys = "abcdefghijklmnopqrstuwxz123456789;',./ABCDEFGHI
 
 "---------TagBAR-----------------------{{{1
 "" tagbar to ,t
-nmap <leader>t :TagbarToggle<CR>
+nmap <leader><C-t> :TagbarToggle<CR>
 
 "---------Gist-------------------------{{{1
 
