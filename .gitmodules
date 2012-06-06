@@ -138,3 +138,6 @@
 	path = bundle/xptemplate
 	url = git://github.com/drmingdrmer/xptemplate.git
   ignore = dirty
+[submodule "bundle/nerdtree"]
+	path = bundle/nerdtree
+	url = git://github.com/scrooloose/nerdtree.git
