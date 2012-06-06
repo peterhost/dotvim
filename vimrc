@@ -419,8 +419,21 @@ let g:xml_syntax_folding=1
 au FileType xml setlocal foldmethod=syntax
 
 "1}}}
+" --------Tabulation name&option-------{{{1
+if version >= 700
+    "set showtabline to show when more than one tab
+    set showtabline=1
+    "set tab labels to show at most 12 characters
+    "set guitablabel=%-0.12t%M
+endif
 
+" don't show the toolbar in the GUI (only the menu)
+set guioptions-=T
 
+" don't show tear-off menus
+"set guioptions-=t
+
+"1}}}
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "                               SPELLCHECK
@@ -1493,6 +1506,37 @@ map <S-Enter> O<ESC> " awesome, inserts new line without going into insert mode
 map ,5 :!html5check %<CR>
 
 "1}}}
+"--------Create TMP buffer-tab IDfile--{{{1
+"
+
+function! g:tartify_list(arg)
+  "if match(a:arg , 'plug|plugin|plugins')
+    ""for f in split(glob('/Users/plhoste/.vim/bundle/tartify/*' ), '\n')
+    "for f in split(glob(s:tart_pluginDir . "*"), '\n')
+      "if s:production == 0
+        "call Decho(f)
+      "endif
+    "endfor
+    ""let l:dirlist = get(s:tart_pluginDir)
+    ""let l:dirlist = split(glob("s:tart_pluginDir/*"), '\n')
+    ""call Decho("Dir contains\n" .  l:dirlist )
+  "else
+    "if s:production == 0
+      "call Decho("unknown arg for g:tart_pluginDir()")
+    "endif
+  "endif
+
+
+
+endfunction
+
+
+
+
+map ,NN :!createIDfile %<CR>
+
+"1}}}
+
 
 "------------------------------------------------------------------------------
 "                           PLUGINS
