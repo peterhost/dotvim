@@ -110,10 +110,6 @@
 	path = bundle/nerdcommenter
 	url = git://github.com/scrooloose/nerdcommenter.git
   ignore = dirty
-[submodule "bundle/PreciseJump"]
-	path = bundle/PreciseJump
-	url = git@github.com:peterhost/PreciseJump.git
-  ignore = dirty
 [submodule "bundle/supertab"]
 	path = bundle/supertab
 	url = git://github.com/ervandew/supertab.git
