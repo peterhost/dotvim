@@ -153,3 +153,4 @@
 [submodule "bundle/doxygen-support.vim"]
 	path = bundle/doxygen-support.vim
 	url = git://github.com/vim-scripts/doxygen-support.vim.git
+  ignore = dirty
