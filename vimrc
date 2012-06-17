@@ -530,6 +530,35 @@ if v:version >= '703'
 endif
 
 "1}}}
+"--------JSON-autoindent-------------{{{1
+
+" This will only work with the "yajl" package installed (MAcos brew, or linux)
+" We first test for its existence
+"
+let __shellcmd = 'which json_reformat'
+let __output=system(__shellcmd)
+if !v:shell_error
+  autocmd BufNewFile,BufRead *.json set equalprg=json_reformat
+endif
+
+
+
+"}}}1
+"--------XML-autoindent--------------{{{1
+
+" This will only work with the "xml-fmt" tool from  package "xml-coreutil"
+" installed (MAcos brew, or linux)
+" We first test for its existence
+"
+let __shellcmd = 'which xml-fmt'
+let __output=system(__shellcmd)
+if !v:shell_error
+  autocmd BufNewFile,BufRead *.xml set equalprg=xml-fmt
+endif
+
+
+
+"}}}1
 " --------re-indent anyfile------------{{{1
 " map <F8> to reindent file
 noremap <F8> mzgg=G`z
@@ -717,13 +746,6 @@ autocmd BufWinLeave * call clearmatches()
 
 
 "1}}}
-" --------Special addit keywords (TODO,...)--{{{1
-"
-"
-syn match   myTodo   contained   "\<\(TODO\|FIXME\|REMARK\|WARNING\|REMEMBER\):"
-hi def link myTodo Todo
-
-"1}}}
 
 " --------Color Scheme-------------------{{{1
 
@@ -776,6 +798,21 @@ if &t_Co > 2 || has("gui_running")
   "doesn't reset user defined highlights
   "syntax enable
 endif
+
+
+"1}}}
+" --------Special addit keywords (TODO,...)--{{{1
+"
+"
+
+"WORKS NOT
+"syn match   myTodo   contained   "\<\(TODO\|FIXME\|REMARK\|WARNING\|REMEMBER\):"
+"hi def link myTodo Todo
+
+" WORKS(sometimes) (http://superuser.com/questions/110054/custom-vim-highlighting)
+highlight myHighlight1 guifg=red guibg=green
+"syntax match myHighlight1 /WARN/
+syntax match myHighlight1 /.*WARN.*/
 
 
 "1}}}
@@ -1222,6 +1259,9 @@ imap <C-l> <right>
 imap jf <C-c>
 cmap jf <C-c>
 vmap jf <C-c>
+imap fj <C-c>
+cmap fj <C-c>
+vmap fj <C-c>
 
 "1}}}
 "--------SEARCH------------------------{{{1
@@ -1628,13 +1668,13 @@ let g:fuf_keyOpenTabpage = '<C-l>'
 "1}}}
 "---------vim-session------------------{{{1
 
-nmap <leader>ws       :SaveSession 
+nmap <leader>ws       :SaveSession
 
-nmap <leader>wo       :OpenSession 
-nmap <leader>ww       :OpenSession 
+nmap <leader>wo       :OpenSession
+nmap <leader>ww       :OpenSession
 nmap <leader>wl       :OpenSession<CR>
 nmap <leader>wx       :CloseSession<CR>
-nmap <leader>wd       :DeleteSession 
+nmap <leader>wd       :DeleteSession
 nmap <leader>wv       :ViewSession<CR>
 nmap <leader>wr       :RestartVim<CR>
 
@@ -1784,6 +1824,61 @@ let g:xptemplate_key = '<s-Tab>'
 
 "1}}}
 
+
+
+"------------------------------------------------------------------------------
+"                    MACOS SPECIFIC APPS
+"------------------------------------------------------------------------------
+
+" --------Marked(MD preview)-----------{{{1
+
+if has("macunix")
+  :nnoremap <leader>P :silent !open -a Marked.app '%:p'<cr>
+endif
+
+
+
+
+"1}}}
+
+
+"------------------------------------------------------------------------------
+"                    OTHER OS SPECIFIC APPS
+"------------------------------------------------------------------------------
+
+"--------GOOGLE CLosure Linting--{{{1
+"
+
+
+
+function! AutocmdJS()
+
+  " javascript
+  nnoremap ,jsl :!gjslint --custom_jsdoc_tags 'xtype,event,singleton' %<CR>
+  nnoremap ,jsf :!fixjsstyle --custom_jsdoc_tags 'xtype,event,singleton' %<CR>
+  :command! FJS :call FixJS()
+
+endf
+
+
+
+" Let Google Linter autofix the js errors in the current buffer
+function! FixJS()
+  setlocal autoread
+  execute('silent !fixjsstyle --strict --nojsdoc %')
+  execute(retab)
+  "execute('silent !fixjsstyle --strict --nojsdoc %')
+endfunction
+
+
+if has("autocmd")
+  au filetype javascript call AutocmdJS()
+endif
+
+
+
+"1}}}
+
 "##############################################################################
 "                       --ADDITIONAL RC files--
 "##############################################################################
@@ -1810,6 +1905,8 @@ endif
 
 
 "1}}}
+
+
 
 "##############################################################################
 "                               --MEMO--
