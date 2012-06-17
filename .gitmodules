@@ -150,3 +150,6 @@
 	path = bundle/FencView
 	url = git://github.com/vim-scripts/FencView.vim.git
   ignore = dirty
+[submodule "bundle/doxygen-support.vim"]
+	path = bundle/doxygen-support.vim
+	url = git://github.com/vim-scripts/doxygen-support.vim.git
