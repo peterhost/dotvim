@@ -146,3 +146,7 @@
 	path = bundle/tabular
 	url = git://github.com/godlygeek/tabular.git
   ignore = dirty
+[submodule "bundle/FencView"]
+	path = bundle/FencView
+	url = git://github.com/vim-scripts/FencView.vim.git
+  ignore = dirty
