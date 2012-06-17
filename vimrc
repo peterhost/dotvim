@@ -35,6 +35,19 @@ runtime bundle/vim-pathogen/autoload/pathogen.vim
 let g:pathogen_disabled = ['']
 "let g:pathogen_disabled = ['Decho', 'svndiff', 'ManPageView', 'vim-blcose', 'SearchComplete', 'supertab', 'vim-fugitive', 'ShowTabs', 'vim-colors-solarized' ]
 
+"-------------------------------------
+"              UNUSED
+"
+"-------------------------------------
+
+
+" I use `tabular' for the moment
+call add(g:pathogen_disabled, 'vim-align')
+
+"-------------------------------------
+"        CONDITIONAL LOADING
+"
+"-------------------------------------
 
 if !has('gui_running')
   "call add(g:pathogen_disabled, 'css-color')
@@ -966,6 +979,41 @@ let g:SuperTabDefaultCompletionType = "context"
 
 
 "1}}}
+" --------Tabularize------------------{{{1
+"
+"let tabularize automatically tablularize "|" delimited arrays (markdown,
+"tests,...) in INSERT MODE !
+"
+"SRC : tpope : https://gist.github.com/287147
+"VIMCAST : http://vimcasts.org/episodes/aligning-text-with-tabular-vim/
+"
+
+inoremap <silent> <Bar>   <Bar><Esc>:call <SID>align()<CR>a
+
+function! s:align()
+  let p = '^\s*|\s.*\s|\s*$'
+  if exists(':Tabularize') && getline('.') =~# '^\s*|' && (getline(line('.')-1) =~# p || getline(line('.')+1) =~# p)
+    let column = strlen(substitute(getline('.')[0:col('.')],'[^|]','','g'))
+    let position = strlen(matchstr(getline('.')[0:col('.')],'.*|\s*\zs.*'))
+    Tabularize/|/l1
+    normal! 0
+    call search(repeat('[^|]*|',column).'\s\{-\}'.repeat('.',position),'ce',line('.'))
+  endif
+endfunction
+
+
+"1}}}
+" --------FencView (encoding)---------{{{1
+"
+" Great ENCODING TOOL
+"
+let g:fencview_autodetect=1
+let g:fencview_auto_patterns='*.txt,*.js,*.css,*.c,*.cpp,*.h,*.java,*.cs,*.htm{l\=}'
+let g:fencview_checklines=20
+" couldn't compile it on macos
+"let $FENCVIEW_TELLENC='tellenc'
+
+"1}}}
 
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -1815,7 +1863,7 @@ silent! call repeat#set("\<Plug>surround", v:count)
 silent! call repeat#set("\<Plug>unimpaired", v:count)
 
 "1}}}
-" --------xptemplate---------------------{{{1
+" ---------xptemplate-----------------{{{1
 
 
 let g:xptemplate_key = '<s-Tab>'
@@ -1823,7 +1871,21 @@ let g:xptemplate_key = '<s-Tab>'
 
 
 "1}}}
+" ---------FencView (encoding)--------{{{1
+"
+" Great ENCODING TOOL
+"
 
+" Open the ENCODING CHOOSER menu
+nnoremap <leader><C-e>   :FencView<CR>
+"1}}}
+" ---------TABULAR (text align)-------{{{1
+"
+" Just a shortcut
+"
+
+nnoremap <leader>T   :Tabularize /
+"1}}}
 
 
 "------------------------------------------------------------------------------
