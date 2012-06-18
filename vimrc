@@ -11,11 +11,11 @@
 
 
 "##############################################################################
-"                               PATHOGEN
+"                               PATHOGEN/VUNDLE
 "##############################################################################
 
 
-
+" ---Pathogen / Vundle INITIALISATION-{{{1
 " This must be first, because it changes other options as side effect
 set nocompatible
 
@@ -23,12 +23,17 @@ set nocompatible
 "" see http://www.adamlowe.me/2009/12/vim-destroys-all-other-rails-editors.html
 filetype off
 
-
-" ----- Load/Unload plugins RULES -----{{{1
-
-
+"~~~ PATHOGEN ~~~
 runtime bundle/vim-pathogen/autoload/pathogen.vim
-" Bundle: tpope/vim-pathogen
+
+""~~~ VUNDLE ~~~
+"set rtp+=~/.vim/bundle/vundle/
+"call vundle#rc()
+
+"1}}}
+" ------Load/Unload plugins RULES -----{{{1
+
+
 
 " CUSTOM logic
 " To disable a plugin, add it's bundle name to the following list
@@ -43,6 +48,7 @@ let g:pathogen_disabled = ['']
 
 " I use `tabular' for the moment
 call add(g:pathogen_disabled, 'vim-align')
+call add(g:pathogen_disabled, 'tartify')
 
 "-------------------------------------
 "        CONDITIONAL LOADING
@@ -70,6 +76,7 @@ end
 
 if  !has('ruby')
   call add(g:pathogen_disabled, 'LustyJuggler')
+  call add(g:pathogen_disabled, 'lusty-explorer')
   call add(g:pathogen_disabled, 'command-t')
   " All those need ruby support
 endif
@@ -99,128 +106,33 @@ if !has("signs")
 endif
 
 
+
+
+
+
+"1}}}
+" ---Pathogen / Vundle POST-INIT------{{{1
+
+"~~~ PATHOGEN ~~~
 " It is essential that these lines are called before enabling filetype detection
 call pathogen#infect()
 call pathogen#helptags()
 call pathogen#runtime_append_all_bundles()
 
-
-
+""~~~ VUNDLE ~~~
+"filetype plugin indent on     " required!
+" "
+" " Brief help
+" " :BundleList          - list configured bundles
+" " :BundleInstall(!)    - install(update) bundles
+" " :BundleSearch(!) foo - search(or refresh cache first) for foo
+" " :BundleClean(!)      - confirm(or auto-approve) removal of unused bundles
+" "
+" " see :h vundle for more details or wiki for FAQ
+" " NOTE: comments after Bundle command are not allowed..
 
 
 "1}}}
-"------Pathogen-BUNDLES---------------{{{1
-"
-""Was : Static: tartify
-""Bundle: git://github.com/peterhost/tartify.git
-"Bundle: git://github.com/tpope/vim-fugitive.git
-"Bundle: git://github.com/taq/vim-git-branch-info.git
-"Bundle: git://github.com/wookiehangover/jshint.vim.git
-""Bundle-command: rake
-""Bundle: git://github.com/godlygeek/csapprox.git
-"Bundle: git://github.com/slack/vim-bufexplorer.git
-"Bundle: git://github.com/vim-scripts/LustyJuggler.git
-"Bundle: git://github.com/scrooloose/syntastic.git
-"DEPREC"Bundle: git://github.com/mhz/vim-matchit.git
-"Bundle: git://github.com/tsaleh/vim-matchit.git
-""Bundle: git://github.com/scrooloose/nerdcommenter.git
-""WAS USED before scss & jade fixed  Bundle: git://github.com/peterhost/nerdcommenter.git
-"Bundle: git://github.com/plasticboy/vim-markdown.git
-"Bundle: git://github.com/tpope/vim-surround.git
-"Bundle: git://github.com/tpope/vim-repeat.git
-"""NO MORE UPDATED : Bundle: git://github.com/vim-scripts/YankRing.vim.git
-"Bundle: git@github.com:peterhost/YankRing.vim.git
-"Bundle: git://github.com/vim-scripts/session.vim--Odding.git
-"Bundle: git://github.com/altercation/vim-colors-solarized.git
-"Bundle: git://github.com/cespare/vim-bclose.git
-"Bundle: git://github.com/vim-scripts/Decho.git
-"Bundle: git://github.com/tpope/vim-unimpaired.git
-"Bundle: git://github.com/tpope/vim-git.git
-"(fuzzyFinder depends on L9)
-"Bundle: git://github.com/vim-scripts/L9.git
-"Bundle: git://github.com/vim-scripts/FuzzyFinder.git
-"
-" ..........SYNTAXES...................
-"Bundle: git://github.com/cakebaker/scss-syntax.vim.git
-"Bundle: git://github.com/digitaltoad/vim-jade.git
-"Bundle: git://github.com/wavded/vim-stylus.git
-"Bundle: git://github.com/othree/html5-syntax.vim.git
-"Bundle: git://github.com/pangloss/vim-javascript.git
-"Bundle: git://github.com/skammer/vim-css-color.git
-"
-" ..........PRECISEJUMP ...............
-" Make this one static untill pull request is resolved
-" https://github.com/vim-scripts/PreciseJump/pull/1
-" was Bundle: git://github.com/vim-scripts/PreciseJump.git
-" was Static: PreciseJump
-" EDIT : use my fork instead
-"Bundle: git@github.com:peterhost/PreciseJump.git
-"
-"
-" ..........COMPLETION ................
-"" Comprehnsive auto-completion system (does ALL)
-""Bundle: git://github.com/Shougo/neocomplcache.git
-
-""Bundle: git://github.com/vim-scripts/SearchComplete.git
-
-" this is the latest supertab (supertab-continued on vim-script)
-"Bundle: git://github.com/ervandew/supertab.git
-"
-"
-" ..........MARKDOWN PREVIEW...........
-" Best is markdown-preview, now called hammer. Only, I can't get hammer to
-" work, so in the meantim, let's just go with markdown-preview (cloned repo,
-" the original one does not exist anymore)
-""Bundle: git://github.com/robgleeson/hammer.vim.git
-
-"Bundle: git://github.com/peterhost/vim-markdown-preview.git
-
-" This one works too, but has pbs with utf8
-""Bundle: git://github.com/greyblake/vim-preview.git
-"
-"
-" ..........TAGLIST.PLUS................
-"  for JS goodness, you also need node.js & jsdoctor
-"  installed on your system (jsdoctor = jsctags)
-""Bundle: git://github.com/int3/vim-taglist-plus.git
-"
-"NOW USING TAGBAR
-"Bundle: git://github.com/majutsushi/tagbar.git
-
-" ----------NOT SURE-------------------
-"
-""Bundle: git://github.com/vim-scripts/AutoComplPop.git
-""Bundle: git://github.com/vim-scripts/upAndDown.git
-"Bundle: git://github.com/vim-scripts/Gist.vim.git
-
-" ----------MANUAL-INSTALL-------------
-
-" --------HAVE TO TRY IT SOON!!--------
-
-" --------CANT-GET-IT-TO-WORK----------
-
-" ------(NICE BUT PROBLEMATIC)---------
-
-""Bundle: git://github.com/Raimondi/delimitMate.git
-""Bundle: git://github.com/int3/vim-extradite.git           "extends fugitive
-
-" ----------(NOT NEEDED)---------------
-"
-""Bundle: git://github.com/vim-scripts/ShowMarks.git
-
-""Bundle: git://github.com/vim-scripts/Gundo.git
-""Bundle: git://github.com/scrooloose/nerdtree
-""Bundle: git://github.com/vim-scripts/Conque-Shell.git
-""Bundle: git://github.com/peterhost/svndiff.git
-
-"" ........AUTOALIGN SUITE.............
-""Bundle: git://github.com/vim-scripts/Align.git
-""Bundle: git://github.com/vim-scripts/AutoAlign.git
-
-"1}}}
-
-
-
 
 
 
@@ -229,7 +141,7 @@ call pathogen#runtime_append_all_bundles()
 "##############################################################################
 
 
-"{{{1
+" --------GENERAL SETTINGS -------------{{{1
 
 " UTF8 by default
 set encoding=utf-8
@@ -304,14 +216,38 @@ set formatoptions+=croql
 " --------GUI FONT & size -------------{{{1
 
 if has("gui")
-  "
-  " Default FONT
-  "
-  set guifont=Century\ Schoolbook\ Monospace\ BT:h14
-  set guifont=set guifont=DejaVu\ Sans\ Mono:h11
-  set guifont=Menlo\ Regular:h11
-  nnoremap <silent> <leader>+ :silent! set guifont=Century\ Schoolbook\ Monospace\ BT:h14<CR>
-  nnoremap <silent> <leader>_ :silent! set guifont=DejaVu\ Sans\ Mono:h11<CR>
+  if has("gui_macvim")
+
+    " Default FONT
+
+    "set guifont=Century\ Schoolbook\ Monospace\ BT:h14
+    "set guifont=set guifont=DejaVu\ Sans\ Mono:h11
+    set guifont=Menlo\ Regular-Powerline:h11
+    "set guifont=Nitti\ Normal:h12
+    nnoremap <silent> <leader>1 :silent! set guifont=Century\ Schoolbook\ Monospace\ BT-Powerline:h14<CR>
+    nnoremap <silent> <leader>2 :silent! set guifont=DejaVu\ Sans\ Mono-Powerline:h11<CR>
+    nnoremap <silent> <leader>3 :silent! set guifont=Menlo\ Regular-Powerline:h11<CR>
+    nnoremap <silent> <leader>6 :silent! set guifont=Nitti\ Light-Powerline:h12<CR>
+    nnoremap <silent> <leader>7 :silent! set guifont=Nitti\ Normal-Powerline:h12<CR>
+    nnoremap <silent> <leader>8 :silent! set guifont=Nitti\ Bold-Powerline:h12<CR>
+
+  else
+
+    " Default FONT
+
+    "set guifont=Century\ Schoolbook\ Monospace\ BT:h14
+    "set guifont=set guifont=DejaVu\ Sans\ Mono:h11
+    set guifont=Menlo\ Regular:h11
+    "set guifont=Nitti\ Normal:h12
+    nnoremap <silent> <leader>1 :silent! set guifont=Century\ Schoolbook\ Monospace\ BT:h14<CR>
+    nnoremap <silent> <leader>2 :silent! set guifont=DejaVu\ Sans\ Mono:h11<CR>
+    nnoremap <silent> <leader>3 :silent! set guifont=Menlo\ Regular:h11<CR>
+    nnoremap <silent> <leader>6 :silent! set guifont=Nitti\ Light:h12<CR>
+    nnoremap <silent> <leader>7 :silent! set guifont=Nitti\ Normal:h12<CR>
+    nnoremap <silent> <leader>8 :silent! set guifont=Nitti\ Bold:h12<CR>
+
+  endif
+
 
   ""
   "" FONTSIZE changer
@@ -460,6 +396,7 @@ set nospell
 
 " --------Expantab---------------------{{{1
 " filetype detection, plugin and indent : ON
+
 filetype plugin indent on
 
 
@@ -764,16 +701,27 @@ autocmd BufWinLeave * call clearmatches()
 
 " in terminal choose DARK background
 if has("gui")
-  if &t_Co >= 256 || has("gui_running")
+  if &t_Co >= 256 && has("gui_running")
 
 
     colorscheme solarized
     call togglebg#map("<F5>")       " F5 toggle background
 
+    nnoremap <silent> <leader>@& :silent! colorscheme solarized   <CR> " @ 1
+    nnoremap <silent> <leader>@é :silent! colorscheme mustang     <CR> " @ 2
+    nnoremap <silent> <leader>@" :silent! colorscheme vibrantink2 <CR> " @ 3
+    nnoremap <silent> <leader>@' :silent! colorscheme jellybeans  <CR> " @ 4
+    nnoremap <silent> <leader>@( :silent! colorscheme smyck       <CR> " @ 5
+    nnoremap <silent> <leader>@§ :silent! colorscheme mayansmoke  <CR> " @ 6
+    nnoremap <silent> <leader>@è :silent! colorscheme proton      <CR> " @ 7
+    nnoremap <silent> <leader>@! :silent! colorscheme pyte        <CR> " @ 8
+    nnoremap <silent> <leader>@ç :silent! colorscheme louver      <CR> " @ 9
+
   endif
 
 else
-  colorscheme mustang
+  "colorscheme mustang
+  colorscheme smyck
   let &background = "dark"
 endif
 
@@ -1014,7 +962,23 @@ let g:fencview_checklines=20
 "let $FENCVIEW_TELLENC='tellenc'
 
 "1}}}
+" --------Powerline (STATUSBAR)-------{{{1
+"
+" Great alternative to TARTIFY
+"
+"Fancy needs patched fonts installed
+if has("gui_macvim")
+  let g:Powerline_symbols = 'fancy'
+else
+  let g:Powerline_symbols = 'unicode'
+endif
 
+"let g:Powerline_theme = 'skwp'
+set laststatus=2   " Always show the statusline
+"1}}}
+
+" add trailing whitespace info
+call Pl#Theme#InsertSegment('ws_marker', 'after', 'lineinfo')
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "                           FILES SPECIFIC CONFIGS
@@ -1641,10 +1605,26 @@ endif
 if hasmapto(":LustyJuggler")
   silent! nunmap <leader>lj
 endif
-nmap <leader>l   :LustyJuggler<CR>
+nmap <leader>ll   :LustyJuggler<CR>
 
 "" suppress LustyJuggler ruby warning
 "let g:LustyJugglerSuppressRubyWarning = 1
+
+"1}}}
+"---------LustyExplorer------------------{{{1
+"
+"nothing to do. Mappings are :
+"
+"  <Leader>lf  - Opens filesystem explorer.
+"  <Leader>lr  - Opens filesystem explorer at the directory of the current file.
+"  <Leader>lb  - Opens buffer explorer.
+"  <Leader>lg  - Opens buffer grep.
+"
+"1}}}
+"---------Syntastic-------------------{{{1
+
+" Map :Errors command to <leader>E
+nmap <leader>E  :Errors<CR>
 
 "1}}}
 "---------Syntastic-------------------{{{1
@@ -1800,7 +1780,8 @@ let g:PreciseJump_target_keys = "abcdefghijklmnopqrstuwxz123456789;',./ABCDEFGHI
 
 "---------TagBAR-----------------------{{{1
 "" tagbar to ,t
-nmap <leader><C-t> :TagbarToggle<CR>
+nmap <leader>T :TagbarToggle<CR>
+"nmap <leader><C-t> :TagbarToggle<CR>
 
 "---------Gist-------------------------{{{1
 
@@ -1884,7 +1865,7 @@ nnoremap <leader><C-e>   :FencView<CR>
 " Just a shortcut
 "
 
-nnoremap <leader>T   :Tabularize /
+nnoremap <leader><C-t>   :Tabularize /
 "1}}}
 
 

@@ -56,6 +56,19 @@ ln -s $pathToHere/../gvimrc.local $HOME/.gvimrc.local
 
 . $pathToHere/myUpdateBundles
 
+#_____________________________
+# INSTALL FONTS for PowerLine
+#   (patched)
+#_____________________________
+
+echo "INstalling patched fonts for powerline to ~/.fonts"
+git clone git://github.com/Lokaltog/vim-powerline.git ttmp
+
+
+
+
+
+
 if  ! which node >/dev/null 2>&1  ||  ! which jsctags >/dev/null 2>&1 ;then
 	echo "
 	WARN : either node.js or jsctags (jsdoctor) seems to be missing on your
