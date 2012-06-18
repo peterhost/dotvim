@@ -157,6 +157,12 @@
 [submodule "bundle/vim-powerline"]
 	path = bundle/vim-powerline
 	url = git://github.com/Lokaltog/vim-powerline.git
+  ignore = dirty
 [submodule "bundle/lusty-explorer"]
 	path = bundle/lusty-explorer
 	url = git://github.com/sjbach/lusty.git
+  ignore = dirty
+[submodule "bundle/Gundo"]
+	path = bundle/Gundo
+	url = git://github.com/vim-scripts/Gundo.git
+  ignore = dirty
