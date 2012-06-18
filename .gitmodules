@@ -154,3 +154,9 @@
 	path = bundle/doxygen-support.vim
 	url = git://github.com/vim-scripts/doxygen-support.vim.git
   ignore = dirty
+[submodule "bundle/vim-powerline"]
+	path = bundle/vim-powerline
+	url = git://github.com/Lokaltog/vim-powerline.git
+[submodule "bundle/lusty-explorer"]
+	path = bundle/lusty-explorer
+	url = git://github.com/sjbach/lusty.git
