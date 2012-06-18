@@ -48,7 +48,7 @@ function doyourshit(){
   printf "$__UN_%s$__NN_\n" "______________________________________"
 
   #do some checks before pulling
-  [ -n "$( git ls-files --others --exclude-standard)" ] || ___confirm "there are untracked files in this repo" || errorAndExit "aborted by user"
+  [ -n "$( git ls-files --others --exclude-standard)" ] && ___confirm "there are untracked files in this repo" || errorAndExit "aborted by user"
   git diff --no-ext-diff --quiet --exit-code || errorAndExit "$__EMR_ unstaged modifications in some of your files : clean that before"
   git remote -v update
   [ "$(git rev-list origin/master..HEAD 2>/dev/null | awk 'END {print NR}')" = 0 ] || errorAndExit "$__EMR_ We are ahead of origin/master : push before continuing"
