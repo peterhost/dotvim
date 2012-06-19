@@ -978,6 +978,13 @@ endif
 set laststatus=2   " Always show the statusline
 "1}}}
 
+
+"short filenames
+let g:Powerline_stl_path_style = 'filename'
+"let g:Powerline_stl_path_style = 'short'
+"let g:Powerline_stl_path_style = 'relative'
+"let g:Powerline_stl_path_style = 'full'
+
 " add trailing whitespace info
 call Pl#Theme#InsertSegment('ws_marker', 'after', 'lineinfo')
 
@@ -1663,6 +1670,7 @@ autocmd BufReadPost fugitive://* set bufhidden=delete
 "---------YankRing---------------------{{{1
 nmap <leader>y :YRShow<CR>
 nmap <leader>Y :YRToggle<CR>
+nmap <leader><c-y> :YRClear<CR>
 " last one : yankring conflicts with lustyjuggler and possibly delimmate
 " (https://github.com/sjbach/lusty/issues/16)
 " to resolve the issue, issue <leader>Y two times to let
