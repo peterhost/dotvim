@@ -701,7 +701,8 @@ autocmd BufWinLeave * call clearmatches()
 
 " in terminal choose DARK background
 if has("gui")
-  if &t_Co >= 256 && has("gui_running")
+  "if &t_Co >= 256 && has("gui_running")
+  if  has("gui_running")
 
 
     colorscheme solarized
@@ -912,7 +913,7 @@ set statusline=%<%f%h%m%r%=%b\ 0x%B\ \ %l,%c%V\ %#warningmsg#%P
 "  au BufRead,BufNewFile *.js let g:tagbar_ctags_bin="/usr/local/bin/jsctags"
 "endif
 
-let g:tagbar_type_javascript ="jsctags"
+"let g:tagbar_type_javascript ="jsctags"
 
 
 
