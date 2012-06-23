@@ -705,18 +705,21 @@ if has("gui")
   if  has("gui_running")
 
 
-    colorscheme solarized
+    "colorscheme solarized
+    colorscheme jellybeans
     call togglebg#map("<F5>")       " F5 toggle background
 
-    nnoremap <silent> <leader>@& :silent! colorscheme solarized   <CR> " @ 1
-    nnoremap <silent> <leader>@é :silent! colorscheme mustang     <CR> " @ 2
-    nnoremap <silent> <leader>@" :silent! colorscheme vibrantink2 <CR> " @ 3
-    nnoremap <silent> <leader>@' :silent! colorscheme jellybeans  <CR> " @ 4
-    nnoremap <silent> <leader>@( :silent! colorscheme smyck       <CR> " @ 5
-    nnoremap <silent> <leader>@§ :silent! colorscheme mayansmoke  <CR> " @ 6
-    nnoremap <silent> <leader>@è :silent! colorscheme proton      <CR> " @ 7
-    nnoremap <silent> <leader>@! :silent! colorscheme pyte        <CR> " @ 8
-    nnoremap <silent> <leader>@ç :silent! colorscheme louver      <CR> " @ 9
+    nnoremap <silent> <leader>@& :silent! colorscheme solarized        <CR> " @ 1
+    nnoremap <silent> <leader>@é :silent! colorscheme mustang          <CR> " @ 2
+    nnoremap <silent> <leader>@" :silent! colorscheme vibrantink2      <CR> " @ 3
+    nnoremap <silent> <leader>@' :silent! colorscheme jellybeans       <CR> " @ 4
+    nnoremap <silent> <leader>@( :silent! colorscheme smyck            <CR> " @ 5
+    nnoremap <silent> <leader>@§ :silent! colorscheme mayansmoke       <CR> " @ 6
+    nnoremap <silent> <leader>@è :silent! colorscheme proton           <CR> " @ 7
+    nnoremap <silent> <leader>@! :silent! colorscheme pyte             <CR> " @ 8
+    nnoremap <silent> <leader>@ç :silent! colorscheme louver           <CR> " @ 9
+    nnoremap <silent> <leader>@a :silent! colorscheme inkpot           <CR> " @ a
+    nnoremap <silent> <leader>@  :echoerr "colorscheme not parameterd" <CR> " @ a
 
   endif
 
