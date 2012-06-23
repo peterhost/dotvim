@@ -17,3 +17,6 @@ ftplugin/*
 !ftplugin/help.vim
 simplenoterc
 .netrwhist
+
+tmp/*
+ttmp/*
