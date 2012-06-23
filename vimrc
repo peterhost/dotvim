@@ -61,10 +61,10 @@ if !has('gui_running')
   " but not in GVim, so disable it if no GUI is running
 endif
 
-if !has("gui_macvim")
-  "the PEEPOPEN program is a Macos specific Command-T
-  call add(g:pathogen_disabled, 'vim-peepopen')
-end
+"if ! has("gui_macvim")
+"  "the PEEPOPEN program is a Macos specific Command-T
+"  call add(g:pathogen_disabled, 'vim-peepopen')
+"end
 
 
 
