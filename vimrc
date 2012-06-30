@@ -453,6 +453,7 @@ function! s:removeWhitespaceWipers()
   " in WHOLE FILE
   silent! map <S-F7>   :echo "disabled for markdown"<CR>
   " on CURRENT LINE
+  "plhoste 2012-06-30 22:23:08 : disable that, it's useful, even in markdown
   silent! nnoremap <leader><space>   :echo "disabled for markdown"<CR>
   silent! vnoremap <leader><space>   :echo "disabled for markdown"<CR>
 endfunction
@@ -1011,7 +1012,7 @@ endfunction
 
 function! s:setupMarkup()
   call s:setupWrapping()
-  nmap <buffer> <Leader>p :Mm <CR>
+  nmap <buffer> <Leader><C-p> :Mm <CR>
   imap <buffer> <C-p> :Mm <CR>
 endfunction
 
@@ -1081,68 +1082,69 @@ set winminheight=1     "minimized window only shows title
 :nnoremap ,< <C-W><<C-W><<C-W><<C-W><
 :nnoremap ,> <C-W>><C-W>><C-W>><C-W>>
 
-" MINIMIZING
-" Auto-collapsible minimized windows
-"
-" when a window is minimized, it will remember its state
-" (w:autoCollapsible variable), then :
-"
-"     - when entered : it will be resized 16 line high
-"     - when exited  : it will resume its minimized state
-"
-
-autocmd WinEnter * if winheight(0) <= &winminheight | let w:autoCollapsible = 1 | resize 16 | endif
-
-autocmd WinLeave * if  exists("w:autoCollapsible") | resize 0 | endif
-
+"plhoste 2012-06-30 22:31:18 : DISABLED
+"" MINIMIZING
+"" Auto-collapsible minimized windows
+""
+"" when a window is minimized, it will remember its state
+"" (w:autoCollapsible variable), then :
+""
+""     - when entered : it will be resized 16 line high
+""     - when exited  : it will resume its minimized state
+""
 
 "autocmd WinEnter * if winheight(0) <= &winminheight | let w:autoCollapsible = 1 | resize 16 | endif
 
 "autocmd WinLeave * if  exists("w:autoCollapsible") | resize 0 | endif
-""autocmd WinLeave * if  exists("w:autoCollapsible") | resize 0 | unlet w:autoCollapsible | endif
 
 
-" The following mappings reset w:autoCollapsible, as we
-" chose to "unminimized" the window
+""autocmd WinEnter * if winheight(0) <= &winminheight | let w:autoCollapsible = 1 | resize 16 | endif
 
-function! g:wipeMinimizedState()
-  unlet! w:autoCollapsible
-  "call Decho("MINIMIZED state WIPED")
-endfunction
+""autocmd WinLeave * if  exists("w:autoCollapsible") | resize 0 | endif
+"""autocmd WinLeave * if  exists("w:autoCollapsible") | resize 0 | unlet w:autoCollapsible | endif
 
-function! g:toggleAutoCollapsible()
-  if exists("w:autoCollapsible")
-    unlet w:autoCollapsible
-  else
-    let w:autoCollapsible = 1
-  endif
-endfunction
 
-"    Set Window to Auto-collapsible
+"" The following mappings reset w:autoCollapsible, as we
+"" chose to "unminimized" the window
 
-nmap <leader>mc     :call g:toggleAutoCollapsible()<CR>
-"nmap <leader>mc     :let w:autoCollapsible = 1<CR>
+"function! g:wipeMinimizedState()
+"  unlet! w:autoCollapsible
+"  "call Decho("MINIMIZED state WIPED")
+"endfunction
 
-"    space to maximize current window
-nmap <S-space>      :call g:wipeMinimizedState()<CR><C-W>_
+"function! g:toggleAutoCollapsible()
+"  if exists("w:autoCollapsible")
+"    unlet w:autoCollapsible
+"  else
+"    let w:autoCollapsible = 1
+"  endif
+"endfunction
 
-nmap <leader>ml      :call g:wipeMinimizedState()<CR><C-W>_
+""    Set Window to Auto-collapsible
 
-"    Minimize current window
-nmap <leader>mm    :call g:wipeMinimizedState()<CR><C-W>1_
+"nmap <leader>mc     :call g:toggleAutoCollapsible()<CR>
+""nmap <leader>mc     :let w:autoCollapsible = 1<CR>
 
-"    set current window to 8 lines
-nmap <leader>m&    :call g:wipeMinimizedState()<CR><C-W>8_
+""    space to maximize current window
+"nmap <S-space>      :call g:wipeMinimizedState()<CR><C-W>_
 
-"    ctrl+shift+space to set current window to 16 lines
-nmap <C-S-space>    :call g:wipeMinimizedState()<CR><C-W>16_
+"nmap <leader>ml      :call g:wipeMinimizedState()<CR><C-W>_
 
-nmap <leader>mé    :call g:wipeMinimizedState()<CR><C-W>16_
+""    Minimize current window
+"nmap <leader>mm    :call g:wipeMinimizedState()<CR><C-W>1_
 
-"    ctrl+shift+alt+space to set current window to 32 lines
-nmap <C-S-A-space>    :call g:wipeMinimizedState()<CR><C-W>32_
+""    set current window to 8 lines
+"nmap <leader>m&    :call g:wipeMinimizedState()<CR><C-W>8_
 
-nmap <leader>m"    :call g:wipeMinimizedState()<CR><C-W>32_
+""    ctrl+shift+space to set current window to 16 lines
+"nmap <C-S-space>    :call g:wipeMinimizedState()<CR><C-W>16_
+
+"nmap <leader>mé    :call g:wipeMinimizedState()<CR><C-W>16_
+
+""    ctrl+shift+alt+space to set current window to 32 lines
+"nmap <C-S-A-space>    :call g:wipeMinimizedState()<CR><C-W>32_
+
+"nmap <leader>m"    :call g:wipeMinimizedState()<CR><C-W>32_
 
 
 
