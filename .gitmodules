@@ -166,3 +166,7 @@
 	path = bundle/Gundo
 	url = git://github.com/vim-scripts/Gundo.git
   ignore = dirty
+[submodule "bundle/vim-jekyll"]
+	path = bundle/vim-jekyll
+	url = git://github.com/itspriddle/vim-jekyll.git
+  ignore = dirty
