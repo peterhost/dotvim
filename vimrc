@@ -1601,6 +1601,19 @@ endfunction
 map ,NN :!createIDfile %<CR>
 
 "1}}}
+" --------JEKYLL (blog engine)--------{{{1
+let g:jekyll_post_template =  [
+  \ '---',
+  \ 'layout: post',
+  \ 'title: "JEKYLL_TITLE"',
+  \ 'categories: "[category1, category2]"',
+  \ 'tags: "[tag1,tag2]"',
+  \ 'intro-img: "<img alt=\"pain-in-the-ass\" src=\"http://barkingcode.peterhost.fr/img/covers/date-covername.jpg\"/>"',
+  \ 'intro: "Short Description<br/><br/><strong>Use Case:</strong> define use case"',
+  \ '---',
+  \ '']
+
+"1}}}
 
 
 "------------------------------------------------------------------------------
