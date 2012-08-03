@@ -59,6 +59,13 @@ if !has('gui_running')
   "call add(g:pathogen_disabled, 'css-color')
   " for some reason the csscolor plugin is very slow when run on the terminal
   " but not in GVim, so disable it if no GUI is running
+
+  "Disabled in terminal mode : too costly
+  call add(g:pathogen_disabled, 'tagbar')
+
+  "and this one because it's slowing down Vim too in terminal
+  call add(g:pathogen_disabled, 'number')
+
 endif
 
 "if ! has("gui_macvim")
@@ -1886,6 +1893,14 @@ let g:xptemplate_key = '<s-Tab>'
 
 " Open the ENCODING CHOOSER menu
 nnoremap <leader><C-e>   :FencView<CR>
+"1}}}
+" ---------LINE NUMBERING----------------{{{1
+"
+" Toggle relative line numbering on/off
+" Video tutorial http://myusuf3.github.com/numbers.vim/
+
+nnoremap <F3> :NumbersToggle<CR>
+
 "1}}}
 " ---------TABULAR (text align)-------{{{1
 "
