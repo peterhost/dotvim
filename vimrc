@@ -64,7 +64,7 @@ if !has('gui_running')
   call add(g:pathogen_disabled, 'tagbar')
 
   "and this one because it's slowing down Vim too in terminal
-  call add(g:pathogen_disabled, 'number')
+  call add(g:pathogen_disabled, 'numbers')
 
 endif
 
