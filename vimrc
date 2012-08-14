@@ -465,6 +465,18 @@ function! s:removeWhitespaceWipers()
   silent! vnoremap <leader><space>   :echo "disabled for markdown"<CR>
 endfunction
 
+function! s:markdownWhitespaceWipers()
+  " in WHOLE FILE: in the case of Markdown, 2 whitespaces at end of line
+  " mean : "force line break", so we only wipe out psaces if there are 3
+  " or more of them at EOL
+  map <silent> <S-F7>                 :%s/\s\s\s\+$//g<CR>
+
+  " on CURRENT LINE : no different than normal Whitespacewiper. On a 
+  " single line, you can hardly make unrecoverable mistakes
+  nnoremap <silent> <leader><space>   :s/\s\+$//g<CR>
+  vnoremap <silent> <leader><space>   :s/\s\+$//g<CR>
+endfunction
+
 
 call s:enableWhitespaceWipers()
 
@@ -1025,13 +1037,16 @@ endfunction
 
 
 if has("autocmd")
+  " All txt files are NOW considered markdown, period
+  au BufRead,BufNewFile *.txt set filetype=markdown
+
   " md, markdown, and mk are markdown and define buffer-local preview
   au BufRead,BufNewFile *.{md,markdown,mdown,mkd,mkdn} call s:setupMarkup()
   au BufRead,BufNewFile *.txt call s:setupWrapping()
 
   " unset/re-set "whitespace removing mappings" when entering/leaving MD buffer
-  au BufEnter *.{md,markdown,mdown,mkd,mkdn} call s:removeWhitespaceWipers()
-  au BufLeave *.{md,markdown,mdown,mkd,mkdn} call s:enableWhitespaceWipers()
+  au BufEnter *.{txt,md,markdown,mdown,mkd,mkdn} call s:markdownWhitespaceWipers()
+  au BufLeave *.{txt,md,markdown,mdown,mkd,mkdn} call s:enableWhitespaceWipers()
 endif
 
 "1}}}
