@@ -49,6 +49,7 @@ let g:pathogen_disabled = ['']
 " I use `tabular' for the moment
 call add(g:pathogen_disabled, 'vim-align')
 call add(g:pathogen_disabled, 'tartify')
+call add(g:pathogen_disabled, 'numbers')
 
 "-------------------------------------
 "        CONDITIONAL LOADING
