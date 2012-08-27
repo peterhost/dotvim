@@ -178,3 +178,7 @@
 	path = bundle/VimClojure
 	url = git://github.com/vim-scripts/VimClojure.git
   ignore = dirty
+[submodule "bundle/aspnetcs"]
+	path = bundle/aspnetcs
+	url = git://github.com/vim-scripts/aspnetcs.git
+  ignore = dirty
