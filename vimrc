@@ -866,46 +866,46 @@ let g:neocomplcache_enable_at_startup = 1
 " --------Tartify ---------------------{{{1
 
 
-let g:tartify_auto_enable = 1
-map <silent> <leader>st    :call g:tartify_statusline_toggle()<CR>
+"let g:tartify_auto_enable = 1
+"map <silent> <leader>st    :call g:tartify_statusline_toggle()<CR>
 
-" Overwrite statusline colors with your own
-if exists("g:tartify_forceColor")
-  let g:tartify_forceColor.light.9.hue = "red"
-  let g:tartify_forceColor.light.9.format = "undercurl"
-endif
+"" Overwrite statusline colors with your own
+"if exists("g:tartify_forceColor")
+"  let g:tartify_forceColor.light.9.hue = "red"
+"  let g:tartify_forceColor.light.9.format = "undercurl"
+"endif
 
-let g:tartify_forceTheme = "solarized"
-
-
-
-" SEQUENCE: the sequence of elements present in the statusline is by default
-" defined by the plugin. If the current ColorScheme defines an alternative
-" default sequence, it will be used instead. If the user defines his own
-" sequence (a 'user' key exists in the g:tartify_sequence dictionnary), that
-" sequence overrides the other two.
-"
-" In order to never use any theme's default squence, you can set the following
-" variable :
-"
-"   let g:tartify_sequence_ignore   = "theme"
-"
-" NB: a "user" sequence will always overrride the default sequence
-"
-"
-
-"let g:tartify_sequence_ignore   = "theme"
+"let g:tartify_forceTheme = "solarized"
 
 
 
-let g:tartify_disabled = ['git', 'longlines', 'path', ]
-" StatusLine Elements :
-"   git, longlines,path,...
-" FileType statusline
-"   help, plug:fugitive,plug:NERDTree,...
-"
+"" SEQUENCE: the sequence of elements present in the statusline is by default
+"" defined by the plugin. If the current ColorScheme defines an alternative
+"" default sequence, it will be used instead. If the user defines his own
+"" sequence (a 'user' key exists in the g:tartify_sequence dictionnary), that
+"" sequence overrides the other two.
+""
+"" In order to never use any theme's default squence, you can set the following
+"" variable :
+""
+""   let g:tartify_sequence_ignore   = "theme"
+""
+"" NB: a "user" sequence will always overrride the default sequence
+""
+""
 
-set statusline=%<%f%h%m%r%=%b\ 0x%B\ \ %l,%c%V\ %#warningmsg#%P
+""let g:tartify_sequence_ignore   = "theme"
+
+
+
+"let g:tartify_disabled = ['git', 'longlines', 'path', ]
+"" StatusLine Elements :
+""   git, longlines,path,...
+"" FileType statusline
+""   help, plug:fugitive,plug:NERDTree,...
+""
+
+"set statusline=%<%f%h%m%r%=%b\ 0x%B\ \ %l,%c%V\ %#warningmsg#%P
 
 "1}}}
 " --------xptemplate--------------------{{{1
