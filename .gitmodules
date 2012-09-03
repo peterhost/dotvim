@@ -185,3 +185,4 @@
 [submodule "bundle/dbext.vim"]
 	path = bundle/dbext.vim
 	url = git://github.com/vim-scripts/dbext.vim
+  ignore = dirty

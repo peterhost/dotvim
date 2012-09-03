@@ -45,6 +45,7 @@ let g:pathogen_disabled = ['']
 "
 "-------------------------------------
 
+call add(g:pathogen_disabled, 'dbext.vim')
 
 " I use `tabular' for the moment
 call add(g:pathogen_disabled, 'vim-align')
