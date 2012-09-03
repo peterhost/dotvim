@@ -182,3 +182,6 @@
 	path = bundle/aspnetcs
 	url = git://github.com/vim-scripts/aspnetcs.git
   ignore = dirty
+[submodule "bundle/dbext.vim"]
+	path = bundle/dbext.vim
+	url = git://github.com/vim-scripts/dbext.vim
