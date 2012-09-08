@@ -1931,8 +1931,12 @@ nnoremap <leader><C-t>   :Tabularize /
 " Resize current wiondow to Golden Ration Proportions
 "
 
-" Enable autocommand (enabled by default)
-let g:golden_ratio_autocommand = 0
+" Enable autocommand (enabled by default) on GUI Vim
+" (gvim, macvim,...)
+
+if has('gui_running')
+  let g:golden_ratio_autocommand = 0
+endif
 
 "And map autoresize toggle to a F key:
 nnoremap <S-F5> :GoldenRatioToggle<CR>
