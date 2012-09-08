@@ -1931,12 +1931,14 @@ nnoremap <leader><C-t>   :Tabularize /
 " Resize current wiondow to Golden Ration Proportions
 "
 
-" Disabled autocommand (enabled by default)
-let g:golden_ratio_autocommand = 1
-:GoldenRatioToggle
+" Enable autocommand (enabled by default)
+let g:golden_ratio_autocommand = 0
+
 "And map autoresize toggle to a F key:
 nnoremap <S-F5> :GoldenRatioToggle<CR>
 
+" This would disable the plugin globally
+"let g:loaded_golden_ratio = 0
 
 "1}}}
 
