@@ -186,3 +186,6 @@
 	path = bundle/dbext.vim
 	url = git://github.com/vim-scripts/dbext.vim
   ignore = dirty
+[submodule "bundle/golden-ratio"]
+	path = bundle/golden-ratio
+	url = git://github.com/roman/golden-ratio.git

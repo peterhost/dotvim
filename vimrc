@@ -1926,6 +1926,19 @@ nnoremap <F3> :NumbersToggle<CR>
 
 nnoremap <leader><C-t>   :Tabularize /
 "1}}}
+" ---------GOLDEN RATIO (resize)---------{{{1
+"
+" Resize current wiondow to Golden Ration Proportions
+"
+
+" Disabled autocommand (enabled by default)
+let g:golden_ratio_autocommand = 1
+:GoldenRatioToggle
+"And map autoresize toggle to a F key:
+nnoremap <S-F5> :GoldenRatioToggle<CR>
+
+
+"1}}}
 
 
 "------------------------------------------------------------------------------
