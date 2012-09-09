@@ -167,7 +167,7 @@ set hidden
 
 " usefull stuff
 set nowrap        " don't wrap lines
-set tabstop=2     " a tab is four spaces
+set tabstop=2     " a tab is two spaces
 set backspace=indent,eol,start
                   " allow backspacing over everything in insert mode
                   " (needed on some linux systems -
@@ -375,6 +375,7 @@ nnoremap <leader><C-space> Vatzf
 " enable html tag folding with ,f
 let g:xml_syntax_folding=1
 au FileType xml setlocal foldmethod=syntax
+au FileType xml set tabstop=4     " a tab is four spaces for XML files
 
 "1}}}
 " --------Tabulation name&option-------{{{1
