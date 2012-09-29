@@ -864,6 +864,10 @@ let g:neocomplcache_enable_at_startup = 1
 " SEE HTML5 validation further on
     let g:syntastic_disabled_filetypes = ['html']
 
+" --------JSHINT conf-------------------{{{2
+let g:syntastic_javascript_jshint_conf = "~/.jshintrc"
+"2}}}
+
 "1}}}
 " --------Tartify ---------------------{{{1
 
