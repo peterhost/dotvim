@@ -189,3 +189,8 @@
 [submodule "bundle/golden-ratio"]
 	path = bundle/golden-ratio
 	url = git://github.com/roman/golden-ratio.git
+  ignore = dirty
+[submodule "bundle/DBGPavim"]
+	path = bundle/DBGPavim
+	url = git://github.com/brookhong/DBGPavim.git
+  ignore = dirty
