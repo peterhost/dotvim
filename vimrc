@@ -846,7 +846,7 @@ let g:neocomplcache_enable_at_startup = 1
 
 "Enable this option if you want the cursor to jump to the first detected error
 "when saving or opening a file:
-    let g:syntastic_auto_jump=1
+    let g:syntastic_auto_jump=0
 
 "Use this option to tell syntastic to automatically open and/or close the
 "|location-list| (see |syntastic-error-window|).
