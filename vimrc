@@ -76,6 +76,11 @@ endif
 "end
 
 
+" On enable DBGPavim que sur PALMERSTON
+if ! has("gui_macvim")
+  call add(g:pathogen_disabled, 'DBGPavim')
+end
+
 
 "if !has('gui') || &t_Co < 256
 "  call add(g:pathogen_disabled, 'csapprox')
@@ -1006,7 +1011,6 @@ endif
 
 "let g:Powerline_theme = 'skwp'
 set laststatus=2   " Always show the statusline
-"1}}}
 
 
 "short filenames
@@ -1017,6 +1021,16 @@ let g:Powerline_stl_path_style = 'filename'
 
 " add trailing whitespace info
 call Pl#Theme#InsertSegment('ws_marker', 'after', 'lineinfo')
+"1}}}
+" --------DBGPavim (php xdebug plug)--{{{1
+"
+"
+let g:dbgPavimPort = 9000
+let g:dbgPavimBreakAtEntry = 0
+"1}}}
+
+
+
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "                           FILES SPECIFIC CONFIGS
@@ -1939,10 +1953,11 @@ nnoremap <leader><C-t>   :Tabularize /
 " Enable autocommand (enabled by default) on GUI Vim
 " (gvim, macvim,...)
 
-if has('gui_running')
-  let g:golden_ratio_autocommand = 0
-endif
+"if has('gui_running')
+  "let g:golden_ratio_autocommand = 0
+"endif
 
+let g:golden_ratio_autocommand = 0
 "And map autoresize toggle to a F key:
 nnoremap <S-F5> :GoldenRatioToggle<CR>
 
