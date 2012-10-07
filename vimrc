@@ -753,7 +753,8 @@ if has("gui")
 
 else
   "colorscheme mustang
-  colorscheme smyck
+  "colorscheme smyck
+  colorscheme dante
   let &background = "dark"
 endif
 
