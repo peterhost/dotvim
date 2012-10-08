@@ -77,9 +77,9 @@ endif
 
 
 " On enable DBGPavim que sur PALMERSTON
-if ! has("gui_macvim")
-  call add(g:pathogen_disabled, 'DBGPavim')
-end
+"if ! has("gui_macvim")
+  "call add(g:pathogen_disabled, 'DBGPavim')
+"end
 
 
 "if !has('gui') || &t_Co < 256
