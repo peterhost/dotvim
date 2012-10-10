@@ -198,3 +198,7 @@
 	path = bundle/CSScomb-for-Vim
 	url = https://github.com/miripiruni/CSScomb-for-Vim.git
   ignore = dirty
+[submodule "bundle/vim-behat"]
+	path = bundle/vim-behat
+	url = git://github.com/veloce/vim-behat.git
+  ignore = dirty
