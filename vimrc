@@ -44,7 +44,6 @@ let g:pathogen_disabled = ['']
 "              UNUSED
 "
 "-------------------------------------
-
 call add(g:pathogen_disabled, 'dbext.vim')
 
 " I use `tabular' for the moment
@@ -69,6 +68,22 @@ if !has('gui_running')
   call add(g:pathogen_disabled, 'numbers')
 
 endif
+
+
+
+
+
+"Relentit trop macvim
+if has('gui_running')
+  call add(g:pathogen_disabled, 'vim-behat')
+endi
+
+
+
+
+
+
+
 
 "if ! has("gui_macvim")
 "  "the PEEPOPEN program is a Macos specific Command-T
