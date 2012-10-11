@@ -1673,6 +1673,37 @@ let g:jekyll_post_template =  [
   \ '']
 
 "1}}}
+" --------DBGPavim (PHP debug)---------{{{1
+
+"let g:dbgPavimKeyHelp = '<F1>'
+"let g:dbgPavimKeyStepInto = '<F2>'
+"let g:dbgPavimKeyStepOver = '<F3>'
+"let g:dbgPavimKeyStepOut = '<F4>'
+"let g:dbgPavimKeyRun = '<F5>'
+"let g:dbgPavimKeyQuit = '<F6>'
+"let g:dbgPavimKeyEval = '<F7>'
+"let g:dbgPavimKeyRelayout = '<F9>'
+"let g:dbgPavimKeyToggleBae = '<F8>'
+"let g:dbgPavimKeyToggleBp = '<F10>'
+"let g:dbgPavimKeyContextGet = '<F11>'
+"let g:dbgPavimKeyPropertyGet = '<F12>'
+
+let g:dbgPavimKeyHelp = '<leader>&'
+let g:dbgPavimKeyStepInto = '<leader>é'
+let g:dbgPavimKeyStepOver = '<leader>"'
+let g:dbgPavimKeyStepOut = "<leader>'"
+let g:dbgPavimKeyRun = '<leader>('
+let g:dbgPavimKeyQuit = '<leader>§'
+let g:dbgPavimKeyEval = '<leader>è'
+let g:dbgPavimKeyRelayout = '<leader>!'
+let g:dbgPavimKeyToggleBae = '<leader>ç'
+let g:dbgPavimKeyToggleBp = '<leader>à'
+let g:dbgPavimKeyContextGet = '<leader>1'
+let g:dbgPavimKeyPropertyGet = '<leader>2'
+
+
+
+"1}}}
 
 
 "------------------------------------------------------------------------------
