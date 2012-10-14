@@ -790,7 +790,11 @@ else
   "colorscheme mustang
   "colorscheme smyck
   colorscheme dante
-  let &background = "dark"
+  "let &background = "dark"
+  colorscheme lucius
+  let g:lucius_style='light'
+  let g:lucius_contrast='high'
+  let g:lucius_contrast_bg='high'
 endif
 
 
