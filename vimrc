@@ -753,33 +753,34 @@ if has("gui")
     call togglebg#map("<F5>")       " F5 toggle background
 
     "DARK
-    nnoremap <silent> <leader>@& :silent! colorscheme solarized        <CR> " @ 1
-    nnoremap <silent> <leader>@é :silent! colorscheme mustang          <CR> " @ 2
-    nnoremap <silent> <leader>@" :silent! colorscheme vibrantink2      <CR> " @ 3
-    nnoremap <silent> <leader>@' :silent! colorscheme jellybeans       <CR> " @ 4
-    nnoremap <silent> <leader>@a :silent! colorscheme festoon          <CR> " @ e
-    nnoremap <silent> <leader>@z :silent! colorscheme freya            <CR> " @ z
-    nnoremap <silent> <leader>@e :silent! colorscheme inkpot           <CR> " @ a
+    nnoremap <silent> <leader>@& :silent! colorscheme solarized   <bar>set background=dark <CR>       <CR> " @ 1
+    nnoremap <silent> <leader>@é :silent! colorscheme mustang     <bar>set background=dark <CR>         <CR> " @ 2
+    nnoremap <silent> <leader>@" :silent! colorscheme vibrantink2 <bar>set background=dark <CR>     <CR> " @ 3
+    nnoremap <silent> <leader>@' :silent! colorscheme jellybeans  <bar>set background=dark <CR>       <CR> " @ 4
+    nnoremap <silent> <leader>@a :silent! colorscheme festoon     <bar>set background=dark <CR>         <CR> " @ e
+    nnoremap <silent> <leader>@z :silent! colorscheme freya       <bar>set background=dark <CR>         <CR> " @ z
+    nnoremap <silent> <leader>@e :silent! colorscheme inkpot      <bar>set background=dark <CR>         <CR> " @ a
 
     "LIGHT
-    nnoremap <silent> <leader>@( :silent! colorscheme smyck            <CR> " @ 5
-    nnoremap <silent> <leader>@§ :silent! colorscheme mayansmoke       <CR> " @ 6
-    nnoremap <silent> <leader>@è :silent! colorscheme proton           <CR> " @ 7
-    nnoremap <silent> <leader>@! :silent! colorscheme pyte             <CR> " @ 8
-    nnoremap <silent> <leader>@ç :silent! colorscheme louver           <CR> " @ 9
-    nnoremap <silent> <leader>@à :silent! colorscheme festoon<CR><bar>set background=light <CR> " @ 0
+    nnoremap <silent> <leader>@( :silent! colorscheme smyck       <bar>set background=light <CR> " @ 5
+    nnoremap <silent> <leader>@§ :silent! colorscheme mayansmoke  <bar>set background=light <CR> " @ 6
+    nnoremap <silent> <leader>@è :silent! colorscheme proton      <bar>set background=light <CR> " @ 7
+    nnoremap <silent> <leader>@! :silent! colorscheme pyte        <bar>set background=light <CR> " @ 8
+    nnoremap <silent> <leader>@ç :silent! colorscheme louver      <bar>set background=light <CR> " @ 9
+    nnoremap <silent> <leader>@à :silent! colorscheme festoon     <bar>set background=light <CR> " @ 0
+    nnoremap <silent> <leader>@) :silent! colorscheme solarized   <bar>set background=light <CR> " @ 1
 
     "LUCIUS (has it's own keyboard row all to itself)
-    nnoremap <silent> <leader>@q :silent! colorscheme lucius <bar> let g:lucius_style='dark' <bar> let g:lucius_contrast='high'   <bar> let g:lucius_contrast_bg='normal' <CR> " @ s
-    nnoremap <silent> <leader>@s :silent! colorscheme lucius <bar> let g:lucius_style='dark' <bar> let g:lucius_contrast='normal' <bar> let g:lucius_contrast_bg='normal' <CR> " @ s
-    nnoremap <silent> <leader>@d :silent! colorscheme lucius <bar> let g:lucius_style='dark' <bar> let g:lucius_contrast='low'    <bar> let g:lucius_contrast_bg='normal' <CR> " @ s
-    nnoremap <silent> <leader>@f :silent! colorscheme lucius <bar> let g:lucius_style='dark' <bar> let g:lucius_contrast='high'   <bar> let g:lucius_contrast_bg='high'   <CR> " @ s
-    nnoremap <silent> <leader>@g :silent! colorscheme lucius <bar> let g:lucius_style='dark' <bar> let g:lucius_contrast='normal' <bar> let g:lucius_contrast_bg='high'   <CR> " @ s
-    nnoremap <silent> <leader>@h :silent! colorscheme lucius <bar> let g:lucius_style='dark' <bar> let g:lucius_contrast='low'    <bar> let g:lucius_contrast_bg='high'   <CR> " @ s
+    nnoremap <silent> <leader>@q :silent! set background=dark <bar> let g:lucius_style='dark' <bar> let g:lucius_contrast='high'   <bar> let g:lucius_contrast_bg='normal' <bar> colorscheme lucius <CR> " @ s
+    nnoremap <silent> <leader>@s :silent! set background=dark <bar> let g:lucius_style='dark' <bar> let g:lucius_contrast='normal' <bar> let g:lucius_contrast_bg='normal' <bar> colorscheme lucius <CR> " @ s
+    nnoremap <silent> <leader>@d :silent! set background=dark <bar> let g:lucius_style='dark' <bar> let g:lucius_contrast='low'    <bar> let g:lucius_contrast_bg='normal' <bar> colorscheme lucius <CR> " @ s
+    nnoremap <silent> <leader>@f :silent! set background=dark <bar> let g:lucius_style='dark' <bar> let g:lucius_contrast='high'   <bar> let g:lucius_contrast_bg='high'   <bar> colorscheme lucius <CR> " @ s
+    nnoremap <silent> <leader>@g :silent! set background=dark <bar> let g:lucius_style='dark' <bar> let g:lucius_contrast='normal' <bar> let g:lucius_contrast_bg='high'   <bar> colorscheme lucius <CR> " @ s
+    nnoremap <silent> <leader>@h :silent! set background=dark <bar> let g:lucius_style='dark' <bar> let g:lucius_contrast='low'    <bar> let g:lucius_contrast_bg='high'   <bar> colorscheme lucius <CR> " @ s
 
-    nnoremap <silent> <leader>@j :silent! colorscheme lucius <bar> let g:lucius_style='light' <bar> let g:lucius_contrast='high'   <bar> let g:lucius_contrast_bg='normal' <CR> " @ s
-    nnoremap <silent> <leader>@k :silent! colorscheme lucius <bar> let g:lucius_style='light' <bar> let g:lucius_contrast='normal' <bar> let g:lucius_contrast_bg='normal' <CR> " @ s
-    nnoremap <silent> <leader>@l :silent! colorscheme lucius <bar> let g:lucius_style='light' <bar> let g:lucius_contrast='low'    <bar> let g:lucius_contrast_bg='normal' <CR> " @ s
+    nnoremap <silent> <leader>@j :silent! set background=dark <bar> let g:lucius_style='light' <bar> let g:lucius_contrast='high'   <bar> let g:lucius_contrast_bg='normal' <bar> colorscheme lucius <CR> " @ s
+    nnoremap <silent> <leader>@k :silent! set background=dark <bar> let g:lucius_style='light' <bar> let g:lucius_contrast='normal' <bar> let g:lucius_contrast_bg='normal' <bar> colorscheme lucius <CR> " @ s
+    nnoremap <silent> <leader>@l :silent! set background=dark <bar> let g:lucius_style='light' <bar> let g:lucius_contrast='low'    <bar> let g:lucius_contrast_bg='normal' <bar> colorscheme lucius <CR> " @ s
 
 
     nnoremap <silent> <leader>@  :echoerr "colorscheme not parameterd" <CR> " @ a
