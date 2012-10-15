@@ -552,13 +552,21 @@ endif
 
 
 "}}}1
-" --------re-indent anyfile------------{{{1
-" map <F8> to reindent file
-noremap <F8> mzgg=G`z
-inoremap <F8> <ESC>mzgg=G`z<Insert>
+
+"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+"                              OTHER
+"------------------------------------------------------------------------------
+
+" --------Delete Empty Buffers------------{{{1
+
+function! s:CleanEmptyBuffers()
+  let buffers = filter(range(0, bufnr('$')), 'buflisted(v:val) && empty(bufname(v:val)) && bufwinnr(v:val)<0')
+  if !empty(buffers)
+    exe 'bw '.join(buffers, ' ')
+  endif
+endfunction
 
 "1}}}
-
 
 
 "##############################################################################
@@ -1685,48 +1693,10 @@ endfunction
 map ,NN :!createIDfile %<CR>
 
 "1}}}
-" --------JEKYLL (blog engine)--------{{{1
-let g:jekyll_post_template =  [
-  \ '---',
-  \ 'layout: post',
-  \ 'title: "JEKYLL_TITLE"',
-  \ 'categories: "[category1, category2]"',
-  \ 'tags: "[tag1,tag2]"',
-  \ 'intro-img: "<img alt=\"pain-in-the-ass\" src=\"http://barkingcode.peterhost.fr/img/covers/date-covername.jpg\"/>"',
-  \ 'intro: "Short Description<br/><br/><strong>Use Case:</strong> define use case"',
-  \ '---',
-  \ '']
-
-"1}}}
-" --------DBGPavim (PHP debug)---------{{{1
-
-"let g:dbgPavimKeyHelp = '<F1>'
-"let g:dbgPavimKeyStepInto = '<F2>'
-"let g:dbgPavimKeyStepOver = '<F3>'
-"let g:dbgPavimKeyStepOut = '<F4>'
-"let g:dbgPavimKeyRun = '<F5>'
-"let g:dbgPavimKeyQuit = '<F6>'
-"let g:dbgPavimKeyEval = '<F7>'
-"let g:dbgPavimKeyRelayout = '<F9>'
-"let g:dbgPavimKeyToggleBae = '<F8>'
-"let g:dbgPavimKeyToggleBp = '<F10>'
-"let g:dbgPavimKeyContextGet = '<F11>'
-"let g:dbgPavimKeyPropertyGet = '<F12>'
-
-let g:dbgPavimKeyHelp = '<leader>&'
-let g:dbgPavimKeyStepInto = '<leader>é'
-let g:dbgPavimKeyStepOver = '<leader>"'
-let g:dbgPavimKeyStepOut = "<leader>'"
-let g:dbgPavimKeyRun = '<leader>('
-let g:dbgPavimKeyQuit = '<leader>§'
-let g:dbgPavimKeyEval = '<leader>è'
-let g:dbgPavimKeyRelayout = '<leader>!'
-let g:dbgPavimKeyToggleBae = '<leader>ç'
-let g:dbgPavimKeyToggleBp = '<leader>à'
-let g:dbgPavimKeyContextGet = '<leader>1'
-let g:dbgPavimKeyPropertyGet = '<leader>2'
-
-
+" --------re-indent anyfile------------{{{1
+" map <F8> to reindent file
+noremap <F8> mzgg=G`z
+inoremap <F8> <ESC>mzgg=G`z<Insert>
 
 "1}}}
 
@@ -2035,6 +2005,50 @@ nnoremap <S-F5> :GoldenRatioToggle<CR>
 
 " This would disable the plugin globally
 "let g:loaded_golden_ratio = 0
+
+"1}}}
+" ---------DBGPavim (PHP debug)---------{{{1
+
+"let g:dbgPavimKeyHelp = '<F1>'
+"let g:dbgPavimKeyStepInto = '<F2>'
+"let g:dbgPavimKeyStepOver = '<F3>'
+"let g:dbgPavimKeyStepOut = '<F4>'
+"let g:dbgPavimKeyRun = '<F5>'
+"let g:dbgPavimKeyQuit = '<F6>'
+"let g:dbgPavimKeyEval = '<F7>'
+"let g:dbgPavimKeyRelayout = '<F9>'
+"let g:dbgPavimKeyToggleBae = '<F8>'
+"let g:dbgPavimKeyToggleBp = '<F10>'
+"let g:dbgPavimKeyContextGet = '<F11>'
+"let g:dbgPavimKeyPropertyGet = '<F12>'
+
+let g:dbgPavimKeyHelp = '<leader>&'
+let g:dbgPavimKeyStepInto = '<leader>é'
+let g:dbgPavimKeyStepOver = '<leader>"'
+let g:dbgPavimKeyStepOut = "<leader>'"
+let g:dbgPavimKeyRun = '<leader>('
+let g:dbgPavimKeyQuit = '<leader>§'
+let g:dbgPavimKeyEval = '<leader>è'
+let g:dbgPavimKeyRelayout = '<leader>!'
+let g:dbgPavimKeyToggleBae = '<leader>ç'
+let g:dbgPavimKeyToggleBp = '<leader>à'
+let g:dbgPavimKeyContextGet = '<leader>1'
+let g:dbgPavimKeyPropertyGet = '<leader>2'
+
+
+
+"1}}}
+" ---------JEKYLL (blog engine)--------{{{1
+let g:jekyll_post_template =  [
+  \ '---',
+  \ 'layout: post',
+  \ 'title: "JEKYLL_TITLE"',
+  \ 'categories: "[category1, category2]"',
+  \ 'tags: "[tag1,tag2]"',
+  \ 'intro-img: "<img alt=\"pain-in-the-ass\" src=\"http://barkingcode.peterhost.fr/img/covers/date-covername.jpg\"/>"',
+  \ 'intro: "Short Description<br/><br/><strong>Use Case:</strong> define use case"',
+  \ '---',
+  \ '']
 
 "1}}}
 
