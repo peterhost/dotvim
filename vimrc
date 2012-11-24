@@ -795,6 +795,10 @@ if has("gui")
 
   endif
 
+
+" Terminal, old Vim => dante, which works everywhere
+elseif v:version < '703'
+  colorscheme dante
 else
   "colorscheme mustang
   "colorscheme smyck
