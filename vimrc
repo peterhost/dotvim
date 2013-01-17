@@ -793,9 +793,9 @@ if has("gui")
     nnoremap <silent> <leader>@g :silent! set background=dark <bar> let g:lucius_style='dark' <bar> let g:lucius_contrast='normal' <bar> let g:lucius_contrast_bg='high'   <bar> colorscheme lucius <CR> " @ s
     nnoremap <silent> <leader>@h :silent! set background=dark <bar> let g:lucius_style='dark' <bar> let g:lucius_contrast='low'    <bar> let g:lucius_contrast_bg='high'   <bar> colorscheme lucius <CR> " @ s
 
-    nnoremap <silent> <leader>@j :silent! set background=dark <bar> let g:lucius_style='light' <bar> let g:lucius_contrast='high'   <bar> let g:lucius_contrast_bg='normal' <bar> colorscheme lucius <CR> " @ s
-    nnoremap <silent> <leader>@k :silent! set background=dark <bar> let g:lucius_style='light' <bar> let g:lucius_contrast='normal' <bar> let g:lucius_contrast_bg='normal' <bar> colorscheme lucius <CR> " @ s
-    nnoremap <silent> <leader>@l :silent! set background=dark <bar> let g:lucius_style='light' <bar> let g:lucius_contrast='low'    <bar> let g:lucius_contrast_bg='normal' <bar> colorscheme lucius <CR> " @ s
+    nnoremap <silent> <leader>@j :silent! set background=light <bar> let g:lucius_style='light' <bar> let g:lucius_contrast='high'   <bar> let g:lucius_contrast_bg='high'   <bar> colorscheme lucius <CR> " @ s
+    nnoremap <silent> <leader>@k :silent! set background=light <bar> let g:lucius_style='light' <bar> let g:lucius_contrast='normal' <bar> let g:lucius_contrast_bg='normal' <bar> colorscheme lucius <CR> " @ s
+    nnoremap <silent> <leader>@l :silent! set background=light <bar> let g:lucius_style='light' <bar> let g:lucius_contrast='low'    <bar> let g:lucius_contrast_bg='normal' <bar> colorscheme lucius <CR> " @ s
 
 
     nnoremap <silent> <leader>@  :echoerr "colorscheme not parameterd" <CR> " @ a
@@ -831,15 +831,21 @@ autocmd BufNewFile,BufRead *.json set ft=javascript
 
 "1}}}
 " --------CursorLine-------------------{{{1
-if has("gui_running") && has("autocmd")
 
-  "only highlight line in GUI mode (in terminal, it's distracting)
+"if has("gui_running") && has("autocmd")
+
+"  "only highlight line in GUI mode (in terminal, it's distracting)
+"  autocmd WinEnter * setlocal cursorline
+"  autocmd WinLeave * setlocal nocursorline
+
+"else
+"  set nocursorline
+"endif
+
+"ENABLED in TERM => with light theme, it's ok
   autocmd WinEnter * setlocal cursorline
   autocmd WinLeave * setlocal nocursorline
 
-else
-  set nocursorline
-endif
 "1}}}
 " --------Syntax Highlightning---------{{{1
 " switch syntax highlighting on, when the terminal has colors
@@ -1087,6 +1093,12 @@ call Pl#Theme#InsertSegment('ws_marker', 'after', 'lineinfo')
 "
 let g:dbgPavimPort = 9000
 let g:dbgPavimBreakAtEntry = 0
+"1}}}
+" --------VimClojure -----------------{{{1
+"
+"
+let vimclojure#WantNailgun = 1
+
 "1}}}
 
 
@@ -1704,13 +1716,23 @@ endfunction
 map ,NN :!createIDfile %<CR>
 
 "1}}}
-" --------re-indent anyfile------------{{{1
-" map <F8> to reindent file
-noremap <F8> mzgg=G`z
-inoremap <F8> <ESC>mzgg=G`z<Insert>
+" --------VimClojure -----------------{{{1
+"
+"
+"let vimclojure#SplitPos = "right"
+"let vimclojure#SplitSize = 30
+let g:vimclojure#HighlightBuiltins = 1
+let g:vimclojure#ParenRainbow = 1
+
+
+" from https://groups.google.com/forum/?fromgroups=#!topic/vimclojure/4a1q8czmL8Q
+if exists("*PareditInitBuffer")
+  call PareditInitBuffer()
+endif
+
+
 
 "1}}}
-
 
 "------------------------------------------------------------------------------
 "                           PLUGINS
