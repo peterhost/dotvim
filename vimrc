@@ -566,7 +566,7 @@ inoremap <F8> <ESC>mzgg=G`z<Insert>
 
 " --------Delete Empty Buffers------------{{{1
 
-function! s:CleanEmptyBuffers()
+function! g:CleanEmptyBuffers()
   let buffers = filter(range(0, bufnr('$')), 'buflisted(v:val) && empty(bufname(v:val)) && bufwinnr(v:val)<0')
   if !empty(buffers)
     exe 'bw '.join(buffers, ' ')
