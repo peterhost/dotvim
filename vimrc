@@ -553,6 +553,12 @@ endif
 
 
 "}}}1
+" --------re-indent anyfile------------{{{1
+" map <F8> to reindent file
+noremap <F8> mzgg=G`z
+inoremap <F8> <ESC>mzgg=G`z<Insert>
+
+"1}}}
 
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "                              OTHER
