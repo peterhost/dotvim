@@ -180,6 +180,7 @@ set encoding=utf-8
 
 " change the mapleader from \ to ,
 let mapleader=","
+let maplocalleader="="
 
 
 " hide bufers instead of closing them

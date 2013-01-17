@@ -202,3 +202,6 @@
 	path = bundle/vim-behat
 	url = git://github.com/veloce/vim-behat.git
   ignore = dirty
+[submodule "bundle/paredit.vim"]
+	path = bundle/paredit.vim
+	url = git://github.com/vim-scripts/paredit.vim.git
