@@ -45,6 +45,8 @@ let g:pathogen_disabled = ['']
 "
 "-------------------------------------
 call add(g:pathogen_disabled, 'dbext.vim')
+"call add(g:pathogen_disabled, 'vim-unimpaired')
+call add(g:pathogen_disabled, 'VimClojure')
 
 " I use `tabular' for the moment
 call add(g:pathogen_disabled, 'vim-align')
@@ -758,9 +760,9 @@ autocmd BufWinLeave * call clearmatches()
 " --------Color Scheme-------------------{{{1
 
 " in terminal choose DARK background
-if has("gui")
+if has("gui") &&   has("gui_running")
   "if &t_Co >= 256 && has("gui_running")
-  if  has("gui_running")
+  "if  has("gui_running")
 
 
     "colorscheme solarized
@@ -800,7 +802,7 @@ if has("gui")
 
     nnoremap <silent> <leader>@  :echoerr "colorscheme not parameterd" <CR> " @ a
 
-  endif
+  "endif
 
 
 " Terminal, old Vim => dante, which works everywhere
@@ -1097,7 +1099,7 @@ let g:dbgPavimBreakAtEntry = 0
 " --------VimClojure -----------------{{{1
 "
 "
-let vimclojure#WantNailgun = 1
+"let vimclojure#WantNailgun = 1
 
 "1}}}
 
@@ -1719,16 +1721,16 @@ map ,NN :!createIDfile %<CR>
 " --------VimClojure -----------------{{{1
 "
 "
-"let vimclojure#SplitPos = "right"
-"let vimclojure#SplitSize = 30
-let g:vimclojure#HighlightBuiltins = 1
-let g:vimclojure#ParenRainbow = 1
-
-
-" from https://groups.google.com/forum/?fromgroups=#!topic/vimclojure/4a1q8czmL8Q
-if exists("*PareditInitBuffer")
-  call PareditInitBuffer()
-endif
+""let vimclojure#SplitPos = "right"
+""let vimclojure#SplitSize = 30
+"let g:vimclojure#HighlightBuiltins = 1
+"let g:vimclojure#ParenRainbow = 1
+"
+"
+"" from https://groups.google.com/forum/?fromgroups=#!topic/vimclojure/4a1q8czmL8Q
+"if exists("*PareditInitBuffer")
+"  call PareditInitBuffer()
+"endif
 
 
 
