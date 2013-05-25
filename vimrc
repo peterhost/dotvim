@@ -115,6 +115,7 @@ endif
 
 if  !has('python')
   call add(g:pathogen_disabled, 'simplenote.vim')
+  call add(g:pathogen_disabled, 'CoVim')
   " All those need python support
 endif
 
