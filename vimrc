@@ -440,7 +440,9 @@ set expandtab "soft tabs, except for languages where it makes sense (python)
 if has('autocmd')
   " make and python use real tabs
   autocmd FileType make        set noexpandtab
-  autocmd FileType python      set noexpandtab
+
+  "autocmd FileType python      set noexpandtab
+  autocmd FileType python      set shiftwidth=4  " 4 space for indentation in python
 endif
 
 "1}}}
@@ -1415,7 +1417,7 @@ nmap <silent> <leader>; :nohlsearch<CR>
 
 
 " map control-backspace to delete the previous word in edit mode
-imap <C-BS> <C-W>
+"imap <C-BS> <C-W>
 
 "1}}}
 "--------AZERTY-TO-QWERTY--------------{{{1
