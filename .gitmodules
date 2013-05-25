@@ -205,3 +205,8 @@
 [submodule "bundle/paredit.vim"]
 	path = bundle/paredit.vim
 	url = git://github.com/vim-scripts/paredit.vim.git
+  ignore = dirty
+[submodule "bundle/CoVim"]
+	path = bundle/CoVim
+	url = git://github.com/FredKSchott/CoVim.git
+  ignore = dirty
