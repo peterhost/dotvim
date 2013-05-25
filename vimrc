@@ -149,7 +149,7 @@ endif
 " It is essential that these lines are called before enabling filetype detection
 call pathogen#infect()
 call pathogen#helptags()
-call pathogen#runtime_append_all_bundles()
+call pathogen#incubate()
 
 ""~~~ VUNDLE ~~~
 "filetype plugin indent on     " required!
