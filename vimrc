@@ -1159,6 +1159,15 @@ if &diff
 endif
 
 "1}}}
+"--------Vim Diff MAPPING--------------{{{1
+nnoremap Dp :diffput<CR>
+nnoremap Dg :diffget<CR>
+nnoremap Du :diffupdate<CR>
+nnoremap Dt :diffthis<CR>
+nnoremap Do :diffoff<CR>
+
+
+"1}}}
 
 "##############################################################################
 "                           --MAPPING--
