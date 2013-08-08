@@ -174,10 +174,6 @@
 	path = bundle/numbers
 	url = git://github.com/myusuf3/numbers.vim.git
   ignore = dirty
-[submodule "bundle/VimClojure"]
-	path = bundle/VimClojure
-	url = git://github.com/vim-scripts/VimClojure.git
-  ignore = dirty
 [submodule "bundle/aspnetcs"]
 	path = bundle/aspnetcs
 	url = git://github.com/vim-scripts/aspnetcs.git
@@ -209,4 +205,20 @@
 [submodule "bundle/CoVim"]
 	path = bundle/CoVim
 	url = git://github.com/FredKSchott/CoVim.git
+  ignore = dirty
+[submodule "bundle/vim-fireplace"]
+	path = bundle/vim-fireplace
+	url = git://github.com/tpope/vim-fireplace.git
+  ignore = dirty
+[submodule "bundle/vim-classpath"]
+	path = bundle/vim-classpath
+	url = git://github.com/tpope/vim-classpath.git
+  ignore = dirty
+[submodule "bundle/vim-clojure-static"]
+	path = bundle/vim-clojure-static
+	url = git://github.com/guns/vim-clojure-static.git
+  ignore = dirty
+[submodule "bundle/rainbow_parentheses.vim"]
+	path = bundle/rainbow_parentheses.vim
+	url = https://github.com/kien/rainbow_parentheses.vim.git
   ignore = dirty

@@ -46,7 +46,6 @@ let g:pathogen_disabled = ['']
 "-------------------------------------
 call add(g:pathogen_disabled, 'dbext.vim')
 "call add(g:pathogen_disabled, 'vim-unimpaired')
-call add(g:pathogen_disabled, 'VimClojure')
 
 " I use `tabular' for the moment
 call add(g:pathogen_disabled, 'vim-align')
@@ -1099,10 +1098,33 @@ call Pl#Theme#InsertSegment('ws_marker', 'after', 'lineinfo')
 let g:dbgPavimPort = 9000
 let g:dbgPavimBreakAtEntry = 0
 "1}}}
-" --------VimClojure -----------------{{{1
+" ---(clj)rainbow-parentheses --------{{{1
 "
-"
-"let vimclojure#WantNailgun = 1
+if has("autocmd")
+  :autocmd BufRead,BufNewFile *.{clj} RainbowParenthesesToggle
+  :autocmd BufRead,BufNewFile *.{clj} RainbowParenthesesLoadRound
+  :autocmd BufRead,BufNewFile *.{clj} RainbowParenthesesLoadSquare
+  :autocmd BufRead,BufNewFile *.{clj} RainbowParenthesesLoadBraces
+endif
+
+let g:rbpt_colorpairs = [
+  \ ['brown',       'RoyalBlue3'],
+  \ ['Darkblue',    'SeaGreen3'],
+  \ ['darkgray',    'DarkOrchid3'],
+  \ ['darkgreen',   'firebrick3'],
+  \ ['darkcyan',    'RoyalBlue3'],
+  \ ['darkred',     'SeaGreen3'],
+  \ ['darkmagenta', 'DarkOrchid3'],
+  \ ['brown',       'firebrick3'],
+  \ ['gray',        'RoyalBlue3'],
+  \ ['black',       'SeaGreen3'],
+  \ ['darkmagenta', 'DarkOrchid3'],
+  \ ['Darkblue',    'firebrick3'],
+  \ ['darkgreen',   'RoyalBlue3'],
+  \ ['darkcyan',    'SeaGreen3'],
+  \ ['darkred',     'DarkOrchid3'],
+  \ ['red',         'firebrick3'],
+  \ ]
 
 "1}}}
 
@@ -1730,7 +1752,7 @@ endfunction
 map ,NN :!createIDfile %<CR>
 
 "1}}}
-" --------VimClojure -----------------{{{1
+" ---(clj)vim-clojure-static ---------{{{1
 "
 "
 ""let vimclojure#SplitPos = "right"
@@ -1746,6 +1768,8 @@ map ,NN :!createIDfile %<CR>
 
 
 
+"1}}}
+" ---(clj)rainbow-parentheses --------{{{1
 "1}}}
 
 "------------------------------------------------------------------------------
