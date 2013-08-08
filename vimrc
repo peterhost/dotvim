@@ -269,11 +269,12 @@ if has("gui")
 
     "set guifont=Century\ Schoolbook\ Monospace\ BT:h14
     "set guifont=set guifont=DejaVu\ Sans\ Mono:h11
-    set guifont=Menlo\ Regular:h11
+    "set guifont=Menlo\ Regular:h11
+    set guifont="Meslo LG M DZ":10
     "set guifont=Nitti\ Normal:h12
     nnoremap <silent> <leader>1 :silent! set guifont=Century\ Schoolbook\ Monospace\ BT:h14<CR>
     nnoremap <silent> <leader>2 :silent! set guifont=DejaVu\ Sans\ Mono:h11<CR>
-    nnoremap <silent> <leader>3 :silent! set guifont=Menlo\ Regular:h11<CR>
+    nnoremap <silent> <leader>3 :silent! set guifont="Meslo LG M DZ":10<CR>
     nnoremap <silent> <leader>6 :silent! set guifont=Nitti\ Light:h12<CR>
     nnoremap <silent> <leader>7 :silent! set guifont=Nitti\ Normal:h12<CR>
     nnoremap <silent> <leader>8 :silent! set guifont=Nitti\ Bold:h12<CR>
