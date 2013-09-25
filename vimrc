@@ -1176,6 +1176,11 @@ endif
 au BufRead,BufNewFile *.scss set filetype=scss
 
 "1}}}
+"--------MQL4 syntax ------------------{{{1
+"
+au BufRead,BufNewFile *.mq[4h]      set filetype=mql4
+
+"1}}}
 "--------Vim Diff tweaks---------------{{{1
 if &diff
   colorscheme solarized
