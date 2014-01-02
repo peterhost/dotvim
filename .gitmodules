@@ -222,3 +222,18 @@
 	path = bundle/rainbow_parentheses.vim
 	url = https://github.com/kien/rainbow_parentheses.vim.git
   ignore = dirty
+[submodule "bundle/vim-ipython"]
+	path = bundle/vim-ipython
+	url = https://github.com/ivanov/vim-ipython.git
+  ignore = dirty
+[submodule "bundle/python-syntax"]
+	path = bundle/python-syntax
+	url = https://github.com/hdima/python-syntax
+  ignore = dirty
+[submodule "bundle/pydoc.vim"]
+	path = bundle/pydoc.vim
+	url = https://github.com/fs111/pydoc.vim.git
+  ignore = dirty
+[submodule "bundle/python-mode"]
+	path = bundle/python-mode
+	url = https://github.com/klen/python-mode.git

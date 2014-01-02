@@ -439,11 +439,11 @@ set expandtab "soft tabs, except for languages where it makes sense (python)
 
 " actually show tabs for specific files
 if has('autocmd')
-  " make and python use real tabs
+  " make use real tabs
   autocmd FileType make        set noexpandtab
 
-  "autocmd FileType python      set noexpandtab
-  autocmd FileType python      set shiftwidth=4  " 4 space for indentation in python
+  "python : use recommended 4 spaces indentation
+  autocmd FileType python      set shiftwidth=4
 endif
 
 "1}}}
