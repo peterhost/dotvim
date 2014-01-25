@@ -248,56 +248,59 @@ set formatoptions+=croql
 " --------GUI FONT & size -------------{{{1
 
 if has("gui")
-  if has("gui_macvim")
+    if has("gui_macvim")
 
-    " Default FONT
+        " Default FONT
 
-    "set guifont=Century\ Schoolbook\ Monospace\ BT:h14
-    "set guifont=set guifont=DejaVu\ Sans\ Mono:h11
-    set guifont=Menlo\ Regular:h11
-    "set guifont=Nitti\ Normal:h12
-    nnoremap <silent> <leader>1 :silent! set guifont=Century\ Schoolbook\ Monospace\ BT:h14<CR>
-    nnoremap <silent> <leader>2 :silent! set guifont=DejaVu\ Sans\ Mono:h11<CR>
-    nnoremap <silent> <leader>3 :silent! set guifont=Menlo\ Regular:h11<CR>
-    nnoremap <silent> <leader>4 :silent! set guifont=Nitti\ Light:h12<CR>
-    nnoremap <silent> <leader>7 :silent! set guifont=Nitti\ Normal:h12<CR>
-    nnoremap <silent> <leader>8 :silent! set guifont=Nitti\ Bold:h12<CR>
+        "set guifont=Menlo\ Regular:h11
+        set guifont=SourceCodePro-ExtraLight:h14
 
-  else
+        "set guifont=set guifont=DejaVu\ Sans\ Mono:h11
+        "set guifont=Century\ Schoolbook\ Monospace\ BT:h14
+        "set guifont=Nitti\ Normal:h12
+        nnoremap <silent> <leader>1 :silent! set guifont=Century\ Schoolbook\ Monospace\ BT:h14<CR>
+        nnoremap <silent> <leader>2 :silent! set guifont=DejaVu\ Sans\ Mono:h11<CR>
+        nnoremap <silent> <leader>3 :silent! set guifont=Menlo\ Regular:h11<CR>
+        nnoremap <silent> <leader>4 :silent! set guifont=Nitti\ Light:h12<CR>
+        nnoremap <silent> <leader>7 :silent! set guifont=Nitti\ Normal:h12<CR>
+        nnoremap <silent> <leader>8 :silent! set guifont=Nitti\ Bold:h12<CR>
+        nnoremap <silent> <leader>9 :silent! set guifont=SourceCodePro-ExtraLight:h14<CR>
 
-    " Default FONT
+    else
 
-    "set guifont=Century\ Schoolbook\ Monospace\ BT:h14
-    "set guifont=set guifont=DejaVu\ Sans\ Mono:h11
-    "set guifont=Menlo\ Regular:h11
-    set guifont="Meslo LG M DZ":10
-    "set guifont=Nitti\ Normal:h12
-    nnoremap <silent> <leader>1 :silent! set guifont=Century\ Schoolbook\ Monospace\ BT:h14<CR>
-    nnoremap <silent> <leader>2 :silent! set guifont=DejaVu\ Sans\ Mono:h11<CR>
-    nnoremap <silent> <leader>3 :silent! set guifont="Meslo LG M DZ":10<CR>
-    nnoremap <silent> <leader>6 :silent! set guifont=Nitti\ Light:h12<CR>
-    nnoremap <silent> <leader>7 :silent! set guifont=Nitti\ Normal:h12<CR>
-    nnoremap <silent> <leader>8 :silent! set guifont=Nitti\ Bold:h12<CR>
+        " Default FONT
 
-  endif
+        "set guifont=Century\ Schoolbook\ Monospace\ BT:h14
+        "set guifont=set guifont=DejaVu\ Sans\ Mono:h11
+        "set guifont=Menlo\ Regular:h11
+        set guifont="Meslo LG M DZ":10
+        "set guifont=Nitti\ Normal:h12
+        nnoremap <silent> <leader>1 :silent! set guifont=Century\ Schoolbook\ Monospace\ BT:h14<CR>
+        nnoremap <silent> <leader>2 :silent! set guifont=DejaVu\ Sans\ Mono:h11<CR>
+        nnoremap <silent> <leader>3 :silent! set guifont="Meslo LG M DZ":10<CR>
+        nnoremap <silent> <leader>6 :silent! set guifont=Nitti\ Light:h12<CR>
+        nnoremap <silent> <leader>7 :silent! set guifont=Nitti\ Normal:h12<CR>
+        nnoremap <silent> <leader>8 :silent! set guifont=Nitti\ Bold:h12<CR>
+
+    endif
 
 
-  ""
-  "" FONTSIZE changer
-  "" from: http://vim.wikia.com/wiki/Change_font_size_quickly
-  ""
-  "nnoremap <silent> <S-Up> :silent! let &guifont = substitute(
-  nnoremap <silent> <leader>= :silent! let &guifont = substitute(
-  \ &guifont,
-  \ ':h\zs\d\+',
-  \ '\=eval(submatch(0)+1)',
-  \ '')<CR>
-  "nnoremap <silent> <S-Down> :silent! let &guifont = substitute(
-  nnoremap <silent> <leader>- :silent! let &guifont = substitute(
-  \ &guifont,
-  \ ':h\zs\d\+',
-  \ '\=eval(submatch(0)-1)',
-  \ '')<CR>
+    ""
+    "" FONTSIZE changer
+    "" from: http://vim.wikia.com/wiki/Change_font_size_quickly
+    ""
+    "nnoremap <silent> <S-Up> :silent! let &guifont = substitute(
+    nnoremap <silent> <leader>= :silent! let &guifont = substitute(
+                \ &guifont,
+                \ ':h\zs\d\+',
+                \ '\=eval(submatch(0)+1)',
+                \ '')<CR>
+    "nnoremap <silent> <S-Down> :silent! let &guifont = substitute(
+    nnoremap <silent> <leader>- :silent! let &guifont = substitute(
+                \ &guifont,
+                \ ':h\zs\d\+',
+                \ '\=eval(submatch(0)-1)',
+                \ '')<CR>
 
 
 endif
