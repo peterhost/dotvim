@@ -26,3 +26,4 @@ local/*
 
 # Also ignore BUNDLES (as we now use vundle)
 bundle/*
+bundle/
