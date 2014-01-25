@@ -23,34 +23,86 @@ set nocompatible
 "" see http://www.adamlowe.me/2009/12/vim-destroys-all-other-rails-editors.html
 filetype off
 
-"~~~ PATHOGEN ~~~
-runtime bundle/vim-pathogen/autoload/pathogen.vim
+""~~~ PATHOGEN ~~~
+"runtime bundle/vim-pathogen/autoload/pathogen.vim
 
 ""~~~ VUNDLE ~~~
-"set rtp+=~/.vim/bundle/vundle/
-"call vundle#rc()
+set rtp+=~/.vim/bundle/vundle/
+call vundle#rc()
 
 "1}}}
 " ------Load/Unload plugins RULES -----{{{1
 
+Bundle 'gmarik/vundle'  " the VUNDLE plugin manager has to be able and manange itself
 
 
-" CUSTOM logic
-" To disable a plugin, add it's bundle name to the following list
-let g:pathogen_disabled = ['']
-"let g:pathogen_disabled = ['Decho', 'svndiff', 'ManPageView', 'vim-blcose', 'SearchComplete', 'supertab', 'vim-fugitive', 'ShowTabs', 'vim-colors-solarized' ]
+"" CUSTOM logic
+"" To disable a plugin, add it's bundle name to the following list
+"let g:pathogen_disabled = ['']
+""let g:pathogen_disabled = ['Decho', 'svndiff', 'ManPageView', 'vim-blcose', 'SearchComplete', 'supertab', 'vim-fugitive', 'ShowTabs', 'vim-colors-solarized' ]
 
 "-------------------------------------
 "              UNUSED
 "
 "-------------------------------------
-call add(g:pathogen_disabled, 'dbext.vim')
+"call add(g:pathogen_disabled, 'dbext.vim')
 "call add(g:pathogen_disabled, 'vim-unimpaired')
 
-" I use `tabular' for the moment
-call add(g:pathogen_disabled, 'vim-align')
-call add(g:pathogen_disabled, 'tartify')
-call add(g:pathogen_disabled, 'numbers')
+
+" -------------------------------------
+" MODULES LOADED IN ANY CASE
+"
+" -------------------------------------
+
+Bundle 'miripiruni/CSScomb-for-Vim'        " CSS Cleaner
+Bundle 'brookhong/DBGPavim'                " PHP debuger
+Bundle 'Decho'                             " Vim Debugger
+Bundle 'FencView'                          " Advanced encoding detector
+Bundle 'FuzzyFinder'                       " Fuzzy file/dir/tag/... finder
+Bundle 'Gist.vim'                          " edit/post gists
+Bundle 'Gundo'                             " Undo with tree, branching, history
+Bundle 'L9'                                " (required by fuzzyfinder)
+Bundle 'LargeFile'                         " Large files loading
+Bundle 'sjbach/lusty'                      " provides LustyJuggler, LustyExplorer        | DEPENDS ruby
+Bundle 'YankRing.vim'                      " Copy / Paste with history
+Bundle 'aspnetcs'                          " Vim syntax highlight for asp.net ...
+Bundle 'roman/golden-ratio'                " Resize workspace with golden ratio
+Bundle 'html5-syntax.vim'                  " HTML5 syntax highlight with microdata, rdf,... support
+Bundle 'wookiehangover/jshint.vim'         " jshint check for js                      | DEPENDS nodejs
+Bundle 'scrooloose/nerdcommenter'          " awesome commenting plugin
+Bundle 'scrooloose/nerdtree'               " file browser
+Bundle 'session.vim--Odding'               " Session handling for VIM
+Bundle 'Valloric/YouCompleteMe'            " Powerfull completion tool, including CTAGS (replacement for tagbar)
+" Bundle 'majutsushi/tagbar'               " CTAGS tagbar for dynamic analysis (use YouCompleteMe instead)
+Bundle 'ervandew/supertab'                 " Completion tool on TAB
+Bundle 'scrooloose/syntastic'              " Syntax checking
+Bundle 'godlygeek/tabular'                 " the TABULARIZE fonction for fast re-aligning of code
+Bundle 'vim-bclose'                        " Close buffer but leave window alone : adds Kwbd command (see below)
+" Bundle 'vim-behat'                       " interface to BEHAT TDD
+Bundle 'slack/vim-bufexplorer'             " lists buffers in new tab/window (for ex)
+Bundle 'altercation/vim-colors-solarized'  " the Solarized colorscheme
+Bundle 'skammer/vim-css-color'             " display colors inline in CSS
+Bundle 'tpope/vim-fugitive'                " Tpope's GIT for vim
+Bundle 'tpope/vim-git'                     " Tpope syntax,... for editing git related files
+Bundle 'pangloss/vim-javascript'           " JavaScript bundle provides syntax and indent plugin
+Bundle 'itspriddle/vim-jekyll'             " manage Jekull blog from within Vim
+Bundle 'vim-matchit'                       " matchit.zip : extended % matching for HTML, LaTeX, and many other languages  | DEPREC ?
+Bundle 'vim-peepopen'                      " integration with peepopen for macos
+Bundle 'shemerey/vim-powerline'            " super duper status line
+Bundle 'tpope/vim-repeat'                  " tpope,'s better repeat for vim
+Bundle 'tpope/vim-surround'                " surround by tpope
+Bundle 'vim-unimpaired'                    " tpope too
+Bundle 'drmingdrmer/xptemplate'            " powerfull TAB templates ala textmate
+
+
+" ----- PYTHON ------
+Bundle 'klen/python-mode'
+
+" ----- SYNTAXES ----
+Bundle 'plasticboy/vim-markdown'  " Syntax highlighting, matching rules and mappings for Markdown.
+Bundle 'cakebaker/scss-syntax.vim'         " syntax highlight for SCSS templates
+Bundle 'digitaltoa/vim-jade'                          " syntax highlight for Jade templates
+Bundle 'wavded/vim-stylus'  " Syntax highlighting for Stylus.
 
 "-------------------------------------
 "        CONDITIONAL LOADING
@@ -126,7 +178,6 @@ endif
 
 
 if v:version < '702'
-  call add(g:pathogen_disabled, 'autocomplpop')
   call add(g:pathogen_disabled, 'FuzzyFinder')
   call add(g:pathogen_disabled, 'L9')
 endif
