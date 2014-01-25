@@ -20,3 +20,9 @@ simplenoterc
 
 tmp
 ttmp
+local/*
+.netrwhist
+*.swp
+
+# Also ignore BUNDLES (as we now use vundle)
+bundle/*
