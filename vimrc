@@ -15,16 +15,14 @@
 "##############################################################################
 
 
-" ---Pathogen / Vundle INITIALISATION-{{{1
+" ---Vundle INITIALISATION------------{{{1
 " This must be first, because it changes other options as side effect
 set nocompatible
 
-"" Needed on some linux distros for proper pathogen loading
+"" Needed on some linux distros for proper pathogen/vundle loading
 "" see http://www.adamlowe.me/2009/12/vim-destroys-all-other-rails-editors.html
 filetype off
 
-""~~~ PATHOGEN ~~~
-"runtime bundle/vim-pathogen/autoload/pathogen.vim
 
 ""~~~ VUNDLE ~~~
 set rtp+=~/.vim/bundle/vundle/
@@ -33,20 +31,15 @@ call vundle#rc()
 "1}}}
 " ------Load/Unload plugins RULES -----{{{1
 
-Bundle 'gmarik/vundle'  " the VUNDLE plugin manager has to be able and manange itself
+" the VUNDLE plugin manager has to be able and manange itself
+Bundle 'gmarik/vundle'
 
 
-"" CUSTOM logic
-"" To disable a plugin, add it's bundle name to the following list
-"let g:pathogen_disabled = ['']
-""let g:pathogen_disabled = ['Decho', 'svndiff', 'ManPageView', 'vim-blcose', 'SearchComplete', 'supertab', 'vim-fugitive', 'ShowTabs', 'vim-colors-solarized' ]
 
 "-------------------------------------
 "              UNUSED
 "
 "-------------------------------------
-"call add(g:pathogen_disabled, 'dbext.vim')
-"call add(g:pathogen_disabled, 'vim-unimpaired')
 
 
 " -------------------------------------
@@ -54,137 +47,137 @@ Bundle 'gmarik/vundle'  " the VUNDLE plugin manager has to be able and manange i
 "
 " -------------------------------------
 
-Bundle 'miripiruni/CSScomb-for-Vim'        " CSS Cleaner
-Bundle 'brookhong/DBGPavim'                " PHP debuger
-Bundle 'Decho'                             " Vim Debugger
-Bundle 'FencView'                          " Advanced encoding detector
-Bundle 'FuzzyFinder'                       " Fuzzy file/dir/tag/... finder
-Bundle 'Gist.vim'                          " edit/post gists
-Bundle 'Gundo'                             " Undo with tree, branching, history
-Bundle 'L9'                                " (required by fuzzyfinder)
-Bundle 'LargeFile'                         " Large files loading
-Bundle 'sjbach/lusty'                      " provides LustyJuggler, LustyExplorer        | DEPENDS ruby
-Bundle 'YankRing.vim'                      " Copy / Paste with history
-Bundle 'aspnetcs'                          " Vim syntax highlight for asp.net ...
-Bundle 'roman/golden-ratio'                " Resize workspace with golden ratio
-Bundle 'html5-syntax.vim'                  " HTML5 syntax highlight with microdata, rdf,... support
-Bundle 'wookiehangover/jshint.vim'         " jshint check for js                      | DEPENDS nodejs
-Bundle 'scrooloose/nerdcommenter'          " awesome commenting plugin
-Bundle 'scrooloose/nerdtree'               " file browser
-Bundle 'session.vim--Odding'               " Session handling for VIM
-Bundle 'Valloric/YouCompleteMe'            " Powerfull completion tool, including CTAGS (replacement for tagbar)
-" Bundle 'majutsushi/tagbar'               " CTAGS tagbar for dynamic analysis (use YouCompleteMe instead)
-Bundle 'ervandew/supertab'                 " Completion tool on TAB
-Bundle 'scrooloose/syntastic'              " Syntax checking
-Bundle 'godlygeek/tabular'                 " the TABULARIZE fonction for fast re-aligning of code
-Bundle 'vim-bclose'                        " Close buffer but leave window alone : adds Kwbd command (see below)
-" Bundle 'vim-behat'                       " interface to BEHAT TDD
-Bundle 'slack/vim-bufexplorer'             " lists buffers in new tab/window (for ex)
-Bundle 'altercation/vim-colors-solarized'  " the Solarized colorscheme
-Bundle 'skammer/vim-css-color'             " display colors inline in CSS
-Bundle 'tpope/vim-fugitive'                " Tpope's GIT for vim
-Bundle 'tpope/vim-git'                     " Tpope syntax,... for editing git related files
-Bundle 'pangloss/vim-javascript'           " JavaScript bundle provides syntax and indent plugin
-Bundle 'itspriddle/vim-jekyll'             " manage Jekull blog from within Vim
-Bundle 'vim-matchit'                       " matchit.zip : extended % matching for HTML, LaTeX, and many other languages  | DEPREC ?
-Bundle 'vim-peepopen'                      " integration with peepopen for macos
-Bundle 'shemerey/vim-powerline'            " super duper status line
-Bundle 'tpope/vim-repeat'                  " tpope,'s better repeat for vim
-Bundle 'tpope/vim-surround'                " surround by tpope
-Bundle 'vim-unimpaired'                    " tpope too
-Bundle 'drmingdrmer/xptemplate'            " powerfull TAB templates ala textmate
+" CSS Cleaner
+Bundle 'miripiruni/CSScomb-for-Vim'
+" PHP debuger
+Bundle 'brookhong/DBGPavim'
+" Vim Debugger
+Bundle 'Decho'
+" Advanced encoding detector
+Bundle 'vim-scripts/FencView.vim'
+" edit/post gists
+Bundle 'vim-scripts/Gist.vim'
+" Large files loading
+Bundle 'vim-scripts/LargeFile'
+" Copy / Paste with history
+Bundle 'YankRing.vim'
+" Vim syntax highlight for asp.net ...
+Bundle 'aspnetcs'
+" Resize workspace with golden ratio
+Bundle 'roman/golden-ratio'
+" HTML5 syntax highlight with microdata, rdf,... support
+Bundle 'othree/html5.vim'
+" jshint check for js                      | DEPENDS nodejs
+Bundle 'wookiehangover/jshint.vim'
+" awesome commenting plugin
+Bundle 'scrooloose/nerdcommenter'
+" file browser
+Bundle 'scrooloose/nerdtree'
+" Session handling for VIM
+Bundle 'session.vim--Odding'
+
+" Completion tool on TAB
+Bundle 'ervandew/supertab'
+
+" Syntax checking
+Bundle 'scrooloose/syntastic'
+" the TABULARIZE fonction for fast re-aligning of code
+Bundle 'godlygeek/tabular'
+" Close buffer but leave window alone : adds Kwbd command (see below)
+Bundle 'cespare/vim-bclose'
+" lists buffers in new tab/window (for ex)
+Bundle 'slack/vim-bufexplorer'
+" the Solarized colorscheme
+Bundle 'altercation/vim-colors-solarized'
+" display colors inline in CSS
+Bundle 'skammer/vim-css-color'
+" Tpope's GIT for vim
+Bundle 'tpope/vim-fugitive'
+" Tpope syntax,... for editing git related files
+Bundle 'tpope/vim-git'
+" JavaScript bundle provides syntax and indent plugin
+Bundle 'pangloss/vim-javascript'
+" manage Jekull blog from within Vim
+Bundle 'itspriddle/vim-jekyll'
+" matchit.zip : extended % matching for HTML, LaTeX, and many other languages  | DEPREC ?
+Bundle 'tsaleh/vim-matchit'
+" super duper status line
+Bundle 'Lokaltog/vim-powerline'
+" tpope,'s better repeat for vim
+Bundle 'tpope/vim-repeat'
+" surround by tpope
+Bundle 'tpope/vim-surround'
+" tpope too
+Bundle 'tpope/vim-unimpaired'
+" powerfull TAB templates ala textmate
+Bundle 'drmingdrmer/xptemplate'
 
 
 " ----- PYTHON ------
 Bundle 'klen/python-mode'
+"Bundle 'davidhalter/jedi-vim'
 
 " ----- SYNTAXES ----
-Bundle 'plasticboy/vim-markdown'  " Syntax highlighting, matching rules and mappings for Markdown.
-Bundle 'cakebaker/scss-syntax.vim'         " syntax highlight for SCSS templates
-Bundle 'digitaltoa/vim-jade'                          " syntax highlight for Jade templates
-Bundle 'wavded/vim-stylus'  " Syntax highlighting for Stylus.
+" Syntax highlighting, matching rules and mappings for Markdown.
+Bundle 'plasticboy/vim-markdown'
+" syntax highlight for SCSS templates
+Bundle 'cakebaker/scss-syntax.vim'
+" syntax highlight for Jade templates
+Bundle 'digitaltoad/vim-jade'
+" Syntax highlighting for Stylus.
+Bundle 'wavded/vim-stylus'
 
 "-------------------------------------
 "        CONDITIONAL LOADING
 "
 "-------------------------------------
 
-if !has('gui_running')
-  "call add(g:pathogen_disabled, 'css-color')
-  " for some reason the csscolor plugin is very slow when run on the terminal
-  " but not in GVim, so disable it if no GUI is running
-
-  "Disabled in terminal mode : too costly
-  call add(g:pathogen_disabled, 'tagbar')
-
-  "and this one because it's slowing down Vim too in terminal
-  call add(g:pathogen_disabled, 'numbers')
-
-endif
-
-
-
-
-
-"Relentit trop macvim
 if has('gui_running')
-  call add(g:pathogen_disabled, 'vim-behat')
-endi
-
-
-
-
-
-
-
-
-"if ! has("gui_macvim")
-"  "the PEEPOPEN program is a Macos specific Command-T
-"  call add(g:pathogen_disabled, 'vim-peepopen')
-"end
-
-
-" On enable DBGPavim que sur PALMERSTON
-"if ! has("gui_macvim")
-  "call add(g:pathogen_disabled, 'DBGPavim')
-"end
-
-
-"if !has('gui') || &t_Co < 256
-"  call add(g:pathogen_disabled, 'csapprox')
-"  "csapprox need Vim compiled with gui support to work
-"endif
-
-
-if  !has('ruby')
-  call add(g:pathogen_disabled, 'LustyJuggler')
-  call add(g:pathogen_disabled, 'lusty-explorer')
-  call add(g:pathogen_disabled, 'command-t')
-  " All those need ruby support
+ " CTAGS tagbar for dynamic analysis (use YouCompleteMe instead)
+ Bundle 'majutsushi/tagbar'
 endif
 
 
-if  !has('python')
-  call add(g:pathogen_disabled, 'simplenote.vim')
-  call add(g:pathogen_disabled, 'CoVim')
-  " All those need python support
+
+if has("gui_macvim")
+  "the PEEPOPEN program is a Macos specific Command-T
+
+  " integration with peepopen for macos
+  Bundle 'shemerey/vim-peepopen'
+end
+
+if v:version >= '702'
+  " (required by fuzzyfinder)
+  Bundle 'L9'
+  " Fuzzy file/dir/tag/... finder
+  Bundle 'FuzzyFinder'
+endif
+
+" All those need ruby support
+if  has('ruby')
+  " provides LustyJuggler, LustyExplorer        | DEPENDS ruby
+  Bundle 'sjbach/lusty'
 endif
 
 
-if v:version < '703' || !has('python')
-  call add(g:pathogen_disabled, 'Gundo')
+" All those need python support
+if  has('python')
+  " Powerfull completion tool, including CTAGS (replacement for tagbar)
+  Bundle 'Valloric/YouCompleteMe'
+endif
+
+
+if v:version >= '703' && !has('python')
   " Gundo requires at least Vim 7.3
+
+  " Undo with tree, branching, history
+  Bundle 'Gundo'
 endif
 
 
-if v:version < '702'
-  call add(g:pathogen_disabled, 'FuzzyFinder')
-  call add(g:pathogen_disabled, 'L9')
-endif
 
 if !has("signs")
-  call add(g:pathogen_disabled, 'ShowMarks')
-  call add(g:pathogen_disabled, 'svndiff')
+  "
 endif
 
 
@@ -193,16 +186,11 @@ endif
 
 
 "1}}}
-" ---Pathogen / Vundle POST-INIT------{{{1
+" ---Vundle POST-INIT-----------------{{{1
 
-"~~~ PATHOGEN ~~~
-" It is essential that these lines are called before enabling filetype detection
-call pathogen#infect()
-call pathogen#helptags()
-call pathogen#incubate()
 
 ""~~~ VUNDLE ~~~
-"filetype plugin indent on     " required!
+filetype plugin indent on     " required!
 " "
 " " Brief help
 " " :BundleList          - list configured bundles
@@ -962,6 +950,23 @@ syntax match myHighlight1 /.*WARN.*/
 "                           PLUGIN SPECIFIC CONFIGS
 "------------------------------------------------------------------------------
 
+" --------youCompleteMe----------------{{{1
+
+
+"let g:ycm_path_to_python_interpreter = '/usr/local/opt/pyenv/bin/pyenv'
+"let g:ycm_path_to_python_interpreter = '/usr/local/opt/pyenv/shims/python'
+"let g:ycm_path_to_python_interpreter = '/usr/local/opt/pyenv/versions/2.7.3/bin/python'
+"let g:ycm_path_to_python_interpreter = ' /usr/local/Cellar/python/2.7.6/Frameworks/Python.framework/Versions/2.7/Python'
+"let g:ycm_path_to_python_interpreter = '/usr/local/bin/python2.7'
+
+" WARNING : on OSX, or any environment where python is managed with PYENV,
+" make sur to compile youCompleteMe with the system python (do that in ZSH for
+" ex to avoid loading specific PATH modifications of .bashrc)
+if has("gui_macvim")
+    let g:ycm_path_to_python_interpreter = '/usr/bin/python'
+endif
+
+"1}}}
 " --------NeoComplCache----------------{{{1
 
 
@@ -1049,13 +1054,6 @@ let g:syntastic_javascript_jshint_conf = "~/.jshintrc"
 
 
 
-
-"1}}}
-" --------ShowMarks(x)-----------------{{{1
-
-
-""let g:showmarks_enable=0       "ShowMarks - disable by default
-"let g:Tlist_Use_SingleClick=1  "TagList   - single click to 'goto' tag
 
 "1}}}
 " --------Command-T(x)-----------------{{{1
@@ -1960,21 +1958,6 @@ else
   nmap <leader>q      :ConqueTermTab bash<CR>
 endif
 "1}}}
-" ---------SvnDiff---------------------{{{1
-"
-
-nmap <leader>dd       :call Svndiff("next")<CR>
-nmap <leader>dn       :call Svndiff("next")<CR>
-nmap <leader>du       :call Svndiff("prev")<CR>
-nmap <leader>dp       :call Svndiff("prev")<CR>
-nmap <leader>dc       :call Svndiff("clear")<CR>
-nmap <leader>dh       :call Svndiff("clear")<CR>
-nmap <leader>ds       :call Svndiff("show")<CR>
-
-
-let g:svndiff_autoupdate=1
-
-"1}}}
 " -------- Decho Debugger -------------{{{1
 
 
@@ -2286,7 +2269,6 @@ endif
 " NERDTree     : ,CMD+t
 "
 " GundoToggle  : ,u
-" ShowMarks    : ,mt  -> toggle ShowMarks
 "
 " YankRing     : ,y
 "
