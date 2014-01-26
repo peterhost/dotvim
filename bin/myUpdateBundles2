@@ -1,0 +1,62 @@
+#!/bin/sh
+
+
+# HELPER FUNC
+# CONFIRM
+# issues a [Y/N] confirm dialog
+# returns 0 if yes, 1 if no
+function ___confirm() {
+  #? confirm [y/n]
+  local confirm_
+  local msg=$1
+  echo -ne "${__R_}${msg}" : "${__EMR_}Are you sure ?${__R_} [Y/N]"
+  read confirm_
+  if [[ "$confirm_" =~ ^y|Y$ ]]
+  then
+    echo  " ${__G_}-> proceeding...${__NN_}"
+    echo
+    #return 0
+  else
+    echo -ne "${__R_}... ABORTED\n${__NN_}"
+    echo
+    return 1
+  fi
+
+}
+
+function errorAndExit() {
+  echo "$__EMR_
+
+  ERROR : $1
+"
+  #exit the script
+  kill -SIGINT $$
+}
+
+
+
+
+
+function doyourshit(){
+
+# NOw that we use VUNDLE, it only consists of cloning vundle in the bundle directory
+
+  # go to project root
+  cd $( git rev-parse --show-toplevel)
+
+
+  printf "$__UN_%s$__NN_\n" "______________________________________"
+  printf "$__EMG_%s$__NN_\n" " INSTALLING VUNDLE"
+  printf "$__UN_%s$__NN_\n" "______________________________________"
+
+  rm -rf ~/.vim/bundle/vundle
+  git clone https://github.com/gmarik/vundle.git ~/.vim/bundle/vundle
+
+  printf "$__UN_%s$__NN_\n" "______________________________________"
+  printf "$__EMG_%s$__NN_\n" "    FINISHED installing VUNDLE"
+  printf "$__UN_%s$__NN_\n" "______________________________________"
+
+}
+
+
+doyourshit

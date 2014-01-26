@@ -54,7 +54,7 @@ echo "making new symlink"
 ln -s $pathToHere/../gvimrc.local $HOME/.gvimrc.local
 
 
-. $pathToHere/myUpdateBundles
+. $pathToHere/myUpdateBundles2
 
 #_____________________________
 # INSTALL FONTS for PowerLine
