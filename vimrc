@@ -1083,6 +1083,16 @@ let g:syntastic_javascript_jshint_conf = "~/.jshintrc"
 
 "let g:tagbar_type_javascript ="jsctags"
 
+" also, cf. https://stackoverflow.com/questions/8570357/ctags-and-tagbar-configuration-are-out-of-sync
+let g:tagbar_type_javascript = {
+    \ 'ctagstype' : 'JavaScript',
+    \ 'kinds'     : [
+        \ 'o:objects',
+        \ 'f:functions',
+        \ 'a:arrays',
+        \ 's:strings'
+    \ ]
+\ }
 
 
 "1}}}
