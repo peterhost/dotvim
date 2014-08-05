@@ -2212,7 +2212,7 @@ let g:pymode_rope = 0
 " --------Marked(MD preview)-----------{{{1
 
 if has("macunix")
-  :nnoremap <leader>P :silent !open -a Marked.app '%:p'<cr>
+  :nnoremap <leader>P :silent !open -a Marked\ 2.app '%:p'<cr>
 endif
 
 
