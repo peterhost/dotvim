@@ -1614,6 +1614,8 @@ nmap <silent> <leader>ev :call UnSymLinkEdit($MYVIMRC)<CR>
 nmap <silent> <leader>sv :mapc<CR>:mapc!<CR>:so $MYVIMRC<CR>
 " Quickly edit/reload the bashrc file
 nmap <silent> <leader>eb :call UnSymLinkEdit($HOME . "/.bashrc")<CR>
+" Quickly edit/reload the hydra file (MacOS windows manager)
+nmap <silent> <leader>eh :call UnSymLinkEdit($HOME . "/.hydra/init.lua")<CR>
 " Same for the statusLine
 nmap <silent> <leader>es :e $HOME/.vim/bundle/tartify/plugin/tartify.vim<CR>
 nmap <silent> <leader>ss :so $HOME/.vim/bundle/tartify/plugin/tartify.vim<CR>
