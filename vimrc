@@ -292,7 +292,7 @@ if has("gui")
         " Default FONT
 
         "set guifont=Menlo\ Regular:h11
-        set guifont=SourceCodePro-ExtraLight:h14
+        set guifont=SourceCodePro-ExtraLight:h15
 
         "set guifont=set guifont=DejaVu\ Sans\ Mono:h11
         "set guifont=Century\ Schoolbook\ Monospace\ BT:h14
