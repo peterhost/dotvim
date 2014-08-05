@@ -2187,6 +2187,22 @@ let g:jekyll_post_template =  [
   \ '']
 
 "1}}}
+" ---------python-mode------------------{{{1
+
+
+" Automatically fix PEP8 errors in the current buffer:
+" (overwrite the general purpuse autoindent defined earlier)
+autocmd FileType python      noremap <F8> :PymodeLintAuto<CR>
+
+"" Automatically fix PEP8 errors in the current buffer
+"" when saving:
+"if has("autocmd")
+"    autocmd BufWritePost *.py !autopep8 -i expand("%")
+"endif
+
+let g:pymode_lint_mccabe_complexity = 20
+let g:pymode_rope = 0
+"1}}}
 
 
 "------------------------------------------------------------------------------
