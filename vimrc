@@ -1969,7 +1969,7 @@ nmap <leader>wd       :DeleteSession
 nmap <leader>wv       :ViewSession<CR>
 nmap <leader>wr       :RestartVim<CR>
 
-let g:session_autosave=1
+"let g:session_autosave=1
 "let g:session_autoload=1
 "1}}}
 "---------ConqueTerm-------------------{{{1
