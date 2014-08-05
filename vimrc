@@ -115,7 +115,12 @@ Bundle 'drmingdrmer/xptemplate'
 
 " ----- PYTHON ------
 Bundle 'klen/python-mode'
-"Bundle 'davidhalter/jedi-vim'
+Bundle 'davidhalter/jedi-vim'
+
+if  has('python')
+  " Powerfull completion tool, including CTAGS (replacement for tagbar)
+  "Bundle 'Valloric/YouCompleteMe'
+endif
 
 " ----- SYNTAXES ----
 " Syntax highlighting, matching rules and mappings for Markdown.
@@ -160,11 +165,6 @@ if  has('ruby')
 endif
 
 
-" All those need python support
-if  has('python')
-  " Powerfull completion tool, including CTAGS (replacement for tagbar)
-  Bundle 'Valloric/YouCompleteMe'
-endif
 
 
 if v:version >= '703' && !has('python')
