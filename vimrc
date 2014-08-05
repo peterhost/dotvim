@@ -950,14 +950,24 @@ syntax match myHighlight1 /.*WARN.*/
 "                           PLUGIN SPECIFIC CONFIGS
 "------------------------------------------------------------------------------
 
+" --------jedi-vim (python)------------{{{1
+
+" Macos with pyenv : http://stackoverflow.com/a/2086309
+" to check :
+"
+"   :python import sys
+"   :python print sys.path
+"
+if has("gui_macvim")
+    python sys.path.append("/usr/local/opt/pyenv/versions/2.7.3/lib/python2.7/site-packages")
+    python sys.path.append("/usr/local/opt/pyenv/versions/2.3.2/lib/python3.3/site-packages")
+endif
+
+
+"1}}}
 " --------youCompleteMe----------------{{{1
 
 
-"let g:ycm_path_to_python_interpreter = '/usr/local/opt/pyenv/bin/pyenv'
-"let g:ycm_path_to_python_interpreter = '/usr/local/opt/pyenv/shims/python'
-"let g:ycm_path_to_python_interpreter = '/usr/local/opt/pyenv/versions/2.7.3/bin/python'
-"let g:ycm_path_to_python_interpreter = ' /usr/local/Cellar/python/2.7.6/Frameworks/Python.framework/Versions/2.7/Python'
-"let g:ycm_path_to_python_interpreter = '/usr/local/bin/python2.7'
 
 " WARNING : on OSX, or any environment where python is managed with PYENV,
 " make sur to compile youCompleteMe with the system python (do that in ZSH for
