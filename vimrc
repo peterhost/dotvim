@@ -139,8 +139,8 @@ Bundle 'wavded/vim-stylus'
 
 if has('gui_running')
  " CTAGS tagbar for dynamic analysis (use YouCompleteMe instead)
- Bundle 'majutsushi/tagbar'
 endif
+ Bundle 'majutsushi/tagbar'
 
 
 
