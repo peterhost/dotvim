@@ -100,7 +100,7 @@ Bundle 'pangloss/vim-javascript'
 " manage Jekull blog from within Vim
 Bundle 'itspriddle/vim-jekyll'
 " matchit.zip : extended % matching for HTML, LaTeX, and many other languages  | DEPREC ?
-Bundle 'tsaleh/vim-matchit'
+Bundle 'eshock/vim-matchit'
 " super duper status line
 Bundle 'Lokaltog/vim-powerline'
 " tpope,'s better repeat for vim
