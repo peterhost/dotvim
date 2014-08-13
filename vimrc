@@ -86,7 +86,7 @@ Bundle 'godlygeek/tabular'
 " Close buffer but leave window alone : adds Kwbd command (see below)
 Bundle 'cespare/vim-bclose'
 " lists buffers in new tab/window (for ex)
-Bundle 'slack/vim-bufexplorer'
+Bundle 'jlanzarotta/bufexplorer'
 " the Solarized colorscheme
 Bundle 'altercation/vim-colors-solarized'
 " display colors inline in CSS
