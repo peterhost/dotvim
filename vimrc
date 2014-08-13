@@ -1805,7 +1805,7 @@ map ,5 :!html5check %<CR>
 "--------Create TMP buffer-tab IDfile--{{{1
 "
 
-function! g:tartify_list(arg)
+"function! g:tartify_list(arg)
   "if match(a:arg , 'plug|plugin|plugins')
     ""for f in split(glob('/Users/plhoste/.vim/bundle/tartify/*' ), '\n')
     "for f in split(glob(s:tart_pluginDir . "*"), '\n')
@@ -1821,10 +1821,7 @@ function! g:tartify_list(arg)
       "call Decho("unknown arg for g:tart_pluginDir()")
     "endif
   "endif
-
-
-
-endfunction
+"endfunction
 
 
 
