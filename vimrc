@@ -815,16 +815,16 @@ if has("gui") &&   has("gui_running")
     call togglebg#map("<F5>")       " F5 toggle background
 
     "DARK
-    nnoremap <silent> <leader>@& :silent! colorscheme solarized   <bar>set background=dark <CR>       <CR> " @ 1
-    nnoremap <silent> <leader>@é :silent! colorscheme mustang     <bar>set background=dark <CR>         <CR> " @ 2
-    nnoremap <silent> <leader>@" :silent! colorscheme vibrantink2 <bar>set background=dark <CR>     <CR> " @ 3
-    nnoremap <silent> <leader>@' :silent! colorscheme jellybeans  <bar>set background=dark <CR>       <CR> " @ 4
-    nnoremap <silent> <leader>@a :silent! colorscheme festoon     <bar>set background=dark <CR>         <CR> " @ e
-    nnoremap <silent> <leader>@z :silent! colorscheme freya       <bar>set background=dark <CR>         <CR> " @ z
-    nnoremap <silent> <leader>@e :silent! colorscheme inkpot      <bar>set background=dark <CR>         <CR> " @ a
+    nnoremap <silent> <leader>@& :silent! colorscheme solarized   <bar>set background=dark <CR> <CR> " @ 1
+    nnoremap <silent> <leader>@é :silent! colorscheme mustang     <bar>set background=dark <CR> <CR> " @ 2
+    nnoremap <silent> <leader>@" :silent! colorscheme vibrantink2 <bar>set background=dark <CR> <CR> " @ 3
+    nnoremap <silent> <leader>@' :silent! colorscheme jellybeans  <bar>set background=dark <CR> <CR> " @ 4
+    nnoremap <silent> <leader>@( :silent! colorscheme smyck       <bar>set background=dark <CR> <CR> " @ 5
+    nnoremap <silent> <leader>@a :silent! colorscheme festoon     <bar>set background=dark <CR> <CR> " @ a
+    nnoremap <silent> <leader>@z :silent! colorscheme freya       <bar>set background=dark <CR> <CR> " @ z
+    nnoremap <silent> <leader>@e :silent! colorscheme inkpot      <bar>set background=dark <CR> <CR> " @ e
 
     "LIGHT
-    nnoremap <silent> <leader>@( :silent! colorscheme smyck       <bar>set background=light <CR> " @ 5
     nnoremap <silent> <leader>@§ :silent! colorscheme mayansmoke  <bar>set background=light <CR> " @ 6
     nnoremap <silent> <leader>@è :silent! colorscheme proton      <bar>set background=light <CR> " @ 7
     nnoremap <silent> <leader>@! :silent! colorscheme pyte        <bar>set background=light <CR> " @ 8
@@ -845,7 +845,8 @@ if has("gui") &&   has("gui_running")
     nnoremap <silent> <leader>@l :silent! set background=light <bar> let g:lucius_style='light' <bar> let g:lucius_contrast='low'    <bar> let g:lucius_contrast_bg='normal' <bar> colorscheme lucius <CR> " @ s
 
 
-    nnoremap <silent> <leader>@  :echoerr "colorscheme not parameterd" <CR> " @ a
+    "nnoremap <silent> <leader>@  :echoerr "colorscheme not parameterd" <CR> " @ a
+    nnoremap <silent> <leader>@  :colorscheme<CR> " @ a
 
   "endif
 
