@@ -111,7 +111,8 @@ Bundle 'tpope/vim-surround'
 Bundle 'tpope/vim-unimpaired'
 " powerfull TAB templates ala textmate
 Bundle 'drmingdrmer/xptemplate'
-
+" alternate buffer explorer
+Bundle 'fholgado/minibufexpl.vim'
 
 " ----- PYTHON ------
 Bundle 'klen/python-mode'
@@ -2200,6 +2201,12 @@ autocmd FileType python      noremap <F8> :PymodeLintAuto<CR>
 
 let g:pymode_lint_mccabe_complexity = 20
 let g:pymode_rope = 0
+"1}}}
+" ---------mini-bufexplorer-------------{{{1
+
+map <Leader>aa :MBEToggle <CR>:MBEFocus <CR>
+map <Leader>az :MBEFocus <CR>
+let g:miniBufExplVSplit = 20   " column width in chars
 "1}}}
 
 
