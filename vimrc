@@ -855,6 +855,9 @@ if has("gui") &&   has("gui_running")
 " Terminal, old Vim => dante, which works everywhere
 elseif v:version < '703'
   colorscheme dante
+" GNU Screen
+elseif $STY != ""
+  colorscheme moria
 else
   "colorscheme mustang
   "colorscheme smyck
