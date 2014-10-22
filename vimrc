@@ -963,6 +963,7 @@ syntax match myHighlight1 /.*WARN.*/
 if has("gui_macvim")
     python sys.path.append("/usr/local/opt/pyenv/versions/2.7.3/lib/python2.7/site-packages")
     python sys.path.append("/usr/local/opt/pyenv/versions/2.3.2/lib/python3.3/site-packages")
+    python sys.path.append("/usr/local/opt/pyenv/versions/3.4.1/lib/python3.4/site-packages")
 endif
 
 
