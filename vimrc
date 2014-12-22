@@ -2221,7 +2221,10 @@ let g:miniBufExplVSplit = 20   " column width in chars
 " --------Marked(MD preview)-----------{{{1
 
 if has("macunix")
-  :nnoremap <leader>P :silent !open -a Marked\ 2.app '%:p'<cr>
+  "" ne marche plus pour je ne sais quelle raison 2014-12-22
+  ":nnoremap <leader>P :silent !open -a Marked\ 2.app '%:p'<cr>
+  "" employer cela à la place :
+  :nnoremap <leader>P :silent !open -a /Applications/Marked\ 2.app '%:p'<cr>
 endif
 
 
