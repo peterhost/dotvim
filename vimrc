@@ -964,9 +964,17 @@ syntax match myHighlight1 /.*WARN.*/
 "   :python print sys.path
 "
 if has("gui_macvim")
+  if has('python3')
+
+    "let g:pyenvPath=system('python -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())"')
+    "python3 sys.path.append(vim.command("echo g:pyenvPath"))
+
+    "python3 sys.path.append("/usr/local/opt/pyenv/versions/3.3.2/lib/python3.3/site-packages")
+    python3 sys.path.append("/usr/local/opt/pyenv/versions/3.4.1/lib/python3.4/site-packages")
+
+  elseif has('python')
     python sys.path.append("/usr/local/opt/pyenv/versions/2.7.3/lib/python2.7/site-packages")
-    python sys.path.append("/usr/local/opt/pyenv/versions/2.3.2/lib/python3.3/site-packages")
-    python sys.path.append("/usr/local/opt/pyenv/versions/3.4.1/lib/python3.4/site-packages")
+  endif
 endif
 
 
