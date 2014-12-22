@@ -91,6 +91,8 @@ Bundle 'jlanzarotta/bufexplorer'
 Bundle 'altercation/vim-colors-solarized'
 " display colors inline in CSS
 Bundle 'skammer/vim-css-color'
+" colorscheme based on github
+Bundle "endel/vim-github-colorscheme.git"
 " Tpope's GIT for vim
 Bundle 'tpope/vim-fugitive'
 " Tpope syntax,... for editing git related files
