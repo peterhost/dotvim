@@ -103,8 +103,15 @@ Bundle 'pangloss/vim-javascript'
 Bundle 'itspriddle/vim-jekyll'
 " matchit.zip : extended % matching for HTML, LaTeX, and many other languages  | DEPREC ?
 Bundle 'eshock/vim-matchit'
-" super duper status line
-Bundle 'Lokaltog/vim-powerline'
+
+"------- STATUS LINE ------
+" DISABLED (unmaintained)
+"Bundle 'Lokaltog/vim-powerline'
+"
+" REPLACES vim-powerline
+Bundle 'bling/vim-airline'
+" ------------------------
+"
 " tpope,'s better repeat for vim
 Bundle 'tpope/vim-repeat'
 " surround by tpope
@@ -1167,29 +1174,86 @@ let g:fencview_checklines=20
 "let $FENCVIEW_TELLENC='tellenc'
 
 "1}}}
-" --------Powerline (STATUSBAR)-------{{{1
+"" --------Powerline (STATUSBAR) [DEPREC]-------{{{1
+""
+"" Great alternative to TARTIFY
+""
+""Fancy needs patched fonts installed
+"if has("gui_macvim")
+"  let g:Powerline_symbols = 'fancy'
+"else
+"  let g:Powerline_symbols = 'unicode'
+"endif
+
+""let g:Powerline_theme = 'skwp'
+"set laststatus=2   " Always show the statusline
+
+
+""short filenames
+"let g:Powerline_stl_path_style = 'filename'
+""let g:Powerline_stl_path_style = 'short'
+""let g:Powerline_stl_path_style = 'relative'
+""let g:Powerline_stl_path_style = 'full'
+
+"" add trailing whitespace info
+"call Pl#Theme#InsertSegment('ws_marker', 'after', 'lineinfo')
+""1}}}
+" --------Airline (STATUSBAR)---------{{{1
 "
-" Great alternative to TARTIFY
-"
-"Fancy needs patched fonts installed
-if has("gui_macvim")
-  let g:Powerline_symbols = 'fancy'
-else
-  let g:Powerline_symbols = 'unicode'
+
+if !exists('g:airline_symbols')
+  let g:airline_symbols = {}
 endif
 
-"let g:Powerline_theme = 'skwp'
+if has("gui_macvim")
+  "let g:airline_theme = 'solarized'
+  let g:airline_powerline_fonts=1
+
+  "following need patched fonts installed
+  " powerline symbols
+  let g:airline_left_sep = ''
+  let g:airline_left_alt_sep = ''
+  let g:airline_right_sep = ''
+  let g:airline_right_alt_sep = ''
+  let g:airline_symbols.branch = ''
+  let g:airline_symbols.readonly = ''
+  let g:airline_symbols.linenr = ''
+
+  " old vim-powerline symbols
+  let g:airline_left_sep = '⮀'
+  let g:airline_left_alt_sep = '⮁'
+  let g:airline_right_sep = '⮂'
+  let g:airline_right_alt_sep = '⮃'
+  let g:airline_symbols.branch = '⭠'
+  let g:airline_symbols.readonly = '⭤'
+  let g:airline_symbols.linenr = '⭡'
+
+
+
+
+
+else
+  let g:airline_theme = 'jellybeans'
+
+  " unicode symbols
+  let g:airline_left_sep = '»'
+  let g:airline_left_sep = '▶'
+  let g:airline_right_sep = '«'
+  let g:airline_right_sep = '◀'
+  let g:airline_symbols.linenr = '␊'
+  let g:airline_symbols.linenr = '␤'
+  let g:airline_symbols.linenr = '¶'
+  let g:airline_symbols.branch = '⎇'
+  let g:airline_symbols.paste = 'ρ'
+  let g:airline_symbols.paste = 'Þ'
+  let g:airline_symbols.paste = '∥'
+  let g:airline_symbols.whitespace = 'Ξ'
+endif
+
 set laststatus=2   " Always show the statusline
 
 
-"short filenames
-let g:Powerline_stl_path_style = 'filename'
-"let g:Powerline_stl_path_style = 'short'
-"let g:Powerline_stl_path_style = 'relative'
-"let g:Powerline_stl_path_style = 'full'
-
-" add trailing whitespace info
-call Pl#Theme#InsertSegment('ws_marker', 'after', 'lineinfo')
+let g:airline#extensions#tabline#enabled = 1
 "1}}}
 " --------DBGPavim (php xdebug plug)--{{{1
 "
