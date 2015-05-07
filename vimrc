@@ -134,6 +134,8 @@ Bundle 'cakebaker/scss-syntax.vim'
 Bundle 'digitaltoad/vim-jade'
 " Syntax highlighting for Stylus.
 Bundle 'wavded/vim-stylus'
+" CSV files
+Bundle 'chrisbra/csv.vim'
 
 "-------------------------------------
 "        CONDITIONAL LOADING
@@ -678,16 +680,20 @@ highlight ExtraWhitespace ctermbg=red guibg=red
 " dark) setup
 
 function! s:setupLongLines()
-  if &background == "light"
-    highlight OverLength ctermbg=red ctermfg=white guibg=#efe9d6
+  " dont highlight for CSV
+  if (&ft=='csv' || &ft=='csv')
+      highlight OverLength ctermbg=transparent ctermfg= guibg=
   else
-    highlight OverLength ctermbg=red ctermfg=white guibg=#592929
+    if &background == "light"
+      highlight OverLength ctermbg=red ctermfg=white guibg=#efe9d6
+    else
+      highlight OverLength ctermbg=red ctermfg=white guibg=#592929
+    endif
   endif
 endfunction
 
 
 if has("autocmd")
-  "au ColorScheme match OverLength /\%81v.\+/
   autocmd ColorScheme * call s:setupLongLines()
 endif
 
@@ -719,7 +725,6 @@ endfunction
 
 
 if has("autocmd")
-  "au ColorScheme match OverLength /\%81v.\+/
   autocmd ColorScheme * call s:setupInappropriateTabs()
 endif
 
@@ -768,10 +773,15 @@ match ExtraWhitespace /\s\+$/
 
 
 if has("autocmd")
-  autocmd BufwinEnter * 2match OverLength /\%81v.\+/
+  " dont highlight for CSV
+  if (&ft=='csv' || &ft=='csv')
+    autocmd BufwinEnter * 2match OverLength /\%81v.\+/
+  endif
 endif
 
-2match OverLength /\%81v.\+/
+if (&ft=='csv' || &ft=='csv')
+  2match OverLength /\%81v.\+/
+endif
 
 
 
@@ -1215,6 +1225,11 @@ let g:rbpt_colorpairs = [
   \ ['red',         'firebrick3'],
   \ ]
 
+"1}}}
+" --------CSV----------------------{{{1
+"
+"
+let g:csv_highlight_column = 'y'
 "1}}}
 
 
