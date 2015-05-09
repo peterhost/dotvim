@@ -1253,7 +1253,16 @@ endif
 set laststatus=2   " Always show the statusline
 
 
+" TABLINE at top of window
 let g:airline#extensions#tabline#enabled = 1
+let g:airline#extensions#tabline#show_tabs = 1
+let g:airline#extensions#tabline#tab_nr_type = 2
+
+" MINI BUFFER
+" Don't collapse inactive windows
+let g:airline_inactive_collapse=1
+
+map <Leader>at :AirlineToggle <CR>
 "1}}}
 " --------DBGPavim (php xdebug plug)--{{{1
 "
@@ -1487,6 +1496,9 @@ set winminheight=1     "minimized window only shows title
 
 "1}}}
 " --------NAVIGATION-------------------{{{1
+
+" ---- WINDOW NAVIGATION ---
+"
 " use CTRL hjkl to navigate in different modes
 
 " NORMAL : Window navigation
@@ -1507,7 +1519,31 @@ map <down> <C-w>j
 map <left> <C-w>h
 map <right> <C-w>l
 
+" ---- TAB NAVIGATION ---
+"
+if has('gui_running')
+  " [Vim GUI] TAB NAVIGATION
+  " alt+arrow left/right in all mode
+  map <A-up> :tabfirst<CR>
+  map <A-down> :tablast<CR>
+  map <A-left> :tabprev<CR>
+  map <A-right> :tabnext<CR>
+  map <A-k> :tabfirst<CR>
+  map <A-j> :tablast<CR>
+  map <A-h> :tabprev<CR>
+  map <A-l> :tabnext<CR>
+endif
 
+" [terminal vim] open new TAB in LAST position
+map <localleader>t :$tabnew<CR>
+map <localleader>w :$tabclose<CR>
+map <localleader>j :tabfirst<CR>
+map <localleader>k :tablast<CR>
+map <localleader>h :tabprev<CR>
+map <localleader>l :tabnext<CR>
+
+" ---- OTHER NAVIGATION ---
+"
 "nmap <C-left> <C-w>h<C-W>_
 "nmap <C-down> <C-w>j<C-W>_
 "nmap <C-up> <C-w>k<C-W>_
@@ -1660,6 +1696,14 @@ nmap `; `.
 nmap <leader>h        :help <C-R>=expand("<cword>")<CR><CR>
 nmap <leader>H        :helpg  <C-R>=expand("<cword>")<CR><CR>
 
+
+"1}}}
+"--------empty-buffers----------------{{{1
+
+" these are i$ VIMHOME/ftplugin/help.vim
+" (mappings specific to help buffer for easy navigation)
+
+nmap <leader>bc        :call g:CleanEmptyBuffers()<CR>
 
 "1}}}
 " --------PERL-(mapping : ,h)----------{{{1
@@ -1884,6 +1928,14 @@ endfunction
 vnoremap ~ ygv"=TwiddleCase(@")<CR>Pgv
 
 
+
+"1}}}
+"--------GF open file in new window --{{{1
+
+"map gf :e <cfile><CR>
+
+" even better : in a vertical split
+map gf :vertical wincmd f<CR>
 
 "1}}}
 "--------Edit ------------------------{{{1
