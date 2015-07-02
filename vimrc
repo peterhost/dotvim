@@ -144,6 +144,10 @@ Bundle 'wavded/vim-stylus'
 " CSV files
 Bundle 'chrisbra/csv.vim'
 
+" ----- TMUX ----
+Plugin 'christoomey/vim-tmux-navigator'
+
+
 "-------------------------------------
 "        CONDITIONAL LOADING
 "
