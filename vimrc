@@ -147,6 +147,8 @@ Bundle 'chrisbra/csv.vim'
 " ----- TMUX ----
 Plugin 'christoomey/vim-tmux-navigator'
 
+" ----- MOVEMENT ---
+"Plugin 'matze/vim-move'
 
 "-------------------------------------
 "        CONDITIONAL LOADING
