@@ -155,10 +155,31 @@ Plugin 'christoomey/vim-tmux-navigator'
 "
 "-------------------------------------
 
-if has('gui_running')
- " CTAGS tagbar for dynamic analysis (use YouCompleteMe instead)
+
+Bundle 'majutsushi/tagbar'
+" TAGBAR & JAVASCRIPT : Use the 'tern' javascript ctags engine replacing the
+"                       original doctorjs jsctags
+" https://github.com/majutsushi/tagbar/wiki#javascript
+" https://github.com/ramitos/jsctags (ctags generator using node 'tern')
+" https://github.com/marijnh/tern_for_vim ('tern' plugin for vim)
+"
+" 1 : `npm install -g git+https://github.com/ramitos/jsctags.git`
+" 2 : `sudo npm install tern -g` (or `npm install tern -g`on mac)
+
+
+if executable('node')
+  if executable('jsctags')
+    if executable('tern')
+      Plugin 'marijnh/tern_for_vim'
+    else
+      "do nothing
+      echo "tern is not installed (ctags for javascript, read .vimrc)"
+    endif
+  else
+    " do nothing
+      echo "jsctags is not installed (ctags for javascript, read .vimrc)"
+  endif
 endif
- Bundle 'majutsushi/tagbar'
 
 
 
@@ -1029,16 +1050,16 @@ endif
 
 
 "1}}}
-" --------youCompleteMe----------------{{{1
+" --------[DEPREC] youCompleteMe----------------{{{1
 
 
 
-" WARNING : on OSX, or any environment where python is managed with PYENV,
-" make sur to compile youCompleteMe with the system python (do that in ZSH for
-" ex to avoid loading specific PATH modifications of .bashrc)
-if has("gui_macvim")
-    let g:ycm_path_to_python_interpreter = '/usr/bin/python'
-endif
+"" WARNING : on OSX, or any environment where python is managed with PYENV,
+"" make sur to compile youCompleteMe with the system python (do that in ZSH for
+"" ex to avoid loading specific PATH modifications of .bashrc)
+"if has("gui_macvim")
+"    let g:ycm_path_to_python_interpreter = '/usr/bin/python'
+"endif
 
 "1}}}
 " --------NeoComplCache----------------{{{1
@@ -1139,24 +1160,39 @@ let g:syntastic_javascript_jshint_conf = "~/.jshintrc"
 
 
 "1}}}
-" --------TagBar(TODO?)----------------{{{1
+" --------TagBar()----------------{{{1
 
+"" ########## FIRST ITERATION #############
 "if has("macunix")
 "  au BufRead,BufNewFile *.js let g:tagbar_ctags_bin="/usr/local/bin/jsctags"
 "endif
 
 "let g:tagbar_type_javascript ="jsctags"
 
-" also, cf. https://stackoverflow.com/questions/8570357/ctags-and-tagbar-configuration-are-out-of-sync
-let g:tagbar_type_javascript = {
-    \ 'ctagstype' : 'JavaScript',
-    \ 'kinds'     : [
-        \ 'o:objects',
-        \ 'f:functions',
-        \ 'a:arrays',
-        \ 's:strings'
-    \ ]
-\ }
+"" ########## SECOND ITERATION #############
+"" retour à Ctags, car le jsctags (doctorjs) originel n'est plus maintenu
+
+"" also, cf. https://stackoverflow.com/questions/8570357/ctags-and-tagbar-configuration-are-out-of-sync
+"let g:tagbar_type_javascript = {
+"    \ 'ctagstype' : 'JavaScript',
+"    \ 'kinds'     : [
+"        \ 'o:objects',
+"        \ 'f:functions',
+"        \ 'a:arrays',
+"        \ 's:strings'
+"    \ ]
+"\ }
+
+"" ########## THIRD ITERATION #############
+"" use the nodejs jsctags, which wraps the maintained 'tern' javascript
+"" engine
+if executable('node')
+  if executable('jsctags')
+    if executable('tern')
+      "do nothing
+    endif
+  endif
+endif
 
 
 "1}}}
