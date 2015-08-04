@@ -343,6 +343,14 @@ else
    endif
 endif
 
+
+" REDRAW in terminal VIM each time a buffer gains focus, to prevent
+" the 'ghost characters' from showing up in 'plugin heavy' situations
+" (lots of system calls)
+" SEE : https://unix.stackexchange.com/questions/58941/how-to-automatically-refresh-vim-on-buffer-window-focus
+" ANS : https://stackoverflow.com/questions/22250690/in-terminal-vim-how-do-i-prevent-ghost-echoing-while-running-a-shell-command-vi
+:au FocusGained * :redraw!
+
 "1}}}
 " --------GUI FONT & size -------------{{{1
 
