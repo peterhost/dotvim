@@ -1195,11 +1195,17 @@ let g:syntastic_javascript_jshint_conf = "~/.jshintrc"
 "" ########## THIRD ITERATION #############
 "" use the nodejs jsctags, which wraps the maintained 'tern' javascript
 "" engine
-if executable('node')
-  if executable('jsctags')
-    if executable('tern')
-      "do nothing
-    endif
+"" TODO : inutile ??
+if executable('node') && executable('jsctags') && executable('tern')
+  if has('unix') && !has('gui_running')
+    "let g:tagbar_type_javascript ="jsctags"
+    let g:tagbar_type_javascript = {
+        \ 'ctagsbin' : '/usr/bin/jsctags'
+        \ }
+  elseif has("macunix")
+    let g:tagbar_type_javascript = {
+        \ 'ctagsbin' : '/usr/local/bin/jsctags'
+        \ }
   endif
 endif
 
