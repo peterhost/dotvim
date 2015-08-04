@@ -481,6 +481,12 @@ nnoremap <leader><C-space> Vatzf
 let g:xml_syntax_folding=1
 au FileType xml setlocal foldmethod=syntax
 au FileType xml set tabstop=4     " a tab is four spaces for XML files
+au FileType xml set shiftwidth=4     " a tab is four spaces for XML files
+
+"1}}}
+" --------Tabulation de 4--------------------------{{{1
+
+au FileType js, cpp, python set shiftwidth=4     " a tab is four spaces for those
 
 "1}}}
 " --------Tabulation name&option-------{{{1
@@ -523,8 +529,6 @@ if has('autocmd')
   " make use real tabs
   autocmd FileType make        set noexpandtab
 
-  "python : use recommended 4 spaces indentation
-  autocmd FileType python      set shiftwidth=4
 endif
 
 "1}}}
