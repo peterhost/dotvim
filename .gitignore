@@ -27,3 +27,9 @@ local/*
 # Also ignore BUNDLES (as we now use vundle)
 bundle/*
 bundle/
+
+
+.DS_Store
+tags/
+vim-powerline-patched-fonts/
+*.sess
