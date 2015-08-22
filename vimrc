@@ -365,7 +365,7 @@ if has("gui")
         " Default FONT
 
         "set guifont=Menlo\ Regular:h11
-        set guifont=SourceCodePro-ExtraLight:h15
+        set guifont=SourceCodePro-ExtraLight:h13
 
         "set guifont=set guifont=DejaVu\ Sans\ Mono:h11
         "set guifont=Century\ Schoolbook\ Monospace\ BT:h14
@@ -896,7 +896,16 @@ if has("gui") &&   has("gui_running")
 
 
     "colorscheme solarized
-    colorscheme jellybeans
+    if has("gui_macvim")
+      silent! set background=dark
+      let g:lucius_style='dark'
+      g:lucius_contrast='normal'
+      let g:lucius_contrast_bg='normal'
+      colorscheme lucius
+    else
+      colorscheme jellybeans
+    endif
+
     call togglebg#map("<F5>")       " F5 toggle background
 
     "DARK
