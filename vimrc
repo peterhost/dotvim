@@ -32,7 +32,7 @@ call vundle#rc()
 " ------Load/Unload plugins RULES -----{{{1
 
 " the VUNDLE plugin manager has to be able and manange itself
-Bundle 'gmarik/vundle'
+Plugin 'gmarik/vundle'
 
 
 
@@ -48,101 +48,105 @@ Bundle 'gmarik/vundle'
 " -------------------------------------
 
 " CSS Cleaner
-Bundle 'miripiruni/CSScomb-for-Vim'
+Plugin 'miripiruni/CSScomb-for-Vim'
 " PHP debuger
-Bundle 'brookhong/DBGPavim'
+Plugin 'brookhong/DBGPavim'
 " Vim Debugger
-Bundle 'Decho'
+Plugin 'Decho'
 " Advanced encoding detector
-Bundle 'vim-scripts/FencView.vim'
+Plugin 'vim-scripts/FencView.vim'
 " edit/post gists
-Bundle 'vim-scripts/Gist.vim'
+Plugin 'vim-scripts/Gist.vim'
 " Large files loading
-Bundle 'vim-scripts/LargeFile'
+Plugin 'vim-scripts/LargeFile'
 " Copy / Paste with history
-Bundle 'YankRing.vim'
+Plugin 'YankRing.vim'
 " Vim syntax highlight for asp.net ...
-Bundle 'aspnetcs'
+Plugin 'aspnetcs'
 " Resize workspace with golden ratio
-Bundle 'roman/golden-ratio'
+Plugin 'roman/golden-ratio'
 " HTML5 syntax highlight with microdata, rdf,... support
-Bundle 'othree/html5.vim'
-" jshint check for js                      | DEPENDS nodejs
-Bundle 'wookiehangover/jshint.vim'
+Plugin 'othree/html5.vim'
 " awesome commenting plugin
-Bundle 'scrooloose/nerdcommenter'
+Plugin 'scrooloose/nerdcommenter'
 " file browser
-Bundle 'scrooloose/nerdtree'
+Plugin 'scrooloose/nerdtree'
 " Session handling for VIM
-Bundle 'session.vim--Odding'
+Plugin 'session.vim--Odding'
 
 " Completion tool on TAB
-Bundle 'ervandew/supertab'
+Plugin 'ervandew/supertab'
 
 " Syntax checking
-Bundle 'scrooloose/syntastic'
+Plugin 'scrooloose/syntastic'
 " the TABULARIZE fonction for fast re-aligning of code
-Bundle 'godlygeek/tabular'
+Plugin 'godlygeek/tabular'
 " Close buffer but leave window alone : adds Kwbd command (see below)
-Bundle 'cespare/vim-bclose'
+Plugin 'cespare/vim-bclose'
 " lists buffers in new tab/window (for ex)
-Bundle 'jlanzarotta/bufexplorer'
+Plugin 'jlanzarotta/bufexplorer'
 " the Solarized colorscheme
-Bundle 'altercation/vim-colors-solarized'
+Plugin 'altercation/vim-colors-solarized'
 " display colors inline in CSS
-Bundle 'skammer/vim-css-color'
+Plugin 'skammer/vim-css-color'
 " colorscheme based on github
-Bundle "endel/vim-github-colorscheme.git"
+Plugin 'endel/vim-github-colorscheme.git'
 " Tpope's GIT for vim
-Bundle 'tpope/vim-fugitive'
+Plugin 'tpope/vim-fugitive'
 " Tpope syntax,... for editing git related files
-Bundle 'tpope/vim-git'
+Plugin 'tpope/vim-git'
 " JavaScript bundle provides syntax and indent plugin
-Bundle 'pangloss/vim-javascript'
+Plugin 'pangloss/vim-javascript'
 " manage Jekull blog from within Vim
-Bundle 'itspriddle/vim-jekyll'
+Plugin 'itspriddle/vim-jekyll'
 " matchit.zip : extended % matching for HTML, LaTeX, and many other languages  | DEPREC ?
-Bundle 'eshock/vim-matchit'
+Plugin 'eshock/vim-matchit'
 
 "------- STATUS LINE ------
 " DISABLED (unmaintained)
-"Bundle 'Lokaltog/vim-powerline'
+"Plugin 'Lokaltog/vim-powerline'
 "
 " REPLACES vim-powerline
-Bundle 'bling/vim-airline'
+Plugin 'bling/vim-airline'
 " ------------------------
 "
 " tpope,'s better repeat for vim
-Bundle 'tpope/vim-repeat'
+Plugin 'tpope/vim-repeat'
 " surround by tpope
-Bundle 'tpope/vim-surround'
+Plugin 'tpope/vim-surround'
 " tpope too
-Bundle 'tpope/vim-unimpaired'
+Plugin 'tpope/vim-unimpaired'
 " powerfull TAB templates ala textmate
-Bundle 'drmingdrmer/xptemplate'
+Plugin 'drmingdrmer/xptemplate'
 " alternate buffer explorer
-Bundle 'fholgado/minibufexpl.vim'
+Plugin 'fholgado/minibufexpl.vim'
 
 " ----- PYTHON ------
-Bundle 'klen/python-mode'
-Bundle 'davidhalter/jedi-vim'
+Plugin 'klen/python-mode'
+Plugin 'davidhalter/jedi-vim'
 
 if  has('python')
   " Powerfull completion tool, including CTAGS (replacement for tagbar)
-  "Bundle 'Valloric/YouCompleteMe'
+  "Plugin 'Valloric/YouCompleteMe'
 endif
+
+" ----- JAVASCRIPT --
+" jshint check for js                      | DEPENDS nodejs
+Plugin 'wookiehangover/jshint.vim'
+" insert jsdoc tags
+Plugin 'heavenshell/vim-jsdoc'
 
 " ----- SYNTAXES ----
 " Syntax highlighting, matching rules and mappings for Markdown.
-Bundle 'plasticboy/vim-markdown'
+Plugin 'plasticboy/vim-markdown'
 " syntax highlight for SCSS templates
-Bundle 'cakebaker/scss-syntax.vim'
+Plugin 'cakebaker/scss-syntax.vim'
 " syntax highlight for Jade templates
-Bundle 'digitaltoad/vim-jade'
+Plugin 'digitaltoad/vim-jade'
 " Syntax highlighting for Stylus.
-Bundle 'wavded/vim-stylus'
+Plugin 'wavded/vim-stylus'
 " CSV files
-Bundle 'chrisbra/csv.vim'
+Plugin 'chrisbra/csv.vim'
 
 " ----- TMUX ----
 Plugin 'christoomey/vim-tmux-navigator'
@@ -156,7 +160,7 @@ Plugin 'christoomey/vim-tmux-navigator'
 "-------------------------------------
 
 
-Bundle 'majutsushi/tagbar'
+Plugin 'majutsushi/tagbar'
 " TAGBAR & JAVASCRIPT : Use the 'tern' javascript ctags engine replacing the
 "                       original doctorjs jsctags
 " https://github.com/majutsushi/tagbar/wiki#javascript
@@ -187,20 +191,20 @@ if has("gui_macvim")
   "the PEEPOPEN program is a Macos specific Command-T
 
   " integration with peepopen for macos
-  Bundle 'shemerey/vim-peepopen'
+  Plugin 'shemerey/vim-peepopen'
 end
 
 if v:version >= '702'
   " (required by fuzzyfinder)
-  Bundle 'L9'
+  Plugin 'L9'
   " Fuzzy file/dir/tag/... finder
-  Bundle 'FuzzyFinder'
+  Plugin 'FuzzyFinder'
 endif
 
 " All those need ruby support
 if  has('ruby')
   " provides LustyJuggler, LustyExplorer        | DEPENDS ruby
-  Bundle 'sjbach/lusty'
+  Plugin 'sjbach/lusty'
 endif
 
 
@@ -210,7 +214,7 @@ if v:version >= '703' && !has('python')
   " Gundo requires at least Vim 7.3
 
   " Undo with tree, branching, history
-  Bundle 'Gundo'
+  Plugin 'Gundo'
 endif
 
 
@@ -238,7 +242,7 @@ filetype plugin indent on     " required!
 " " :BundleClean(!)      - confirm(or auto-approve) removal of unused bundles
 " "
 " " see :h vundle for more details or wiki for FAQ
-" " NOTE: comments after Bundle command are not allowed..
+" " NOTE: comments after Plugin command are not allowed..
 
 
 "1}}}
