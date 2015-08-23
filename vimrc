@@ -1756,14 +1756,16 @@ imap <C-l> <right>
 "  cmap <C-Space> <C-c>
 "endif
 
-" remap jf to ESC in modes that don't use the 'j' key for navigation
-" (insert, command, operator-pending)
+"" remap jf to ESC in modes that don't use the 'j' key for navigation
+"" (insert, command, operator-pending)
 imap jf <C-c>
 cmap jf <C-c>
-vmap jf <C-c>
 imap fj <C-c>
 cmap fj <C-c>
-vmap fj <C-c>
+
+" and in visual mode : space
+vmap <space> <C-c>
+
 
 "1}}}
 "--------SEARCH------------------------{{{1
