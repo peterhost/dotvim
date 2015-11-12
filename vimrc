@@ -424,7 +424,8 @@ endif
 
 " --------SessionOptions---------------{{{1
 
-set sessionoptions=blank,buffers,curdir,folds,help,localoptions,tabpages,winsize
+set sessionoptions=buffers,curdir,folds,localoptions,tabpages,winsize
+
 "set sessionoptions=blank,buffers,curdir,folds,help,options,tabpages,winsize
 "set sessionoptions=blank,buffers,curdir,folds,help,localoptions,options,tabpages,winsize
 
@@ -474,12 +475,13 @@ set foldmethod=syntax
 "1}}}
 " --------VIM,VIMRC-------------------{{{1
 if has("autocmd")
-  autocmd FileType vim        setlocal foldmethod=marker
-  autocmd BufRead *.vim       setlocal foldmethod=marker
+  autocmd FileType vim         setlocal foldmethod=marker
+  autocmd BufRead *.vim        setlocal foldmethod=marker
   autocmd FileType html        setlocal foldmethod=marker
   autocmd BufRead *.html       setlocal foldmethod=marker
   autocmd FileType jade        setlocal foldmethod=marker
   autocmd BufRead *.jade       setlocal foldmethod=marker
+  autocmd BufRead *.js         setlocal foldmethod=indent
 endif
 
 "au BufReadPre * setlocal foldmethod=indent
@@ -1105,7 +1107,8 @@ let g:neocomplcache_enable_at_startup = 1
 
 "When set to 1 the error window will be automatically opened when errors are
 "detected, and closed when none are detected. >
-    let g:syntastic_auto_loc_list=1
+
+    "let g:syntastic_auto_loc_list=1
 
 "When set to 2 the error window will be automatically closed when no errors
 "are detected, but not opened automatically.
@@ -1471,7 +1474,7 @@ au BufRead,BufNewFile *.scss set filetype=scss
 "1}}}
 "--------MQL4 syntax ------------------{{{1
 "
-au BufRead,BufNewFile *.mq[4h]      set filetype=mql4
+au BufRead,BufNewFile *.mq[54h]      set filetype=mql4
 
 "1}}}
 "--------Vim Diff tweaks---------------{{{1
