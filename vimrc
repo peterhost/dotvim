@@ -85,8 +85,6 @@ Plugin 'godlygeek/tabular'
 Plugin 'cespare/vim-bclose'
 " lists buffers in new tab/window (for ex)
 Plugin 'jlanzarotta/bufexplorer'
-" the Solarized colorscheme
-Plugin 'altercation/vim-colors-solarized'
 " display colors inline in CSS
 Plugin 'skammer/vim-css-color'
 " colorscheme based on github
@@ -95,8 +93,12 @@ Plugin 'endel/vim-github-colorscheme.git'
 Plugin 'tpope/vim-fugitive'
 " Tpope syntax,... for editing git related files
 Plugin 'tpope/vim-git'
+
 " JavaScript bundle provides syntax and indent plugin
 Plugin 'pangloss/vim-javascript'
+" syntaxe additionnelle pour vim-javascript (underscore, jquery,...)
+Plugin 'crusoexia/vim-javascript-lib'
+
 " manage Jekull blog from within Vim
 Plugin 'itspriddle/vim-jekyll'
 " matchit.zip : extended % matching for HTML, LaTeX, and many other languages  | DEPREC ?
@@ -138,7 +140,12 @@ Plugin 'heavenshell/vim-jsdoc'
 
 " ----- SYNTAXES ----
 " Syntax highlighting, matching rules and mappings for Markdown.
-Plugin 'plasticboy/vim-markdown'
+"Plugin 'plasticboy/vim-markdown'
+
+" this one allows concealing of markdown markers while editing,
+" and is compatible with conceiling in 'limelight' plugin.
+Plugin 'tpope/vim-markdown'
+
 " syntax highlight for SCSS templates
 Plugin 'cakebaker/scss-syntax.vim'
 " syntax highlight for Jade templates
@@ -153,6 +160,20 @@ Plugin 'christoomey/vim-tmux-navigator'
 
 " ----- MOVEMENT ---
 "Plugin 'matze/vim-move'
+" swap pane content without ruining layout
+Plugin 'wesQ3/vim-windowswap'
+
+" ------ TEXT EDITING ------
+Plugin 'reedes/vim-pencil'
+Plugin 'junegunn/limelight.vim'
+Plugin 'junegunn/goyo.vim'
+
+
+" ------ COLORSCHEMES ------
+" the Solarized colorscheme
+Plugin 'altercation/vim-colors-solarized'
+Plugin 'junegunn/seoul256.vim'
+Plugin 'reedes/vim-colors-pencil'
 
 "-------------------------------------
 "        CONDITIONAL LOADING
@@ -1422,6 +1443,59 @@ nnoremap <localleader>D :exec "!cd '%:p:h' ;jsdoc --configure ~/.jsdoc.json --te
 nnoremap <localleader>d :JsDoc<CR>
 
 
+
+" 1}}}
+" --------windowswap---------------------{{{1
+"
+
+let g:windowswap_map_keys = 0 "prevent default bindings
+"nnoremap <silent> <leader>yw :call WindowSwap#MarkWindowSwap()<CR>
+"nnoremap <silent> <leader>pw :call WindowSwap#DoWindowSwap()<CR>
+nnoremap <silent> <leader>sw :call WindowSwap#EasyWindowSwap()<CR>
+
+
+" 1}}}
+" --------GoYo---------------------------{{{1
+"
+
+" automatically turn limelight on when entering Goyo mode
+
+function! s:goyo_enter()
+  silent !tmux set status off
+  set noshowmode
+  set noshowcmd
+  set scrolloff=999
+  Limelight
+  PencilSoft
+  "colorscheme pencil
+  "set background=dark
+  let g:airline_theme = 'pencil'
+  " ...
+endfunction
+
+function! s:goyo_leave()
+  silent !tmux set status on
+  set showmode
+  set showcmd
+  set scrolloff=5
+  Limelight!
+  PencilOff
+  "colorscheme lucius
+  " ...
+endfunction
+
+autocmd! User GoyoEnter nested call <SID>goyo_enter()
+autocmd! User GoyoLeave nested call <SID>goyo_leave()
+
+" 1}}}
+
+
+" 1}}}
+" --------Vim-Color-Pencil---------------{{{1
+"
+
+" automatically personalize the pencil colorscheme when used
+let g:pencil_terminal_italics = 1
 
 " 1}}}
 
