@@ -146,6 +146,11 @@ Plugin 'heavenshell/vim-jsdoc'
 " and is compatible with conceiling in 'limelight' plugin.
 Plugin 'tpope/vim-markdown'
 
+" Linux only : markdown previewer
+if has('unix') && !has('macunix')
+    Plugin 'suan/vim-instant-markdown'
+endif
+
 " syntax highlight for SCSS templates
 Plugin 'cakebaker/scss-syntax.vim'
 " syntax highlight for Jade templates
