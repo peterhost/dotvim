@@ -110,6 +110,8 @@ Plugin 'eshock/vim-matchit'
 "
 " REPLACES vim-powerline
 Plugin 'bling/vim-airline'
+Plugin 'vim-airline/vim-airline-themes'
+Plugin 'edkolev/tmuxline.vim'
 " ------------------------
 "
 " tpope,'s better repeat for vim
