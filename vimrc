@@ -1494,8 +1494,6 @@ endfunction
 autocmd! User GoyoEnter nested call <SID>goyo_enter()
 autocmd! User GoyoLeave nested call <SID>goyo_leave()
 
-" 1}}}
-
 
 " 1}}}
 " --------Vim-Color-Pencil---------------{{{1
@@ -1505,6 +1503,17 @@ autocmd! User GoyoLeave nested call <SID>goyo_leave()
 let g:pencil_terminal_italics = 1
 
 " 1}}}
+" --------vim-instant-markdown----------{{{1
+
+let g:instant_markdown_autostart = 0
+
+"Linux only : map for preview in browser
+if has('unix') && !has('macunix')
+  :nnoremap <leader>P :InstantMarkdownPreview<cr>
+endif
+
+
+"1}}}
 
 
 
