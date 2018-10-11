@@ -162,6 +162,10 @@ Plugin 'wavded/vim-stylus'
 " CSV files
 Plugin 'chrisbra/csv.vim'
 
+" .toml syntax
+Plugin 'cespare/vim-toml'
+Plugin 'maralla/vim-toml-enhance'
+
 " ----- TMUX ----
 Plugin 'christoomey/vim-tmux-navigator'
 
