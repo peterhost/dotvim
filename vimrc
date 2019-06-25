@@ -326,6 +326,7 @@ set incsearch     " show search matches as you type
 
 " and some more
 set history=10000         " remember more commands and search history
+set undodir=~/.vim/undodir " dir to store history between sessions
 set undolevels=1000      " use many muchos levels of undo
 set wildignore=*.swp,*.bak,*.pyc,*.class
 set title                " change the terminal's title

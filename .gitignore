@@ -3,6 +3,7 @@
 #eclim
 eclim/*
 plugin/*
+undodir/*
 
 #Others
 doc/*
