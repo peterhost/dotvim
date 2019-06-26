@@ -2179,11 +2179,6 @@ map <S-Enter> O<ESC> " awesome, inserts new line without going into insert mode
 
 
 "1}}}
-"--------HTML5 validation--------------{{{1
-"check html
-map ,5 :!html5check %<CR>
-
-"1}}}
 "--------Create TMP buffer-tab IDfile--{{{1
 "
 
