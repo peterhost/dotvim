@@ -76,18 +76,3 @@ if  ! which node >/dev/null 2>&1  ||  ! which jsctags >/dev/null 2>&1 ;then
 		   (https://github.com/pcwalton/doctorjs.git)
 "
 fi
-
-
-if  ! which html5check >/dev/null 2>&1 ;then
-	echo "
-	WARN : html5check is not in your path, do: 
-
-	         ln -s ~/.vim/lib/html5check /usr/local/bin/html5check
-
-	       so that you can use the ",5" mapping to properly validate
-         HTML5 files (syntastic's based on tidy and is broken)
-"
-fi
-
-
-
