@@ -214,6 +214,10 @@ Plugin 'junegunn/goyo.vim'
 Plugin 'altercation/vim-colors-solarized'
 Plugin 'junegunn/seoul256.vim'
 Plugin 'reedes/vim-colors-pencil'
+" colorscheme based on github
+Plugin 'endel/vim-github-colorscheme.git'
+" 16 color colorscheme for TTYs
+Plugin 'noahfrederick/vim-noctu.git'
 
 "-------------------------------------
 "        CONDITIONAL LOADING
@@ -953,80 +957,75 @@ autocmd BufWinLeave * call clearmatches()
 
 " --------Color Scheme-------------------{{{1
 
-" in terminal choose DARK background
-if has("gui") &&   has("gui_running")
-  "if &t_Co >= 256 && has("gui_running")
-  "if  has("gui_running")
+" in GUI or 256-color terminal, default theme Lucius
+if has("gui_running") || &t_Co >= 16
 
-
-    "colorscheme solarized
-    if has("gui_macvim")
-      silent! set background=dark
-      let g:lucius_style='dark'
-      g:lucius_contrast='normal'
-      let g:lucius_contrast_bg='normal'
-      colorscheme lucius
-    else
-      colorscheme jellybeans
-    endif
+    silent! set background=light
+    let g:lucius_style='light'
+    let g:lucius_contrast_bg='normal'
+    colorscheme lucius
 
     call togglebg#map("<F5>")       " F5 toggle background
 
-    "DARK
-    nnoremap <silent> <leader>@& :silent! colorscheme solarized   <bar>set background=dark <CR> <CR> " @ 1
-    nnoremap <silent> <leader>@é :silent! colorscheme mustang     <bar>set background=dark <CR> <CR> " @ 2
-    nnoremap <silent> <leader>@" :silent! colorscheme vibrantink2 <bar>set background=dark <CR> <CR> " @ 3
-    nnoremap <silent> <leader>@' :silent! colorscheme jellybeans  <bar>set background=dark <CR> <CR> " @ 4
-    nnoremap <silent> <leader>@( :silent! colorscheme smyck       <bar>set background=dark <CR> <CR> " @ 5
-    nnoremap <silent> <leader>@a :silent! colorscheme festoon     <bar>set background=dark <CR> <CR> " @ a
-    nnoremap <silent> <leader>@z :silent! colorscheme freya       <bar>set background=dark <CR> <CR> " @ z
-    nnoremap <silent> <leader>@e :silent! colorscheme inkpot      <bar>set background=dark <CR> <CR> " @ e
-
-    "LIGHT
-    nnoremap <silent> <leader>@§ :silent! colorscheme mayansmoke  <bar>set background=light <CR> " @ 6
-    nnoremap <silent> <leader>@è :silent! colorscheme proton      <bar>set background=light <CR> " @ 7
-    nnoremap <silent> <leader>@! :silent! colorscheme pyte        <bar>set background=light <CR> " @ 8
-    nnoremap <silent> <leader>@ç :silent! colorscheme louver      <bar>set background=light <CR> " @ 9
-    nnoremap <silent> <leader>@à :silent! colorscheme festoon     <bar>set background=light <CR> " @ 0
-    nnoremap <silent> <leader>@) :silent! colorscheme solarized   <bar>set background=light <CR> " @ 1
-
-    "LUCIUS (has it's own keyboard row all to itself)
-    nnoremap <silent> <leader>@q :silent! set background=dark <bar> let g:lucius_style='dark' <bar> let g:lucius_contrast='high'   <bar> let g:lucius_contrast_bg='normal' <bar> colorscheme lucius <CR> " @ s
-    nnoremap <silent> <leader>@s :silent! set background=dark <bar> let g:lucius_style='dark' <bar> let g:lucius_contrast='normal' <bar> let g:lucius_contrast_bg='normal' <bar> colorscheme lucius <CR> " @ s
-    nnoremap <silent> <leader>@d :silent! set background=dark <bar> let g:lucius_style='dark' <bar> let g:lucius_contrast='low'    <bar> let g:lucius_contrast_bg='normal' <bar> colorscheme lucius <CR> " @ s
-    nnoremap <silent> <leader>@f :silent! set background=dark <bar> let g:lucius_style='dark' <bar> let g:lucius_contrast='high'   <bar> let g:lucius_contrast_bg='high'   <bar> colorscheme lucius <CR> " @ s
-    nnoremap <silent> <leader>@g :silent! set background=dark <bar> let g:lucius_style='dark' <bar> let g:lucius_contrast='normal' <bar> let g:lucius_contrast_bg='high'   <bar> colorscheme lucius <CR> " @ s
-    nnoremap <silent> <leader>@h :silent! set background=dark <bar> let g:lucius_style='dark' <bar> let g:lucius_contrast='low'    <bar> let g:lucius_contrast_bg='high'   <bar> colorscheme lucius <CR> " @ s
-
-    nnoremap <silent> <leader>@j :silent! set background=light <bar> let g:lucius_style='light' <bar> let g:lucius_contrast='high'   <bar> let g:lucius_contrast_bg='high'   <bar> colorscheme lucius <CR> " @ s
-    nnoremap <silent> <leader>@k :silent! set background=light <bar> let g:lucius_style='light' <bar> let g:lucius_contrast='normal' <bar> let g:lucius_contrast_bg='normal' <bar> colorscheme lucius <CR> " @ s
-    nnoremap <silent> <leader>@l :silent! set background=light <bar> let g:lucius_style='light' <bar> let g:lucius_contrast='low'    <bar> let g:lucius_contrast_bg='normal' <bar> colorscheme lucius <CR> " @ s
-
-
-    "nnoremap <silent> <leader>@  :echoerr "colorscheme not parameterd" <CR> " @ a
-    nnoremap <silent> <leader>@  :colorscheme<CR> " @ a
-
-  "endif
 
 
 " Terminal, old Vim => dante, which works everywhere
 elseif v:version < '703'
-  colorscheme dante
+    colorscheme dante
 " GNU Screen
 elseif $STY != ""
-  colorscheme moria
+    colorscheme moria
+" BASIC TERM or LINUX CONSOLE (TTY)
 else
-  "colorscheme mustang
-  "colorscheme smyck
-  colorscheme dante
-  "let &background = "dark"
-  colorscheme lucius
-  let g:lucius_style='light'
-  let g:lucius_contrast='high'
-  let g:lucius_contrast_bg='high'
+    if (&term == "xterm") || (&term == "linux")
+        set t_Co=16
+    elseif &term == "vt320"
+        set t_Co=8
+    endif
+    "colorscheme mustang
+    "colorscheme dante
+    "colorscheme noctu
+
+    "silent! set background=dark
+    "set background=dark
+    colorscheme smyck
 endif
 
 
+
+"DARK
+nnoremap <silent> <leader>$& :silent! colorscheme solarized   <bar>set background=dark <CR> <CR> " $ 1
+nnoremap <silent> <leader>$é :silent! colorscheme mustang     <bar>set background=dark <CR> <CR> " $ 2
+nnoremap <silent> <leader>$" :silent! colorscheme vibrantink2 <bar>set background=dark <CR> <CR> " $ 3
+nnoremap <silent> <leader>$' :silent! colorscheme jellybeans  <bar>set background=dark <CR> <CR> " $ 4
+nnoremap <silent> <leader>$( :silent! colorscheme smyck       <bar>set background=dark <CR> <CR> " $ 5
+nnoremap <silent> <leader>$a :silent! colorscheme noctu       <bar>set background=dark <CR> <CR> " $ a
+nnoremap <silent> <leader>$z :silent! colorscheme festoon     <bar>set background=dark <CR> <CR> " $ a
+nnoremap <silent> <leader>$e :silent! colorscheme freya       <bar>set background=dark <CR> <CR> " $ z
+nnoremap <silent> <leader>$r :silent! colorscheme inkpot      <bar>set background=dark <CR> <CR> " $ e
+
+"LIGHT
+nnoremap <silent> <leader>$- :silent! colorscheme mayansmoke  <bar>set background=light <CR> " $ 6
+nnoremap <silent> <leader>$è :silent! colorscheme proton      <bar>set background=light <CR> " $ 7
+nnoremap <silent> <leader>$_ :silent! colorscheme pyte        <bar>set background=light <CR> " $ 8
+nnoremap <silent> <leader>$ç :silent! colorscheme louver      <bar>set background=light <CR> " $ 9
+nnoremap <silent> <leader>$à :silent! colorscheme festoon     <bar>set background=light <CR> " $ 0
+nnoremap <silent> <leader>$) :silent! colorscheme solarized   <bar>set background=light <CR> " $ 1
+
+"LUCIUS (has it's own keyboard row all to itself)
+nnoremap <silent> <leader>$q :silent! set background=dark <bar> let g:lucius_style='dark' <bar> let g:lucius_contrast='high'   <bar> let g:lucius_contrast_bg='normal' <bar> colorscheme lucius <CR> " $ s
+nnoremap <silent> <leader>$s :silent! set background=dark <bar> let g:lucius_style='dark' <bar> let g:lucius_contrast='normal' <bar> let g:lucius_contrast_bg='normal' <bar> colorscheme lucius <CR> " $ s
+nnoremap <silent> <leader>$d :silent! set background=dark <bar> let g:lucius_style='dark' <bar> let g:lucius_contrast='low'    <bar> let g:lucius_contrast_bg='normal' <bar> colorscheme lucius <CR> " $ s
+nnoremap <silent> <leader>$f :silent! set background=dark <bar> let g:lucius_style='dark' <bar> let g:lucius_contrast='high'   <bar> let g:lucius_contrast_bg='high'   <bar> colorscheme lucius <CR> " $ s
+nnoremap <silent> <leader>$g :silent! set background=dark <bar> let g:lucius_style='dark' <bar> let g:lucius_contrast='normal' <bar> let g:lucius_contrast_bg='high'   <bar> colorscheme lucius <CR> " $ s
+nnoremap <silent> <leader>$h :silent! set background=dark <bar> let g:lucius_style='dark' <bar> let g:lucius_contrast='low'    <bar> let g:lucius_contrast_bg='high'   <bar> colorscheme lucius <CR> " $ s
+
+nnoremap <silent> <leader>$j :silent! set background=light <bar> let g:lucius_style='light' <bar> let g:lucius_contrast='high'   <bar> let g:lucius_contrast_bg='high'   <bar> colorscheme lucius <CR> " $ s
+nnoremap <silent> <leader>$k :silent! set background=light <bar> let g:lucius_style='light' <bar> let g:lucius_contrast='normal' <bar> let g:lucius_contrast_bg='normal' <bar> colorscheme lucius <CR> " $ s
+nnoremap <silent> <leader>$l :silent! set background=light <bar> let g:lucius_style='light' <bar> let g:lucius_contrast='low'    <bar> let g:lucius_contrast_bg='normal' <bar> colorscheme lucius <CR> " $ s
+
+
+nnoremap <silent> <leader>$  :colorscheme<CR> " $ a
 
 
 "1}}}
@@ -1365,39 +1364,54 @@ if !exists('g:airline_symbols')
   let g:airline_symbols = {}
 endif
 
-if has("gui_macvim")
-  "let g:airline_theme = 'solarized'
+
+" check if TTY/terminal has powerline patched fonts on *nix systems
+if system('[ $(find  /usr/share/consolefonts/ -type f -name "ter-powerline*" | wc -l) -gt 0 ] && echo 1 || echo 0') == 1
   let g:airline_powerline_fonts=1
-
-  "following need patched fonts installed
-  " powerline symbols
-  let g:airline_left_sep = ''
-  let g:airline_left_alt_sep = ''
-  let g:airline_right_sep = ''
-  let g:airline_right_alt_sep = ''
-  let g:airline_symbols.branch = ''
-  let g:airline_symbols.readonly = ''
-  let g:airline_symbols.linenr = ''
-
-
-
+    "following need patched fonts installed
+    " powerline symbols
+    let g:airline_left_sep = ''
+    let g:airline_left_alt_sep = ''
+    let g:airline_right_sep = ''
+    let g:airline_right_alt_sep = ''
+    let g:airline_symbols.branch = ''
+    let g:airline_symbols.readonly = ''
+    let g:airline_symbols.linenr = ''
 else
-  let g:airline_theme = 'jellybeans'
+    echohl WarningMsg
+    echo "system does not have powerline patched font -> using standard unicode as replacement"
+    echohl None
 
-  " unicode symbols
-  let g:airline_left_sep = '»'
-  let g:airline_left_sep = '▶'
-  let g:airline_right_sep = '«'
-  let g:airline_right_sep = '◀'
-  let g:airline_symbols.linenr = '␊'
-  let g:airline_symbols.linenr = '␤'
-  let g:airline_symbols.linenr = '¶'
-  let g:airline_symbols.branch = '⎇'
-  let g:airline_symbols.paste = 'ρ'
-  let g:airline_symbols.paste = 'Þ'
-  let g:airline_symbols.paste = '∥'
-  let g:airline_symbols.whitespace = 'Ξ'
+    " unicode symbols
+    let g:airline_left_sep = '»'
+    let g:airline_left_sep = '▶'
+    let g:airline_right_sep = '«'
+    let g:airline_right_sep = '◀'
+    let g:airline_symbols.crypt = '🔒'
+    let g:airline_symbols.linenr = '␊'
+    let g:airline_symbols.linenr = '␤'
+    let g:airline_symbols.linenr = '¶'
+    let g:airline_symbols.maxlinenr = '☰'
+    let g:airline_symbols.maxlinenr = ''
+    let g:airline_symbols.branch = '⎇'
+    let g:airline_symbols.paste = 'ρ'
+    let g:airline_symbols.paste = 'Þ'
+    let g:airline_symbols.paste = '∥'
+    let g:airline_symbols.spell = 'Ꞩ'
+    let g:airline_symbols.notexists = '∄'
+    let g:airline_symbols.whitespace = 'Ξ'
 endif
+
+
+if (has("gui") &&   has("gui_running")) || &t_Co >= 256
+    let g:airline_theme = 'lucius'
+elseif (&term == "xterm") || (&term == "linux") || (&term == "vt320")
+    let g:airline_theme = 'base16'
+endif
+
+
+"  let g:airline_powerline_fonts=1
+
 
 set laststatus=2   " Always show the statusline
 
@@ -1559,8 +1573,17 @@ function! s:setupWrapping()
   endif
 endfunction
 
+" IN 8-COLOR TERMINALS, use appropriate colorscheme for markdown
+function! s:MdColorschemeCheck()
+    if (&term == "xterm") || (&term == "linux") || (&term == "vt320")
+        let g:airline_theme = 'base16'
+        colorscheme PaperColor
+    endif
+endfunction
+
 function! s:setupMarkup()
   call s:setupWrapping()
+  call s:MdColorschemeCheck()
   nmap <buffer> <Leader><C-p> :Mm <CR>
   imap <buffer> <C-p> :Mm <CR>
 endfunction
