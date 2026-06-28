@@ -116,8 +116,6 @@ Plugin 'cespare/vim-bclose'
 Plugin 'jlanzarotta/bufexplorer'
 " display colors inline in CSS
 Plugin 'skammer/vim-css-color'
-" colorscheme based on github
-Plugin 'endel/vim-github-colorscheme.git'
 " Tpope's GIT for vim
 Plugin 'tpope/vim-fugitive'
 " Tpope syntax,... for editing git related files
@@ -171,11 +169,11 @@ Plugin 'heavenshell/vim-jsdoc'
 
 " ----- SYNTAXES ----
 " Syntax highlighting, matching rules and mappings for Markdown.
-"Plugin 'plasticboy/vim-markdown'
+Plugin 'plasticboy/vim-markdown'
 
 " this one allows concealing of markdown markers while editing,
 " and is compatible with conceiling in 'limelight' plugin.
-Plugin 'tpope/vim-markdown'
+"Plugin 'tpope/vim-markdown'
 
 " Linux only : markdown previewer
 if has('unix') && !has('macunix')
@@ -208,6 +206,8 @@ Plugin 'reedes/vim-pencil'
 Plugin 'junegunn/limelight.vim'
 Plugin 'junegunn/goyo.vim'
 
+" ------ SPELL / SYNTAX CHECKING ------
+Plugin 'dpelle/vim-Grammalecte'
 
 " ------ COLORSCHEMES ------
 " the Solarized colorscheme
@@ -1496,25 +1496,37 @@ let g:windowswap_map_keys = 0 "prevent default bindings
 "nnoremap <silent> <leader>yw :call WindowSwap#MarkWindowSwap()<CR>
 "nnoremap <silent> <leader>pw :call WindowSwap#DoWindowSwap()<CR>
 nnoremap <silent> <leader>sw :call WindowSwap#EasyWindowSwap()<CR>
+nnoremap <silent> <leader>sm :call WindowSwap#MarkWindowSwap()<CR>
 
 
 " 1}}}
 " --------GoYo---------------------------{{{1
 "
-
+let g:goyo_linenr = 1
 " automatically turn limelight on when entering Goyo mode
 
 function! s:goyo_enter()
-  silent !tmux set status off
-  set noshowmode
-  set noshowcmd
-  set scrolloff=999
-  Limelight
-  PencilSoft
-  "colorscheme pencil
-  "set background=dark
-  let g:airline_theme = 'pencil'
-  " ...
+    echohl WarningMsg
+    echo "Entering Goyo !"
+    echohl None
+
+    "detect if running inside TTY or degraded terminal
+    if (&term == "xterm") || (&term == "linux") || (&term == "vt320")
+        let g:airline_theme = 'base16'
+        colorscheme PaperColor
+        let g:limelight_conceal_ctermfg = 'darkgrey'
+    endif
+
+    silent !tmux set status off
+    set noshowmode
+    set noshowcmd
+    set scrolloff=999
+    Limelight
+    PencilSoft
+    "colorscheme pencil
+    "set background=dark
+    let g:airline_theme = 'pencil'
+    " ...
 endfunction
 
 function! s:goyo_leave()
@@ -1528,8 +1540,8 @@ function! s:goyo_leave()
   " ...
 endfunction
 
-autocmd! User GoyoEnter nested call <SID>goyo_enter()
-autocmd! User GoyoLeave nested call <SID>goyo_leave()
+autocmd! User GoyoEnter call <SID>goyo_enter()
+autocmd! User GoyoLeave call <SID>goyo_leave()
 
 
 " 1}}}
@@ -1567,10 +1579,10 @@ function! s:setupWrapping()
   set wrap
   "set wm=2
   set textwidth=72
-  if has ("gui_running")
+  "if has ("gui_running")
     set spell
-    set spelllang=en
-  endif
+    set spelllang=fr
+  "endif
 endfunction
 
 " IN 8-COLOR TERMINALS, use appropriate colorscheme for markdown
