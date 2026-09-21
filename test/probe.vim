@@ -358,10 +358,30 @@ function! s:test_python_objects()
   silent! bdelete!
 endfunction
 
+" Mise à jour échouée : message au démarrage, une seule fois
+function! s:test_update_notice()
+  let l:status = g:my_local . '/update-status'
+  call writefile(['fail 2', 'x fzf:', 'conseil: lancer : sudo opkg install git-http'], l:status)
+  call delete(g:my_local . '/update-status.seen')
+  let l:before = len(split(s:messages(), "\n"))
+  call my#update#notify()
+  let l:new = split(s:messages(), "\n")[l:before :]
+  call s:ok('update.notice_shown', join(l:new) =~# 'échoué pour 2' && join(l:new) =~# 'git-http', string(l:new))
+  let l:before = len(split(s:messages(), "\n"))
+  call my#update#notify()
+  call s:ok('update.notice_once', len(split(s:messages(), "\n")) == l:before)
+  call writefile(['ok'], l:status)
+  call delete(g:my_local . '/update-status.seen')
+  let l:before = len(split(s:messages(), "\n"))
+  call my#update#notify()
+  call s:ok('update.no_notice_when_ok', len(split(s:messages(), "\n")) == l:before)
+  call delete(l:status)
+endfunction
+
 function! s:run()
   call s:test_startup()
   if exists('g:my_tier') && $VIMTEST_SUITE ==# 'full'
-    for l:t in ['env', 'mappings', 'commands', 'edit', 'filetypes', 'highlights', 'themes', 'plugins', 'writing', 'extras', 'yank_history', 'python_objects', 'reload']
+    for l:t in ['env', 'mappings', 'commands', 'edit', 'filetypes', 'highlights', 'themes', 'plugins', 'writing', 'extras', 'yank_history', 'python_objects', 'update_notice', 'reload']
       try
         call call('s:test_' . l:t, [])
       catch

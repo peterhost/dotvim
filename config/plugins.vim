@@ -119,6 +119,12 @@ endif
 augroup my_update
   autocmd!
   autocmd VimEnter * call my#update#start()
+  " message après l'affichage initial (sinon effacé par le premier rendu)
+  if exists('*timer_start')
+    autocmd VimEnter * call timer_start(300, 'my#update#notify')
+  else
+    autocmd VimEnter * call my#update#notify()
+  endif
 augroup END
 command! PluginsUpdateLog execute 'split ' . fnameescape(g:my_local . '/update.log')
 

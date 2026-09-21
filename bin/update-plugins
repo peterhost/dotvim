@@ -46,12 +46,36 @@ if ! mkdir "$LOCK" 2>/dev/null; then
 fi
 trap 'rmdir "$LOCK" 2>/dev/null' EXIT INT TERM
 
+REPORT="$LOCAL/update-report.txt"
+STATUS="$LOCAL/update-status"
+rm -f "$REPORT"
+MY_VIM_NO_AUTOUPDATE=1 "$VIM" -N -u "$REPO/vimrc" -i NONE -es \
+  -c 'PlugUpdate --sync' -c "silent! write! $REPORT" -c 'qa!' </dev/null >/dev/null 2>&1
+
+# État lu par vim au démarrage suivant (message si échec, voir
+# autoload/my/update.vim) : « ok », ou « fail N » + détail + conseil.
+fails=$(grep -c '^x ' "$REPORT" 2>/dev/null) || fails=0
 {
-  echo "=== $(date '+%Y-%m-%d %H:%M:%S') mise à jour des plugins"
-  MY_VIM_NO_AUTOUPDATE=1 "$VIM" -N -u "$REPO/vimrc" -i NONE -es \
-    -c 'PlugUpdate --sync' -c 'qa!' </dev/null 2>&1
-  echo "=== fin (code $?)"
-} >> "$LOG" 2>&1
+  if [ ! -s "$REPORT" ]; then
+    echo "fail ?"; echo "vim n'a pas produit de rapport de mise à jour"
+  elif [ "$fails" -gt 0 ]; then
+    echo "fail $fails"
+    grep '^x ' "$REPORT" | head -5
+    if grep -qi "remote-https\|remote helper for 'https'" "$REPORT"; then
+      if [ -x /opt/bin/opkg ] || command -v opkg >/dev/null 2>&1; then
+        echo "conseil: git sans support https ; lancer : sudo opkg install git-http"
+      else
+        echo "conseil: git sans support https (paquet git-http / git-remote-https manquant)"
+      fi
+    fi
+  else
+    echo ok
+  fi
+} > "$STATUS"
+{
+  echo "=== $(date '+%Y-%m-%d %H:%M:%S') mise à jour des plugins : $(head -1 "$STATUS")"
+  cat "$REPORT" 2>/dev/null
+} >> "$LOG"
 
 touch "$STAMP"
 # journal limité aux 500 dernières lignes

@@ -25,3 +25,28 @@ function! my#update#start()
     call system(join(map(l:cmd, 'shellescape(v:val)'), ' ') . ' >/dev/null 2>&1 &')
   endif
 endfunction
+
+" Au démarrage : si la dernière mise à jour a échoué, le dire une fois (le
+" message reste dans :messages), avec le conseil éventuel.
+function! my#update#notify(...)
+  let l:status = g:my_local . '/update-status'
+  let l:seen = g:my_local . '/update-status.seen'
+  if !filereadable(l:status) || getftime(l:status) <= getftime(l:seen)
+    return
+  endif
+  let l:lines = readfile(l:status)
+  if empty(l:lines) || l:lines[0] !~# '^fail'
+    return
+  endif
+  let l:n = matchstr(l:lines[0], '\d\+')
+  echohl WarningMsg
+  echomsg 'Plugins : la dernière mise à jour a échoué'
+        \ . (l:n !=# '' ? ' pour ' . l:n . ' plugin(s)' : '') . ' — détails : :PluginsUpdateLog'
+  for l:line in l:lines
+    if l:line =~# '^conseil: '
+      echomsg '  ' . substitute(l:line, '^conseil: ', '', '')
+    endif
+  endfor
+  echohl None
+  silent! call writefile([], l:seen)
+endfunction

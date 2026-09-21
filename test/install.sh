@@ -181,6 +181,20 @@ check "installation sans git dans le PATH" sh -c "HOME='$H' PATH='$TMP/nogit' MY
 check "git retrouvé dans le dossier supplémentaire" grep -q 'git présent' "$TMP/out.txt"
 check "sans dossier supplémentaire : git signalé absent" sh -c "HOME='$H' PATH='$TMP/nogit' MY_EXTRA_PATHS=/nonexistent '$TMP/nogit/sh' '$H/.vim/bin/install' --yes --no-plugins </dev/null 2>&1 | grep -q 'git absent'"
 
+echo "== Mise à jour : rapport d'échec enregistré pour vim"
+new_home report
+cat > "$TMP/fakevim" <<'FV'
+#!/bin/sh
+# faux vim : écrit un rapport vim-plug en échec là où on lui demande
+for a in "$@"; do case $a in "silent! write! "*) f=${a#silent! write! } ;; esac; done
+printf '%s\n' 'Updated.' '' "x fzf:" "    fatal: Unable to find remote helper for 'https'" '- nerdtree: Already up to date.' > "$f"
+FV
+chmod +x "$TMP/fakevim"
+HOME=$H VIM_BIN="$TMP/fakevim" sh "$H/.vim/bin/update-plugins" >/dev/null 2>&1
+check "état : échec pour 1 plugin"                    grep -qx 'fail 1' "$H/.vim/local/update-status"
+check "conseil https enregistré"                      grep -q '^conseil: git sans support https' "$H/.vim/local/update-status"
+check "rapport ajouté au journal"                     grep -q 'remote helper' "$H/.vim/local/update.log"
+
 if [ -n "${TEST_NETWORK:-}" ]; then
   echo "== Premier lancement de vim : installation des plugins en arrière-plan (réseau)"
   new_home firstrun
