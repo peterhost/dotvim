@@ -13,6 +13,8 @@ let s:fzf_bin = g:my_dir . '/plugged/fzf/bin/fzf'
 " ctrlp ne prend jamais Ctrl-p (réservé au défilement des copies, vim-yoink) ;
 " on l'appelle par ,ff quand fzf n'est pas disponible.
 let g:ctrlp_map = ''
+" cache (y compris la liste des fichiers récents) dans local/, jamais ~/.cache
+let g:ctrlp_cache_dir = g:my_local . '/tmp/ctrlp'
 let s:use_fzf = my#plug#on('fzf.vim') && (executable('fzf') || executable(s:fzf_bin))
 
 if s:use_fzf
@@ -35,7 +37,6 @@ if s:use_fzf
     nnoremap <leader>fg :vimgrep // **/*<Left><Left><Left><Left><Left><Left>
   endif
 elseif my#plug#on('ctrlp.vim')
-  let g:ctrlp_cache_dir = g:my_local . '/tmp/ctrlp'
   let g:ctrlp_prompt_mappings = {
         \ 'AcceptSelection("h")': ['<c-j>'],
         \ 'AcceptSelection("v")': ['<c-k>'],
