@@ -148,6 +148,79 @@ suggest() {
   esac
 }
 
+# --- Accès à GitHub ---------------------------------------------------------------------
+# Selon les machines, https ou ssh peut manquer : git des Synology sans
+# git-remote-https ; compte sans clé SSH déclarée sur GitHub.
+GH_TEST_REPO=${MY_GH_TEST_REPO:-junegunn/vim-plug}
+REWRITE_FROM="https://github.com/ https://git::@github.com/"
+to() { if has timeout; then timeout "$@"; else shift; "$@"; fi; }
+
+net_test() {
+  NET_HTTPS=0; NET_SSH=0
+  has git || return 0
+  GIT_TERMINAL_PROMPT=0 to 20 git ls-remote "https://github.com/$GH_TEST_REPO.git" HEAD >/dev/null 2>&1 && NET_HTTPS=1
+  GIT_SSH_COMMAND="ssh -o BatchMode=yes -o ConnectTimeout=10" \
+    to 20 git ls-remote "git@github.com:$GH_TEST_REPO.git" HEAD >/dev/null 2>&1 && NET_SSH=1
+  return 0
+}
+
+GIT_USER_CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/git/config"
+
+origin_url() { git -C "$REPO" remote get-url origin 2>/dev/null || true; }
+
+# Entware (Synology…) : git y est découpé en paquets ; sans « git-http »,
+# git-remote-https manque et https est impossible.
+opkg_bin() { command -v opkg 2>/dev/null || { [ -x /opt/bin/opkg ] && echo /opt/bin/opkg; } || true; }
+https_helper_missing() {
+  ep=$(git --exec-path 2>/dev/null) && [ -n "$ep" ] && [ ! -e "$ep/git-remote-https" ]
+}
+
+# Repli quand https ne peut pas être réparé : toute URL https GitHub passe par
+# ssh. Règle rangée dans ~/.config/git/config (lu par git en plus de
+# ~/.gitconfig), pour la garder à un seul endroit ; elle vaut pour tout git
+# sur cette machine (plugins vim, ~/.tmux, ~/.bash…).
+fix_rewrite() {
+  mkdir -p "$(dirname "$GIT_USER_CONFIG")"
+  for from in $REWRITE_FROM; do
+    git config --get-all url.git@github.com:.insteadOf 2>/dev/null | grep -qxF "$from" \
+      || git config --file "$GIT_USER_CONFIG" --add url.git@github.com:.insteadOf "$from"
+  done
+  ok "$(vim_path "$GIT_USER_CONFIG") : les URL https://github.com/ passent par ssh"
+  log "réécriture https->ssh ajoutée à $GIT_USER_CONFIG"
+}
+
+fix_remote_https() {
+  new=$(origin_url | sed -e 's#^git@github\.com:#https://github.com/#' -e 's#^ssh://git@github\.com/#https://github.com/#')
+  git -C "$REPO" remote set-url origin "$new" && ok "Dépôt : origin -> $new" && log "origin -> $new"
+}
+
+# Propose les correctifs adaptés au résultat de net_test.
+fix_network() {
+  has git || return 0
+  if [ "$NET_HTTPS" = 0 ] && [ "$NET_SSH" = 1 ]; then
+    if [ -n "$(opkg_bin)" ] && https_helper_missing; then
+      warn "https indisponible : il manque le paquet git-http. Solution durable :"
+      info "    sudo $(opkg_bin) install git-http    (puis relancer l'installeur)"
+      def=n
+    else
+      def=o
+    fi
+    if ask "  En attendant, faire passer les URL GitHub par ssh (règle dans ~/.config/git/config, vaut pour tout git) ?" "$def"; then
+      fix_rewrite
+    else
+      warn "Sans https ni cette règle, les plugins ne pourront pas s'installer"
+    fi
+  fi
+  case $(origin_url) in
+    git@github.com:*|ssh://git@github.com/*)
+      if [ "$NET_SSH" = 0 ] && [ "$NET_HTTPS" = 1 ]; then
+        if ask "  Pas de clé SSH GitHub ici : passer l'adresse du dépôt en https (pour git pull) ?" o; then
+          fix_remote_https
+        fi
+      fi ;;
+  esac
+}
+
 diagnose() {
   title "Diagnostic"
   detect_os; detect_vim
@@ -164,7 +237,16 @@ diagnose() {
     compat) warn "Niveau prévu : compatibilité (vim < 8 : plugins sans tâches de fond)" ;;
     minimal) warn "Niveau prévu : minimal (options et raccourcis, pas de plugins)" ;;
   esac
-  if has git; then ok "git présent"; else warn "git absent : plugins impossibles à installer (mode minimal)"; fi
+  if has git; then
+    ok "git présent ($(git --version 2>/dev/null | sed 's/git version //'))"
+    net_test
+    if [ "$NET_HTTPS" = 1 ] && [ "$NET_SSH" = 1 ]; then ok "GitHub joignable en https et en ssh"
+    elif [ "$NET_HTTPS" = 1 ]; then ok "GitHub joignable en https (ssh : pas de clé déclarée)"
+    elif [ "$NET_SSH" = 1 ]; then warn "GitHub : https indisponible, ssh OK (une règle sera proposée)"
+    else warn "GitHub injoignable (https et ssh) : plugins non installables, vim marchera sans"; fi
+  else
+    warn "git absent : plugins impossibles à installer (mode minimal)"; NET_HTTPS=0; NET_SSH=0
+  fi
   if has curl || has wget; then ok "curl/wget présent"; else warn "ni curl ni wget : binaires fzf / markdown-preview non téléchargeables"; fi
   info "Terminal     : TERM=${TERM:-?}, $(tput colors 2>/dev/null || echo '?') couleurs${COLORTERM:+, COLORTERM=$COLORTERM}"
   BRANCH_CUR=$(git -C "$REPO" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "?")
@@ -274,6 +356,7 @@ checkout() { # checkout <branche> : dans le dépôt courant, arbre propre exigé
 do_install() {
   title "Installation"
   : > "$LOG.tmp" && rm -f "$LOG.tmp"
+  fix_network
   checkout "$BRANCH" || exit 1
   write_stub "$HOME/.vimrc" "$REPO/vimrc"
   write_stub "$HOME/.gvimrc" "$REPO/gvimrc"
@@ -294,6 +377,7 @@ do_install() {
 
 do_try() {
   title "Essai côte à côte"
+  fix_network
   target=$REPO
   if [ "$BRANCH" != "$BRANCH_CUR" ]; then
     target="$HOME/.vimnew"
@@ -367,7 +451,7 @@ if [ "$MODE" != uninstall ] && [ -z "$BRANCH" ]; then
 fi
 
 if [ "$MODE" != uninstall ] && [ -z "$PLUGINS" ]; then
-  if [ "$TIER" = minimal ] || ! has git; then PLUGINS=no
+  if [ "$TIER" = minimal ] || ! has git || { [ "$NET_HTTPS" = 0 ] && [ "$NET_SSH" = 0 ]; }; then PLUGINS=no
   elif ask "Installer / mettre à jour les plugins maintenant ?" o; then PLUGINS=yes
   else PLUGINS=no; fi
 fi

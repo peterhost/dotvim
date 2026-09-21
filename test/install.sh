@@ -82,6 +82,60 @@ rmdir "$H/.vim/local/update.lock"
 check "mise à jour exécutée sans verrou"  sh -c "HOME='$H' VIM_BIN=true sh '$H/.vim/bin/update-plugins' && test -f '$H/.vim/local/last-update'"
 check "verrou libéré à la fin"            test ! -d "$H/.vim/local/update.lock"
 
+echo "== Accès à GitHub : https ou ssh indisponible (git simulé)"
+# faux git : ls-remote réussit ou échoue selon FAKE_HTTPS / FAKE_SSH, en
+# tenant compte de la règle de réécriture ; tout le reste va au vrai git.
+REALGIT=$(sh -c 'command -v git')
+mkdir -p "$TMP/fakegit"
+cat > "$TMP/fakegit/git" <<FAKE
+#!/bin/sh
+if [ "\$1" = ls-remote ]; then
+  url=\$2
+  case \$url in https://*)
+    "$REALGIT" config --global --get-all url.git@github.com:.insteadOf 2>/dev/null | grep -q '^https://github.com/\$' && url=ssh ;;
+  esac
+  case \$url in https://*) [ "\$FAKE_HTTPS" = 1 ] ;; *) [ "\$FAKE_SSH" = 1 ] ;; esac
+  exit \$?
+fi
+exec "$REALGIT" "\$@"
+FAKE
+chmod +x "$TMP/fakegit/git"
+netinst() { HOME=$H PATH="$TMP/fakegit:$PATH" MY_VIM_NO_AUTOUPDATE=1 FAKE_HTTPS=$1 FAKE_SSH=$2 sh "$H/.vim/bin/install" --yes --no-plugins </dev/null >"$TMP/out.txt" 2>&1; }
+
+new_home nas
+check "NAS (https KO, ssh OK) : installation réussie" netinst 0 1
+check "règle https->ssh ajoutée (forme normale)"      sh -c "git config --file '$H/.config/git/config' --get-all url.git@github.com:.insteadof | grep -qx 'https://github.com/'"
+check "règle https->ssh ajoutée (forme vim-plug)"     sh -c "git config --file '$H/.config/git/config' --get-all url.git@github.com:.insteadof | grep -qx 'https://git::@github.com/'"
+check "~/.gitconfig non modifié"                      test ! -f "$H/.gitconfig"
+check "diagnostic : https indisponible signalé"       grep -q 'https indisponible' "$TMP/out.txt"
+netinst 0 1
+check "règle non dupliquée à la 2e installation"      test "$(git config --file "$H/.config/git/config" --get-all url.git@github.com:.insteadof | wc -l | tr -d ' ')" = 2
+
+new_home harold
+git -C "$H/.vim" remote add origin git@github.com:peterhost/dotvim.git
+check "harold (ssh KO, https OK) : installation réussie" netinst 1 0
+check "origin passé en https"                         test "$(git -C "$H/.vim" remote get-url origin)" = https://github.com/peterhost/dotvim.git
+check "pas de règle https->ssh ajoutée"               test ! -f "$H/.config/git/config"
+
+new_home offline
+check "hors ligne : installation réussie quand même"  netinst 0 0
+check "hors ligne : signalé clairement"               grep -q 'GitHub injoignable' "$TMP/out.txt"
+check "hors ligne : config git non modifiée"          sh -c "test ! -f '$H/.gitconfig' && test ! -f '$H/.config/git/config'"
+
+new_home entware
+# Entware sans git-http : faux opkg, et exec-path sans git-remote-https
+mkdir -p "$TMP/fakeopkg" "$TMP/nohttps"
+printf '#!/bin/sh\nexit 0\n' > "$TMP/fakeopkg/opkg"; chmod +x "$TMP/fakeopkg/opkg"
+cat > "$TMP/fakeopkg/git" <<FAKE2
+#!/bin/sh
+[ "\$1" = --exec-path ] && { echo "$TMP/nohttps"; exit 0; }
+exec "$TMP/fakegit/git" "\$@"
+FAKE2
+chmod +x "$TMP/fakeopkg/git"
+check "Entware sans git-http : installation réussie" sh -c "HOME='$H' PATH='$TMP/fakeopkg:$PATH' MY_VIM_NO_AUTOUPDATE=1 FAKE_HTTPS=0 FAKE_SSH=1 sh '$H/.vim/bin/install' --yes --no-plugins </dev/null >'$TMP/out.txt' 2>&1"
+check "commande opkg install git-http proposée"       grep -q 'opkg install git-http' "$TMP/out.txt"
+check "règle non posée d'office (réparer d'abord)"    test ! -f "$H/.config/git/config"
+
 echo "== git hors du PATH (cas Synology : /opt/bin)"
 new_home extrapath
 mkdir -p "$TMP/optbin" "$TMP/nogit"
