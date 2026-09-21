@@ -44,7 +44,7 @@ call s:P('junegunn/fzf.vim', s:full)
 call s:P('cespare/vim-bclose', 1)
 call s:P('wesQ3/vim-windowswap', 1)
 call s:P('roman/golden-ratio', 1)
-call s:P('christoomey/vim-tmux-navigator', 1)
+call s:P('christoomey/vim-tmux-navigator', exists(':tnoremap') == 2)
 call s:P('tpope/vim-obsession', v:version >= 704)
 call s:P('vim-scripts/LargeFile', 1)
 
@@ -68,8 +68,9 @@ call s:P('pangloss/vim-javascript', 1)
 call s:P('heavenshell/vim-jsdoc', s:full && s:node,
       \ executable('npm') ? {'do': 'make install'} : {})
 call s:P('othree/html5.vim', 1)
-call s:P('ap/vim-css-color', v:version >= 704)
-call s:P('chrisbra/csv.vim', 1)
+call s:P('ap/vim-css-color', v:version >= 704,
+      \ {'for': ['css', 'scss', 'sass', 'less', 'stylus', 'html', 'vim']})
+call s:P('chrisbra/csv.vim', has('lambda'))
 call s:P('preservim/vim-markdown', 1)
 call s:P('iamcco/markdown-preview.nvim', s:full && s:node,
       \ {'do': ':call mkdp#util#install()'})

@@ -112,7 +112,8 @@ expected_ft() {
     *.py) echo python ;; *.js) echo javascript ;;
     *.json) if [ "${ver:-0}" -ge 704 ]; then echo json; else echo javascript; fi ;;
     *.xml) echo xml ;; *.html) echo html ;; *.css) echo css ;; *.scss) echo scss ;;
-    *.sh) echo sh ;; *.toml) echo toml ;; *.csv) echo csv ;; *.pl) echo perl ;;
+    *.sh) echo sh ;; *.toml) echo toml ;; *.pl) echo perl ;;
+    *.csv) if [ "${ver:-0}" -ge 800 ]; then echo csv; else echo ""; fi ;;
     *.vim) echo vim ;; Makefile) echo make ;; *.mq4) echo mql4 ;; *) echo "" ;;
   esac
 }
@@ -137,7 +138,7 @@ for vimbin in $VIMS; do
     np=0; nf=0
     for file in $FILES; do
       out="$TMP/out.txt"
-      label="$(basename "$vimbin") [$pname] $file"
+      label="vim$ver [$pname] $file"
       if [ "$tier" = none ]; then
         run_tiny "$vimbin" "$penv" "$file" "$out"
         if [ ! -f "$out" ]; then record FAIL "$label : pas de sortie"; nf=$((nf + 1))
@@ -169,12 +170,12 @@ for vimbin in $VIMS; do
       EXPECT_FT=; EXPECT_THEME=
       run_vim "$vimbin" "$penv" full NONE "$out"
       if [ ! -f "$out" ]; then
-        record FAIL "$(basename "$vimbin") [$pname] suite : pas de sortie"; nf=$((nf + 1))
+        record FAIL "vim$ver [$pname] suite : pas de sortie"; nf=$((nf + 1))
       else
         while IFS= read -r line; do
           case $line in
             PASS*) np=$((np + 1)); PASS=$((PASS + 1)) ;;
-            FAIL*) nf=$((nf + 1)); record FAIL "$(basename "$vimbin") [$pname] ${line#FAIL }" ;;
+            FAIL*) nf=$((nf + 1)); record FAIL "vim$ver [$pname] ${line#FAIL }" ;;
             INFO*) [ -n "${VERBOSE:-}" ] && echo "    ${line#INFO }" ;;
           esac
         done < "$out"

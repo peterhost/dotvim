@@ -4,6 +4,7 @@
 # Chaque scénario tourne dans un HOME temporaire contenant une copie du dépôt :
 # rien n'est modifié chez vous. Plugins non téléchargés (--no-plugins), sauf
 # le test d'installation en arrière-plan (TEST_NETWORK=1 pour l'activer).
+# TEST_SH=dash : lancer l'installeur avec un autre shell (dash, ksh…).
 
 set -u
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
@@ -25,7 +26,7 @@ new_home() {
   (cd "$H/.vim" && git init -q && git add -A && git -c user.name=t -c user.email=t@t commit -qm base \
     && git branch -M master && git checkout -q -b refactor) || exit 1
 }
-inst() { HOME=$H USER=test MY_VIM_NO_AUTOUPDATE=1 sh "$H/.vim/bin/install" "$@" </dev/null >"$TMP/out.txt" 2>&1; }
+inst() { HOME=$H USER=test MY_VIM_NO_AUTOUPDATE=1 ${TEST_SH:-sh} "$H/.vim/bin/install" "$@" </dev/null >"$TMP/out.txt" 2>&1; }
 
 echo "== Installation sur une machine vierge"
 new_home fresh
