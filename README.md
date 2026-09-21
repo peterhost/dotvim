@@ -146,6 +146,8 @@ Le leader est `,` et le localleader est `=`.
 | `,u` / `,y` | historique d'annulation / registres |
 | `Ctrl-p` / `Ctrl-n` juste après un collage | remplacer par une copie plus ancienne / plus récente |
 | `Maj-Tab` | développer un snippet |
+| `aC` `iC` / `aM` `iM` (python) | objets de texte classe / méthode, aussi `ac` `ic` `af` `if` |
+| `,d` `,n` `,r` (python) | définition, usages, renommage (ALE) |
 
 **Git et erreurs**
 

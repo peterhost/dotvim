@@ -187,7 +187,7 @@ function! s:test_filetypes()
     elseif l:c[1] ==# 'make'
       call s:ok('ftplugin.make_tabs', !&l:expandtab)
     endif
-    silent! bwipeout!
+    silent! bdelete!
   endfor
 endfunction
 
@@ -299,7 +299,7 @@ function! s:test_writing()
   Goyo!
   let l:err = s:errors(s:messages())
   call s:ok('writing.goyo_toggle', l:in && len(l:err) == l:nerr, join(l:err[l:nerr :], ' | '))
-  silent! bwipeout!
+  silent! bdelete!
 endfunction
 
 function! s:test_extras()
@@ -313,7 +313,7 @@ function! s:test_extras()
   execute 'silent edit! ' . fnameescape(g:my_dir . '/test/fixtures/sample.md')
   call s:ok('extra.spell_fr', &l:spell && &l:spelllang ==# 'fr'
         \ && !empty(spellbadword('maisson')[0]), string(spellbadword('maisson')))
-  silent! bwipeout!
+  silent! bdelete!
 endfunction
 
 " Historique des copies : copier 3 lignes, coller, puis Ctrl-p / Ctrl-n
@@ -343,10 +343,25 @@ function! s:test_yank_history()
   call s:ok('yank.ctrl_n_native', line('.') == 2, 'ligne ' . line('.'))
 endfunction
 
+" Objets de texte python : yiM sur une méthode copie toute la méthode
+function! s:test_python_objects()
+  if !my#plug#on('vim-pythonsense')
+    return
+  endif
+  execute 'silent edit! ' . fnameescape(g:my_dir . '/test/fixtures/script.py')
+  call s:ok('python.map_aC', maparg('aC', 'o') =~# 'Pythonsense')
+  let l:line = search('return (self')
+  call feedkeys('yaM', 'xt')
+  call s:ok('python.yank_method', @" =~# 'def norme' && @" =~# 'return (self', string(@"))
+  call feedkeys(l:line . 'GyiC', 'xt')
+  call s:ok('python.yank_class_body', @" =~# 'Un point' && @" !~# 'class Point', string(@"))
+  silent! bdelete!
+endfunction
+
 function! s:run()
   call s:test_startup()
   if exists('g:my_tier') && $VIMTEST_SUITE ==# 'full'
-    for l:t in ['env', 'mappings', 'commands', 'edit', 'filetypes', 'highlights', 'themes', 'plugins', 'writing', 'extras', 'yank_history', 'reload']
+    for l:t in ['env', 'mappings', 'commands', 'edit', 'filetypes', 'highlights', 'themes', 'plugins', 'writing', 'extras', 'yank_history', 'python_objects', 'reload']
       try
         call call('s:test_' . l:t, [])
       catch

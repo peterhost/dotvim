@@ -17,3 +17,17 @@ if exists(':ALEFix') == 2
   nnoremap <buffer> <leader>R :ALERename<CR>
   setlocal omnifunc=ale#completion#OmniFunc
 endif
+
+" Objets de texte classe / fonction (vim-pythonsense) : ac ic af if ad id,
+" déplacements [[ ]] [m ]m. Plus les touches de l'ancien python-mode :
+" aC iC (classe), aM iM (méthode ou fonction).
+if exists('g:loaded_pythonsense') || exists('*pythonsense#select_named_block')
+      \ || my#plug#on('vim-pythonsense')
+  for s:m in ['o', 'x']
+    execute s:m . 'map <buffer> aC <Plug>(PythonsenseOuterClassTextObject)'
+    execute s:m . 'map <buffer> iC <Plug>(PythonsenseInnerClassTextObject)'
+    execute s:m . 'map <buffer> aM <Plug>(PythonsenseOuterFunctionTextObject)'
+    execute s:m . 'map <buffer> iM <Plug>(PythonsenseInnerFunctionTextObject)'
+  endfor
+  unlet s:m
+endif
