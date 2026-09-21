@@ -389,12 +389,20 @@ branches() {
     | sed -e 's#^refs/heads/##' -e 's#^refs/remotes/[^/]*/##' | grep -v '^HEAD$' | sort -u
 }
 
-checkout() { # checkout <branche> : dans le dépôt courant, arbre propre exigé
+checkout() { # checkout <branche> : les modifications locales sont supprimées
   [ "$1" = "$BRANCH_CUR" ] && return 0
-  if [ -n "$(git -C "$REPO" status --porcelain 2>/dev/null)" ]; then
-    err "Modifications non enregistrées dans $REPO : impossible de changer de branche."
-    info "Utilisez le mode Essai, ou enregistrez/annulez vos modifications."
-    return 1
+  changes=$(git -C "$REPO" status --porcelain 2>/dev/null)
+  if [ -n "$changes" ]; then
+    warn "Modifications locales dans $(vim_path "$REPO") (supprimées pour changer de branche) :"
+    printf '%s\n' "$changes" | head -20 | sed 's/^/      /'
+    [ "$(printf '%s\n' "$changes" | wc -l)" -gt 20 ] && info "      …"
+    if ! ask "  Supprimer ces modifications ?" o; then
+      err "Changement de branche annulé"; return 1
+    fi
+    # fichiers suivis remis à l'état du dépôt, fichiers non suivis retirés ;
+    # les fichiers ignorés (bundle/, plugged/, local/…) ne sont pas touchés
+    git -C "$REPO" reset -q --hard && git -C "$REPO" clean -qfd \
+      && ok "Modifications locales supprimées" && log "modifications supprimées : $(printf '%s' "$changes" | tr '\n' ' ')"
   fi
   git -C "$REPO" checkout -q "$1" 2>>"$LOG" \
     || git -C "$REPO" checkout -q -b "$1" "origin/$1" 2>>"$LOG" \

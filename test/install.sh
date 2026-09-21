@@ -66,10 +66,17 @@ check "worktree ~/.vimnew créé"          test -f "$H/.vimnew/vimrc"
 check "~/.vimrc non touché"              test ! -e "$H/.vimrc"
 check "essai refusé si ~/.vimnew existe" sh -c "! HOME='$H' sh '$H/.vim/bin/install' --try --branch master --no-plugins --yes </dev/null"
 
-echo "== Changement de branche refusé si modifications en cours"
+echo "== Modifications locales : supprimées au changement de branche"
 new_home dirty
 echo x >> "$H/.vim/README.md"
-check "installation d'une autre branche refusée" sh -c "! HOME='$H' sh '$H/.vim/bin/install' --yes --branch master --no-plugins </dev/null"
+echo y > "$H/.vim/non-suivi.txt"
+mkdir -p "$H/.vim/bundle/ancien"; echo z > "$H/.vim/bundle/ancien/f"
+check "changement de branche malgré les modifications" inst --yes --branch master --no-plugins
+check "liste des modifications affichée"              grep -q 'README.md' "$TMP/out.txt"
+check "branche master active"                         test "$(git -C "$H/.vim" rev-parse --abbrev-ref HEAD)" = master
+check "fichier suivi remis à l'état du dépôt"         test -z "$(git -C "$H/.vim" status --porcelain)"
+check "fichier non suivi supprimé"                    test ! -e "$H/.vim/non-suivi.txt"
+check "fichiers ignorés conservés (bundle/)"          test -f "$H/.vim/bundle/ancien/f"
 
 echo "== Mise à jour en arrière-plan : témoin et verrou"
 new_home update
