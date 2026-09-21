@@ -44,3 +44,19 @@ function! my#buffers#perldoc()
   setlocal nomodified buftype=nofile bufhidden=wipe filetype=man
   normal! gg
 endfunction
+
+" Ouvre la session enregistrée le plus récemment (local/sessions/).
+function! my#buffers#last_session()
+  let l:last = ''
+  for l:f in split(glob(g:my_local . '/sessions/*'), '\n')
+    if l:last ==# '' || getftime(l:f) > getftime(l:last)
+      let l:last = l:f
+    endif
+  endfor
+  if l:last ==# ''
+    echo 'Aucune session enregistrée (,ws pour en suivre une)'
+    return
+  endif
+  execute 'source ' . fnameescape(l:last)
+  echo 'Session ouverte : ' . fnamemodify(l:last, ':t')
+endfunction

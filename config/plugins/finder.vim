@@ -5,7 +5,7 @@
 " Mêmes raccourcis dans les deux cas :
 "   ,ff fichiers   ,fb buffers   ,fd dossiers   ,ft tags     ,fh aide
 "   ,fj sauts      ,fc changements  ,fr historique  ,fg rechercher (rg)
-"   ,ll ,aa buffers
+"   ,ll ,aa ,az buffers
 " Dans la liste : Entrée ouvre, Ctrl-j partage horizontal, Ctrl-k vertical,
 " Ctrl-l nouvel onglet (comme avec FuzzyFinder).
 
@@ -25,6 +25,7 @@ if s:use_fzf
   nnoremap <leader>fl :BLines<CR>
   nnoremap <leader>ll :Buffers<CR>
   nnoremap <leader>aa :Buffers<CR>
+  nnoremap <leader>az :Buffers<CR>
   if executable('rg')
     nnoremap <leader>fg :Rg<Space>
   else
@@ -53,6 +54,7 @@ elseif my#plug#on('ctrlp.vim')
   nnoremap <leader>fl :CtrlPLine<CR>
   nnoremap <leader>ll :CtrlPBuffer<CR>
   nnoremap <leader>aa :CtrlPBuffer<CR>
+  nnoremap <leader>az :CtrlPBuffer<CR>
   nnoremap <leader>fh :help<Space>
   nnoremap <leader>fj :jumps<CR>
   nnoremap <leader>fc :changes<CR>
