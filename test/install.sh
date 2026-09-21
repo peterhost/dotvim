@@ -136,6 +136,30 @@ check "Entware sans git-http : installation réussie" sh -c "HOME='$H' PATH='$TM
 check "commande opkg install git-http proposée"       grep -q 'opkg install git-http' "$TMP/out.txt"
 check "règle non posée d'office (réparer d'abord)"    test ! -f "$H/.config/git/config"
 
+echo "== Paquets Entware : vérification au lancement (faux opkg)"
+new_home opkgcheck
+mkdir -p "$TMP/ew"
+for c in sh env cat ls mkdir rm mv cp ln date sed awk grep tr cut head tail sort uniq wc du find touch uname \
+         dirname basename tput vim script id readlink sw_vers expr stty tee true false git ssh make; do
+  p=$(sh -c "command -v $c" 2>/dev/null) && [ -x "$p" ] && ln -sf "$p" "$TMP/ew/$c"
+done
+# dépôt : fzf et ripgrep disponibles, ctags / libxml2-utils absents ; make présent
+printf '#!/bin/sh\n[ "$1" = list ] && printf "fzf - 0.70 - x\\nripgrep - 15 - x\\nmake - 4 - x\\n"\nexit 0\n' > "$TMP/ew/opkg"
+chmod +x "$TMP/ew/opkg"
+ewinst() { HOME=$H PATH="$TMP/ew" MY_EXTRA_PATHS=/nonexistent MY_VIM_NO_AUTOUPDATE=1 "$TMP/ew/sh" "$H/.vim/bin/install" --yes --no-plugins </dev/null >"$TMP/out.txt" 2>&1; }
+check "installation réussie avec opkg"                ewinst
+check "commande opkg proposée (fzf ripgrep)"          grep -q 'opkg install fzf ripgrep' "$TMP/out.txt"
+check "paquets absents du dépôt signalés"             grep -q 'Absents du dépôt.*ctags libxml2-utils' "$TMP/out.txt"
+check "outil présent (make) non proposé"              sh -c "! grep -q 'install.*make' '$TMP/out.txt'"
+# sans opkg list (sudo requis) : repli sur ~/opkglist.txt
+printf '#!/bin/sh\nexit 1\n' > "$TMP/ew/opkg"
+printf 'fzf - 0.70 - x\nctags - 6 - x\n' > "$H/opkglist.txt"
+ewinst
+check "repli sur ~/opkglist.txt"                      grep -q 'opkg install fzf ctags' "$TMP/out.txt"
+rm -f "$H/opkglist.txt"; ewinst
+check "sans liste : conseil de déposer opkglist.txt"  grep -q 'opkglist.txt' "$TMP/out.txt"
+check "--check : diagnostic seul, rien d'installé"    sh -c "rm -f '$H/.vimrc'; HOME='$H' sh '$H/.vim/bin/install' --check </dev/null >/dev/null 2>&1; test ! -e '$H/.vimrc'"
+
 echo "== git hors du PATH (cas Synology : /opt/bin)"
 new_home extrapath
 mkdir -p "$TMP/optbin" "$TMP/nogit"

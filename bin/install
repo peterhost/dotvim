@@ -7,6 +7,7 @@
 #   sh bin/install --branch B   choisir la branche (installation ou essai)
 #   sh bin/install --no-plugins ne pas installer les plugins
 #   sh bin/install --uninstall  retirer la config et restaurer la dernière sauvegarde
+#   sh bin/install --check      diagnostic seul (système, vim, GitHub, paquets), aucune action
 #
 # Écrit en sh POSIX : macOS, Debian/Mint (dash), Synology (ash busybox),
 # Cygwin, MSYS2/Git Bash, WSL. Rien n'est installé hors de $HOME, pas de sudo.
@@ -30,10 +31,11 @@ while [ $# -gt 0 ]; do
     --try) MODE=try ;;
     --uninstall) MODE=uninstall ;;
     --install) MODE=install ;;
+    --check) MODE=check ;;
     --branch) shift; BRANCH=${1:-} ;;
     --branch=*) BRANCH=${1#--branch=} ;;
     --no-plugins) PLUGINS=no ;;
-    -h|--help) sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "Option inconnue : $1 (voir --help)" >&2; exit 2 ;;
   esac
   shift
@@ -53,7 +55,7 @@ ok()    { printf '  %s✓%s %s\n' "$C_G" "$C_N" "$1"; }
 warn()  { printf '  %s!%s %s\n' "$C_Y" "$C_N" "$1"; }
 err()   { printf '  %s✗%s %s\n' "$C_R" "$C_N" "$1"; }
 info()  { printf '  %s\n' "$1"; }
-log()   { printf '%s %s\n' "$(date +%H:%M:%S)" "$1" >> "$LOG"; }
+log()   { printf '%s %s\n' "$(date +%H:%M:%S)" "$1" >> "$LOG" 2>/dev/null || true; }
 die()   { err "$1"; log "ERREUR $1"; exit 1; }
 
 # ask <question> <défaut o|n> : 0 si oui
@@ -221,6 +223,52 @@ fix_network() {
   esac
 }
 
+# --- Paquets Entware (opkg) ---------------------------------------------------------------
+# Sur une machine Entware (Synology…), opkg demande sudo : l'installeur ne
+# l'appelle jamais pour installer, il vérifie et donne la commande exacte.
+# Disponibilité dans le dépôt : `opkg list` si possible, sinon ~/opkglist.txt
+# (sortie de `opkg list` déposée par l'utilisateur).
+OPKG_TOOLS="fzf:fzf rg:ripgrep ctags:ctags xmllint:libxml2-utils make:make"
+
+opkg_available() { # opkg_available <paquet> : 0 dispo, 1 absent, 2 inconnu
+  [ -n "$OPKG_LIST" ] || return 2
+  printf '%s\n' "$OPKG_LIST" | grep -q "^$1 - "
+}
+
+entware_check() {
+  ENTWARE=0
+  OPKG=$(opkg_bin); [ -n "$OPKG" ] || return 0
+  ENTWARE=1
+  OPKG_LIST=$("$OPKG" list 2>/dev/null || true)
+  [ -n "$OPKG_LIST" ] || { [ -r "$HOME/opkglist.txt" ] && OPKG_LIST=$(cat "$HOME/opkglist.txt"); }
+  need=""; want=""; missing=""; upgrade=""
+  if has git && [ "$NET_HTTPS" = 0 ] && https_helper_missing; then need="git-http"; fi
+  for pair in $OPKG_TOOLS; do
+    cmd=${pair%%:*}; pkg=${pair#*:}
+    if has "$cmd"; then
+      [ "$cmd" = ctags ] && ! ctags --version 2>/dev/null | grep -qi universal || continue
+    fi
+    opkg_available "$pkg"; case $? in 1) missing="$missing $pkg" ;; *) want="$want $pkg" ;; esac
+  done
+  # bibliothèque trop ancienne pour les outils récents (vu sur DSM 7.2)
+  for cmd in ctags rg; do
+    has "$cmd" && "$cmd" --version 2>&1 >/dev/null | grep -q 'libpcre2.*no version information' && upgrade="libpcre2"
+  done
+  title "Paquets Entware (opkg)"
+  if [ -z "$need$want$upgrade" ]; then ok "Rien à installer"; fi
+  [ -n "$need" ] && warn "Indispensable : $need (sans lui, pas de https : plugins impossibles)"
+  [ -n "$want" ] && info "Utiles :$want"
+  [ -n "$missing" ] && info "Absents du dépôt de cette machine (la config s'en passe) :$missing"
+  [ -n "$upgrade" ] && warn "$upgrade trop ancien : ctags / rg affichent un avertissement à chaque appel"
+  if [ -n "$need$want" ]; then
+    info "À lancer (sudo) :"
+    info "    sudo $OPKG install $(echo $need $want)"
+  fi
+  [ -n "$upgrade" ] && info "    sudo $OPKG upgrade $upgrade"
+  [ -n "$OPKG_LIST" ] || info "(dépôt non consulté : opkg list demande sudo ; déposez sa sortie dans ~/opkglist.txt)"
+  return 0
+}
+
 diagnose() {
   title "Diagnostic"
   detect_os; detect_vim
@@ -262,6 +310,7 @@ diagnose() {
   if has ctags && ! ctags --version 2>/dev/null | grep -qi universal; then
     warn "ctags n'est pas universal-ctags : Tagbar ne fonctionnera pas ($(suggest ctags))"
   fi
+  entware_check
 }
 
 # --- Actions ---------------------------------------------------------------------------------
@@ -424,6 +473,7 @@ EOF
 printf '%s' "$C_N"
 log "=== bin/install $STAMP ($*)"
 diagnose
+[ "$MODE" = check ] && exit 0
 
 if [ -z "$MODE" ]; then
   title "Que voulez-vous faire ?"
@@ -456,7 +506,7 @@ if [ "$MODE" != uninstall ] && [ -z "$PLUGINS" ]; then
   else PLUGINS=no; fi
 fi
 
-if [ "$MODE" != uninstall ] && [ -n "$MISSING" ]; then
+if [ "$MODE" != uninstall ] && [ -n "$MISSING" ] && [ "$ENTWARE" = 0 ]; then
   title "Outils facultatifs absents"
   info "La config s'en passe ; ils ajoutent des fonctions. Commandes suggérées :"
   for t in $MISSING; do printf '    %-28s %s\n' "$t" "$(suggest "$t")"; done
