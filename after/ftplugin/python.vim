@@ -10,5 +10,10 @@ if exists(':ALEFix') == 2
   nnoremap <buffer> <F8> :ALEFix<CR>
   nnoremap <buffer> gd :ALEGoToDefinition<CR>
   nnoremap <buffer> K :ALEHover<CR>
+  " raccourcis de jedi-vim, conservés : définition, usages, renommage
+  nnoremap <buffer> <leader>d :ALEGoToDefinition<CR>
+  nnoremap <buffer> <leader>n :ALEFindReferences<CR>
+  nnoremap <buffer> <leader>r :ALERename<CR>
+  nnoremap <buffer> <leader>R :ALERename<CR>
   setlocal omnifunc=ale#completion#OmniFunc
 endif

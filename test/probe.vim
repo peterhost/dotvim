@@ -178,6 +178,10 @@ function! s:test_filetypes()
     call s:ok('ft.' . l:c[0], &filetype ==# l:want, &filetype)
     if l:c[1] ==# 'markdown'
       call s:ok('ftplugin.markdown_spell.' . l:c[0], &l:spell && &l:textwidth == 72)
+    elseif l:c[1] ==# 'python' && exists(':ALEFix') == 2
+      for l:k in ['d', 'n', 'r', 'R']
+        call s:ok('ftplugin.python_map_' . l:k, maparg(',' . l:k, 'n') =~# 'ALE')
+      endfor
     elseif l:c[1] ==# 'make'
       call s:ok('ftplugin.make_tabs', !&l:expandtab)
     endif
