@@ -7,33 +7,55 @@ Une configuration vim unique pour des machines très différentes : macOS (plusi
 ## Installation
 
 ```sh
-git clone https://github.com/peterhost/dotvim.git ~/.vim
-cd ~/.vim && make
+git clone https://github.com/peterhost/dotvim.git ~/.vim   # ou git@github.com:peterhost/dotvim.git
+cd ~/.vim && sh bin/install                                # ou : make
 ```
 
-`make` lance l'installeur guidé (`bin/install`) :
+`sh bin/install` (ou `make`, s'il est installé) lance l'installeur guidé :
 
-1. **Diagnostic.** Il affiche le système, la version de vim et ses capacités, le niveau prévu et les outils présents.
+1. **Diagnostic.** Il affiche le système, la version et les capacités de vim, le niveau prévu, l'accès à GitHub (https et ssh réellement testés), les outils présents et, sur un NAS, les paquets opkg manquants.
 2. **Choix.** Installer, essayer à côté de la config actuelle, ou désinstaller. Puis la branche, et l'installation des plugins.
 3. **Récapitulatif.** Il demande une confirmation, exécute, puis vérifie que vim démarre sans erreur.
 
-Autres commandes :
-
 | Commande | Effet |
 |---|---|
-| `make install` | installe sans poser de question (ssh, scripts) |
-| `make try` | essai à côté de la config actuelle, sans rien activer |
-| `make update` | `git pull`, puis mise à jour des plugins |
-| `make uninstall` | retire la config et restaure la sauvegarde |
+| `sh bin/install --check` | diagnostic seul, aucune action |
+| `sh bin/install --yes` / `make install` | installe sans poser de question (ssh, scripts) |
+| `sh bin/install --try` / `make try` | essai à côté de la config actuelle, sans rien activer |
+| `make update` | `git pull`, puis mise à jour des plugins (ou `sh bin/update-plugins`) |
+| `sh bin/install --uninstall` / `make uninstall` | retire la config et restaure la sauvegarde |
 | `make check` | batterie de tests (`VIMS="vim /autre/vim"` pour en tester plusieurs) |
 | `make themes` | ouvre le fichier d'essai des thèmes |
 
 Ce que fait l'installation :
 - `~/.vimrc` devient une ligne `source ~/.vim/vimrc`. L'ancien fichier est sauvegardé en `~/.vimrc.bak-<date>`. Même chose pour `~/.gvimrc`.
+- Les anciens liens `~/.vimrc.local` et `~/.gvimrc.local` vers le dépôt sont retirés s'ils sont vides, sinon remplacés par un vrai fichier.
+- Pour changer de branche, **les modifications locales de `~/.vim` sont supprimées** : la liste est affichée et une confirmation est demandée. Les dossiers ignorés (`plugged/`, `local/`…) ne sont pas touchés.
 - Les plugins sont installés dans `~/.vim/plugged/`, qui n'est jamais versionné.
-- Rien n'est écrit hors de `$HOME`, et `sudo` n'est jamais utilisé.
+- Rien n'est écrit hors de `$HOME`, et `sudo` n'est jamais utilisé : l'installeur donne les commandes, c'est vous qui les lancez.
 
-**Windows natif** (sans sh) : clonez dans `%USERPROFILE%\vimfiles`, puis créez `%USERPROFILE%\_vimrc` contenant `source ~/vimfiles/vimrc`. Lancez ensuite `:PlugInstall` dans vim. La config trouve son dossier toute seule. Cygwin, MSYS2 et WSL utilisent `make` normalement.
+### Accès à GitHub
+
+L'installeur teste https et ssh, puis s'adapte :
+
+| Situation | Ce qu'il propose |
+|---|---|
+| https en panne, ssh OK (NAS sans `git-http`) | d'abord `sudo opkg install git-http`, la vraie correction. En repli, une règle qui fait passer les URL GitHub par ssh, écrite dans `~/.config/git/config` (elle vaut alors pour tout git sur la machine) |
+| ssh en panne, https OK (compte sans clé SSH) | passer l'adresse du dépôt en https, pour que `git pull` fonctionne |
+| les deux en panne | vim fonctionne sans plugins, et le dit |
+
+### NAS Synology (Entware)
+
+- git, fzf et les autres outils Entware sont dans `/opt/bin` et `/opt/sbin`, ajoutés au `PATH` par le `.bashrc` interactif. L'installeur et la mise à jour des plugins les cherchent aussi à ces endroits.
+- opkg demande sudo : l'installeur vérifie les paquets au lancement et donne la commande exacte. Il consulte `opkg list` s'il le peut, sinon `~/opkglist.txt` (la sortie de `opkg list`, à déposer soi-même).
+- Paquets utiles :
+  - `git-http` (**indispensable** pour https) ;
+  - `fzf`, `ripgrep`, `ctags`, `libxml2-utils` et `make`, s'ils existent dans le dépôt de la machine.
+
+  Si `ctags` ou `rg` affichent un avertissement `libpcre2`, lancez `sudo opkg upgrade libpcre2`.
+- **N'installez pas le paquet `vim` d'Entware** : c'est une version « tiny », qui masquerait le vim du système.
+
+**Windows natif** (sans sh) : clonez dans `%USERPROFILE%\vimfiles`, puis créez `%USERPROFILE%\_vimrc` contenant `source ~/vimfiles/vimrc`. Lancez ensuite `:PlugInstall` dans vim. Cygwin, MSYS2 et WSL utilisent `sh bin/install` normalement.
 
 ## Essayer une autre branche sans rien casser
 
@@ -47,6 +69,7 @@ vim -u ~/.vimnew/vimrc                   # config, plugins et historique sépar�
 - Ils sont déclarés dans `config/plugins.vim` (vim-plug).
 - Ils sont installés par `make`, ou **au premier lancement de vim** si ce n'est pas encore fait.
 - Ils sont **mis à jour automatiquement en arrière-plan** au lancement de vim, au plus une fois tous les 7 jours. Vim n'est ni ralenti ni bloqué, et les nouvelles versions sont prises en compte au démarrage suivant.
+- Si une mise à jour échoue, vim le signale **une fois**, au démarrage suivant, avec le conseil adapté (par exemple `git-http` sur un NAS).
 - Le journal s'ouvre avec `:PluginsUpdateLog`. Le délai se règle avec `let g:my_autoupdate_days = 14` dans `~/.vimrc.local` ; `0` désactive la mise à jour automatique.
 
 ## Niveaux de fonctionnement
