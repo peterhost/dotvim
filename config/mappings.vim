@@ -178,7 +178,7 @@ nnoremap Do :diffoff<CR>
 nnoremap <silent> <leader>ev :call my#buffers#edit_real(g:my_dir . '/vimrc')<CR>
 nnoremap <silent> <leader>sv :execute 'source ' . fnameescape(g:my_dir . '/vimrc')<CR>:echo 'vimrc rechargé'<CR>
 nnoremap <silent> <leader>eb :call my#buffers#edit_real('~/.bashrc')<CR>
-nnoremap <silent> <leader>el :call my#buffers#edit_real('~/.vimrc.local')<CR>
+nnoremap <silent> <leader>el :execute 'edit ' . fnameescape(g:my_local . '/vimrc.local')<CR>
 " afficher tous les groupes de couleurs
 nnoremap <silent> <leader>sc :source $VIMRUNTIME/syntax/hitest.vim<CR>
 

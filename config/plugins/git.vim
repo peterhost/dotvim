@@ -16,8 +16,13 @@ if my#plug#on('vim-fugitive')
   augroup END
 endif
 
-" Gist : jeton GitHub dans ~/.gist-vim (voir :help gist-vim)
+" Gist : jeton GitHub dans local/gist-token (et non ~/.gist-vim) ; un ancien
+" ~/.gist-vim est repris une fois.
 if my#plug#on('vim-gist')
+  let g:gist_token_file = g:my_local . '/gist-token'
+  if !filereadable(g:gist_token_file) && filereadable(expand('~/.gist-vim'))
+    silent! call writefile(readfile(expand('~/.gist-vim'), 'b'), g:gist_token_file, 'b')
+  endif
   let g:gist_open_browser_after_post = 1
   " configuration QUIX (bookmarklets)
   nnoremap <leader>eq :Gist 1397755<CR>

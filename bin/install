@@ -361,20 +361,25 @@ link_config() { # link_config <~/.vimrc> <fichier du dépôt>
   fi
 }
 
-# ~/.vimrc.local est facultatif : lu s'il existe, jamais créé d'office.
-# Ancienne installation : c'était un lien vers le dépôt ; vide, on le retire,
-# sinon on le remplace par un vrai fichier (propre à cette machine).
-migrate_local() { # migrate_local <fichier>
-  [ -L "$1" ] || return 0
+# Réglages propres à la machine : local/vimrc.local et local/gvimrc.local.
+# Les anciens ~/.vimrc.local / ~/.gvimrc.local (souvent des liens vers le
+# dépôt) sont déplacés s'ils ont du contenu, retirés s'ils sont vides.
+migrate_local() { # migrate_local <~/.vimrc.local> <nom dans local/>
+  [ -e "$1" ] || [ -L "$1" ] || return 0
+  dest="$REPO/local/$2"
   if [ -s "$1" ] && grep -q '[^[:space:]]' "$1" 2>/dev/null; then
-    tmp="$1.tmp-$STAMP"
-    cat "$1" > "$tmp" && rm -f "$1" && mv "$tmp" "$1"
-    ok "$(vim_path "$1") : lien remplacé par un vrai fichier (contenu conservé)"
+    mkdir -p "$REPO/local"
+    if [ -e "$dest" ]; then
+      backup "$1"
+      warn "$(vim_path "$dest") existe déjà : $(vim_path "$1") mis de côté, à fusionner à la main"
+    else
+      cat "$1" > "$dest" && rm -f "$1" \
+        && ok "$(vim_path "$1") déplacé dans $(vim_path "$dest")"
+    fi
   else
-    rm -f "$1"
-    ok "$(vim_path "$1") : lien vers un fichier vide, retiré"
+    rm -f "$1" && ok "$(vim_path "$1") vide, retiré"
   fi
-  log "migration $1"
+  log "migration $1 -> $dest"
 }
 
 install_plugins() { # install_plugins <dossier de config>
@@ -448,8 +453,8 @@ do_install() {
   checkout "$BRANCH" || exit 1
   link_config "$HOME/.vimrc" "$REPO/vimrc"
   link_config "$HOME/.gvimrc" "$REPO/gvimrc"
-  migrate_local "$HOME/.vimrc.local"
-  migrate_local "$HOME/.gvimrc.local"
+  migrate_local "$HOME/.vimrc.local" vimrc.local
+  migrate_local "$HOME/.gvimrc.local" gvimrc.local
   [ "$PLUGINS" = no ] || install_plugins "$REPO"
   if [ -d "$REPO/bundle" ] && [ -d "$REPO/plugged" ]; then
     size=$(du -sh "$REPO/bundle" 2>/dev/null | cut -f1)

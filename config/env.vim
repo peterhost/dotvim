@@ -20,16 +20,18 @@ let g:my_is_linux  = has('unix') && !g:my_is_mac && !g:my_is_cygwin
 let g:my_local = empty($MY_VIM_LOCAL) ? g:my_dir . '/local' : $MY_VIM_LOCAL
 
 " --- Préférences propres à la machine ----------------------------------------
-" ~/.vimrc.local est lu tôt, pour pouvoir régler ce qui suit :
+" local/vimrc.local (jamais versionné) est lu tôt, pour pouvoir régler ce qui
+" suit ; ~/.vimrc.local reste lu s'il existe encore (ancien emplacement) :
 "   let g:my_theme          = 'lucius'   " thème par défaut
 "   let g:my_background     = 'light'    " fond clair/sombre par défaut
 "   let g:my_force_tier     = 'compat'   " forcer un niveau
 "   let g:my_disabled       = ['ale']    " plugins à ne pas charger
+"   let g:my_autoupdate_days = 0         " pas de mise à jour automatique
 "   let g:my_powerline_fonts = 1         " polices patchées pour airline
 "   let g:my_undercurl      = 1          " le terminal gère les soulignés ondulés
 " Pour des réglages à appliquer en toute fin de démarrage :
 "   autocmd VimEnter * …
-for s:f in [expand('~/.vimrc.local'), expand('~/_vimrc.local')]
+for s:f in [g:my_local . '/vimrc.local', expand('~/.vimrc.local'), expand('~/_vimrc.local')]
   if filereadable(s:f)
     execute 'source ' . fnameescape(s:f)
     break

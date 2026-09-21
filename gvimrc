@@ -32,7 +32,7 @@ nnoremap <silent> <leader>= :silent! let &guifont = substitute(&guifont, '\(:h\<
 nnoremap <silent> <leader>- :silent! let &guifont = substitute(&guifont, '\(:h\<Bar>\s\)\zs\d\+', '\=submatch(0)-1', '')<CR>
 
 " --- Réglages propres à la machine ---------------------------------------------------
-for s:f in [expand('~/.gvimrc.local'), expand('~/_gvimrc.local')]
+for s:f in [g:my_local . '/gvimrc.local', expand('~/.gvimrc.local'), expand('~/_gvimrc.local')]
   if filereadable(s:f)
     execute 'source ' . fnameescape(s:f)
     break

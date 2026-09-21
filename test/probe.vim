@@ -394,10 +394,18 @@ function! s:test_update_notice()
   call delete(l:status)
 endfunction
 
+" local/vimrc.local est lu (prioritaire sur ~/.vimrc.local)
+function! s:test_local_rc()
+  call s:ok('local.vimrc_local_read', get(g:, 'my_test_local_rc', '') ==# 'local', get(g:, 'my_test_local_rc', '(non lu)'))
+  if my#plug#on('vim-gist')
+    call s:ok('local.gist_token', get(g:, 'gist_token_file', '') ==# g:my_local . '/gist-token')
+  endif
+endfunction
+
 function! s:run()
   call s:test_startup()
   if exists('g:my_tier') && $VIMTEST_SUITE ==# 'full'
-    for l:t in ['env', 'mappings', 'commands', 'edit', 'filetypes', 'highlights', 'themes', 'plugins', 'writing', 'extras', 'yank_history', 'python_objects', 'update_notice', 'reload']
+    for l:t in ['env', 'mappings', 'commands', 'edit', 'filetypes', 'highlights', 'themes', 'plugins', 'writing', 'extras', 'yank_history', 'python_objects', 'update_notice', 'local_rc', 'reload']
       try
         call call('s:test_' . l:t, [])
       catch

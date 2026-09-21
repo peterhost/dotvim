@@ -28,8 +28,8 @@ cd ~/.vim && sh bin/install                                # ou : make
 | `make themes` | ouvre le fichier d'essai des thèmes |
 
 Ce que fait l'installation :
-- `~/.vimrc` devient une ligne `source ~/.vim/vimrc`. L'ancien fichier est sauvegardé en `~/.vimrc.bak-<date>`. Même chose pour `~/.gvimrc`.
-- Les anciens liens `~/.vimrc.local` et `~/.gvimrc.local` vers le dépôt sont retirés s'ils sont vides, sinon remplacés par un vrai fichier.
+- **Tout vit dans `~/.vim/`.** Depuis vim 7.4, vim lit directement `~/.vim/vimrc` et `~/.vim/gvimrc`. L'installeur met donc de côté l'ancien `~/.vimrc` (et `~/.gvimrc`) dans `~/.vim/local/backup/`, sans rien recréer dans `$HOME`. Un fichier `~/.vimrc` d'une ligne n'est écrit que pour un vim plus ancien, ou pour une config clonée ailleurs que dans `~/.vim`.
+- Les anciens `~/.vimrc.local` et `~/.gvimrc.local` sont déplacés dans `~/.vim/local/` s'ils ont du contenu, et retirés s'ils sont vides.
 - Pour changer de branche, **les modifications locales de `~/.vim` sont supprimées** : la liste est affichée et une confirmation est demandée. Les dossiers ignorés (`plugged/`, `local/`…) ne sont pas touchés.
 - Les plugins sont installés dans `~/.vim/plugged/`, qui n'est jamais versionné.
 - Rien n'est écrit hors de `$HOME`, et `sudo` n'est jamais utilisé : l'installeur donne les commandes, c'est vous qui les lancez.
@@ -70,7 +70,7 @@ vim -u ~/.vimnew/vimrc                   # config, plugins et historique sépar�
 - Ils sont installés par `make`, ou **au premier lancement de vim** si ce n'est pas encore fait.
 - Ils sont **mis à jour automatiquement en arrière-plan** au lancement de vim, au plus une fois tous les 7 jours. Vim n'est ni ralenti ni bloqué, et les nouvelles versions sont prises en compte au démarrage suivant.
 - Si une mise à jour échoue, vim le signale **une fois**, au démarrage suivant, avec le conseil adapté (par exemple `git-http` sur un NAS).
-- Le journal s'ouvre avec `:PluginsUpdateLog`. Le délai se règle avec `let g:my_autoupdate_days = 14` dans `~/.vimrc.local` ; `0` désactive la mise à jour automatique.
+- Le journal s'ouvre avec `:PluginsUpdateLog`. Le délai se règle avec `let g:my_autoupdate_days = 14` dans `~/.vim/local/vimrc.local` ; `0` désactive la mise à jour automatique.
 
 ## Niveaux de fonctionnement
 
@@ -105,9 +105,9 @@ Les fautes d'orthographe (`set spell`) restent visibles dans tous les cas :
 - **soulignement ondulé en couleur** sur les terminaux qui le gèrent (iTerm2, kitty, WezTerm…) ;
 - **souligné et en couleur** en console.
 
-## Réglages propres à une machine : `~/.vimrc.local`
+## Réglages propres à une machine : `~/.vim/local/vimrc.local`
 
-Ce fichier est facultatif. S'il existe, il est lu au démarrage. Exemples :
+Ce fichier est facultatif et jamais versionné. S'il existe, il est lu au démarrage (`,el` l'ouvre). L'ancien emplacement, `~/.vimrc.local`, est encore lu. Exemples :
 
 ```vim
 let g:my_theme = 'lucius'          " autre thème par défaut
@@ -119,7 +119,16 @@ let g:my_powerline_fonts = 1       " polices patchées pour airline
 let g:my_undercurl = 1             " le terminal gère le soulignement ondulé
 ```
 
-`~/.gvimrc.local` fait de même pour l'interface graphique (police, taille de fenêtre…).
+`~/.vim/local/gvimrc.local` fait de même pour l'interface graphique (police, taille de fenêtre…).
+
+**Données propres à la machine** (dossier `~/.vim/local/`, jamais versionné) :
+- l'historique (`viminfo`, repris une fois de l'ancien `~/.viminfo`) ;
+- l'annulation persistante, les vues, les sessions ;
+- le thème choisi ;
+- les caches ;
+- le jeton de vim-gist ;
+- l'état des mises à jour ;
+- les sauvegardes de l'installeur.
 
 ## Organisation
 
@@ -139,7 +148,7 @@ colors/                thèmes de secours (PaperColor, lucius, noctu)
 bin/install            installeur guidé
 bin/update-plugins     mise à jour des plugins (manuelle ou en arrière-plan)
 test/                  batterie de tests (make check)
-local/                 données propres à la machine (non versionné)
+local/                 données et réglages propres à la machine (non versionné)
 plugged/               plugins installés (non versionné)
 ```
 

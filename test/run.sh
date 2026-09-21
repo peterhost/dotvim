@@ -19,6 +19,9 @@ ROOT=$(cd "$(dirname "$0")/.." && pwd)
 TMP=$(mktemp -d "${TMPDIR:-/tmp}/vimtest.XXXXXX")
 trap 'rm -rf "$TMP"' EXIT INT TERM
 mkdir -p "$TMP/home" "$TMP/local"
+# réglages locaux : local/vimrc.local doit l'emporter sur ~/.vimrc.local
+echo "let g:my_test_local_rc = 'local'" > "$TMP/local/vimrc.local"
+echo "let g:my_test_local_rc = 'home'" > "$TMP/home/.vimrc.local"
 
 VIMS=${*:-${TEST_VIMS:-vim}}
 PASS=0; FAIL=0; SKIP=0

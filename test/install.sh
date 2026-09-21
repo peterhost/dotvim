@@ -60,8 +60,9 @@ check "ancien ~/.vimrc sauvegardé dans local/backup" test -L "$(ls -d "$H"/.vim
 check "ancien ~/.gvimrc sauvegardé"      grep -q perso "$(ls -d "$H"/.vim/local/backup/.gvimrc.* | head -1)"
 check "plus de ~/.vimrc ni de sauvegarde dans \$HOME" sh -c "test ! -e '$H/.vimrc' && ! ls '$H' | grep -q bak"
 check "lien .vimrc.local vide retiré"    test ! -e "$H/.vimrc.local"
-check "lien .gvimrc.local -> vrai fichier" sh -c "test -f '$H/.gvimrc.local' && test ! -L '$H/.gvimrc.local'"
-check "contenu de .gvimrc.local conservé" grep -q guifont "$H/.gvimrc.local"
+check "~/.gvimrc.local retiré de \$HOME"  test ! -e "$H/.gvimrc.local"
+check "contenu déplacé dans local/gvimrc.local" grep -q guifont "$H/.vim/local/gvimrc.local"
+check "\$HOME ne contient plus que .vim"   test "$(ls -A "$H")" = .vim
 
 echo "== Désinstallation"
 check "désinstallation réussie"          inst --uninstall --yes
