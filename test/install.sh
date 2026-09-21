@@ -70,6 +70,15 @@ check "désinstallation réussie"          inst --uninstall --yes
 check "~/.vimrc d'origine restauré"      test -L "$H/.vimrc"
 check "~/.gvimrc d'origine restauré"     grep -q perso "$H/.gvimrc"
 
+echo "== Ménage des restes de l'ancienne configuration"
+new_home legacy2
+mkdir -p "$H/.vim/bundle/vundle" "$H/.vim-fuf-data"; echo x > "$H/.vim/bundle/vundle/f"; echo 1 > "$H/.viminfo.vimnew"
+check "installation réussie"                          inst --yes --no-plugins
+check "restes listés"                                 grep -q 'Restes de l.ancienne configuration' "$TMP/out.txt"
+check "bundle/ supprimé"                              test ! -e "$H/.vim/bundle"
+check "~/.vim-fuf-data supprimé"                      test ! -e "$H/.vim-fuf-data"
+check "~/.viminfo.vimnew supprimé"                    test ! -e "$H/.viminfo.vimnew"
+
 echo "== Essai côte à côte (git worktree)"
 new_home try
 check "essai de la branche master"       inst --try --branch master --no-plugins --yes
@@ -81,13 +90,13 @@ echo "== Modifications locales : supprimées au changement de branche"
 new_home dirty
 echo x >> "$H/.vim/README.md"
 echo y > "$H/.vim/non-suivi.txt"
-mkdir -p "$H/.vim/bundle/ancien"; echo z > "$H/.vim/bundle/ancien/f"
+mkdir -p "$H/.vim/plugged/ancien"; echo z > "$H/.vim/plugged/ancien/f"
 check "changement de branche malgré les modifications" inst --yes --branch master --no-plugins
 check "liste des modifications affichée"              grep -q 'README.md' "$TMP/out.txt"
 check "branche master active"                         test "$(git -C "$H/.vim" rev-parse --abbrev-ref HEAD)" = master
 check "fichier suivi remis à l'état du dépôt"         test -z "$(git -C "$H/.vim" status --porcelain)"
 check "fichier non suivi supprimé"                    test ! -e "$H/.vim/non-suivi.txt"
-check "fichiers ignorés conservés (bundle/)"          test -f "$H/.vim/bundle/ancien/f"
+check "fichiers ignorés conservés (plugged/)"         test -f "$H/.vim/plugged/ancien/f"
 
 echo "== Mise à jour en arrière-plan : témoin et verrou"
 new_home update

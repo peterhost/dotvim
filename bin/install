@@ -424,6 +424,23 @@ check_config() { # check_config <dossier> : démarrage à blanc, erreurs éventu
   rm -f "$out"
 }
 
+# Restes de l'ancienne configuration (Vundle, FuzzyFinder, ancien mode
+# essai) : inutiles une fois la nouvelle installée ; listés puis supprimés.
+cleanup_legacy() {
+  set --
+  [ -d "$REPO/bundle" ] && set -- "$@" "$REPO/bundle"
+  [ -d "$REPO/vim-powerline-patched-fonts" ] && set -- "$@" "$REPO/vim-powerline-patched-fonts"
+  [ -d "$HOME/.vim-fuf-data" ] && set -- "$@" "$HOME/.vim-fuf-data"
+  [ -f "$HOME/.viminfo.vimnew" ] && set -- "$@" "$HOME/.viminfo.vimnew"
+  [ $# -eq 0 ] && return 0
+  info "Restes de l'ancienne configuration :"
+  for f in "$@"; do printf '      %-40s %s\n' "$(vim_path "$f")" "$(du -sh "$f" 2>/dev/null | cut -f1)"; done
+  if ask "  Les supprimer ?" o; then
+    for f in "$@"; do rm -rf "$f" && log "supprimé : $f"; done
+    ok "Restes de l'ancienne configuration supprimés"
+  fi
+}
+
 # Plugins absents (hors ligne, git absent…) : le dire, et rappeler que vim
 # les installera tout seul et le signalera à chaque démarrage d'ici là.
 plugins_notice() { # plugins_notice <dossier de config>
@@ -472,12 +489,7 @@ do_install() {
   migrate_local "$HOME/.vimrc.local" vimrc.local
   migrate_local "$HOME/.gvimrc.local" gvimrc.local
   [ "$PLUGINS" = no ] || install_plugins "$REPO"
-  if [ -d "$REPO/bundle" ] && [ -d "$REPO/plugged" ]; then
-    size=$(du -sh "$REPO/bundle" 2>/dev/null | cut -f1)
-    if ask "  Supprimer l'ancien dossier bundle/ de Vundle ($size) ?" n; then
-      rm -rf "$REPO/bundle" && ok "bundle/ supprimé"
-    fi
-  fi
+  cleanup_legacy
   check_config "$REPO"
   plugins_notice "$REPO"
   title "Terminé"

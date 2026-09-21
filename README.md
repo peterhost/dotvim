@@ -32,6 +32,7 @@ Ce que fait l'installation :
 - Les anciens `~/.vimrc.local` et `~/.gvimrc.local` sont déplacés dans `~/.vim/local/` s'ils ont du contenu, et retirés s'ils sont vides.
 - Pour changer de branche, **les modifications locales de `~/.vim` sont supprimées** : la liste est affichée et une confirmation est demandée. Les dossiers ignorés (`plugged/`, `local/`…) ne sont pas touchés.
 - Les plugins sont installés dans `~/.vim/plugged/`, qui n'est jamais versionné.
+- Les restes de l'ancienne configuration (`bundle/` de Vundle, `~/.vim-fuf-data`, `~/.viminfo.vimnew`) sont listés avec leur taille, puis supprimés après confirmation.
 - Rien n'est écrit hors de `$HOME`, et `sudo` n'est jamais utilisé : l'installeur donne les commandes, c'est vous qui les lancez.
 
 ### Accès à GitHub
