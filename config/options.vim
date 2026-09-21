@@ -21,6 +21,8 @@ set title
 set shortmess+=tI
 set sessionoptions=buffers,curdir,folds,localoptions,tabpages,winsize
 let &viewdir = g:my_local . '/views'
+" historique de netrw (explorateur intégré) dans local/, pas à la racine
+let g:netrw_home = g:my_local
 
 " Annulation persistante : l'historique d'annulation survit à la fermeture.
 if has('persistent_undo')

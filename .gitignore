@@ -1,7 +1,8 @@
 # Plugins installés par vim-plug (propres à chaque machine)
 /plugged/
 
-# Données locales : annulation, vues, sessions, thème choisi, caches
+# Tout ce qui est propre à la machine : historique, annulation, vues,
+# sessions, thème, dictionnaire, réglages locaux, caches, journaux, sauvegardes
 /local/
 
 # Ancienne organisation (Vundle) — conservée ignorée pour les vieux clones

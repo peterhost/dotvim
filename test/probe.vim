@@ -88,6 +88,7 @@ function! s:test_env()
     call s:ok('env.undofile', &undofile && isdirectory(&undodir), &undodir)
   endif
   call s:ok('env.leader', get(g:, 'mapleader', '') ==# ',')
+  call s:ok('env.netrw_home_local', get(g:, 'netrw_home', '') ==# g:my_local)
   if has('viminfo')
     call s:ok('env.viminfo_local', &viminfo =~# ',n' . escape(g:my_local, '\.') . '/viminfo$', &viminfo)
   endif

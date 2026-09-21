@@ -20,7 +20,8 @@ for d in ${MY_EXTRA_PATHS:-/opt/bin /opt/sbin /usr/local/bin}; do
 done
 export PATH
 REPO=$(cd "$(dirname "$0")/.." && pwd)
-LOG="$REPO/install.log"
+LOG="$REPO/local/install.log"
+mkdir -p "$REPO/local" 2>/dev/null || true
 STAMP=$(date +%Y%m%d-%H%M%S)
 MARK="Généré par bin/install"
 

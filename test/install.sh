@@ -34,6 +34,7 @@ check "installation --yes réussie"       inst --yes --no-plugins
 check "pas de ~/.vimrc (vim lit ~/.vim/vimrc)" test ! -e "$H/.vimrc"
 check "pas de ~/.gvimrc"                 test ! -e "$H/.gvimrc"
 check "rien d'autre créé dans \$HOME"     test "$(ls -A "$H")" = .vim
+check "journal dans local/, rien à la racine" sh -c "test -f '$H/.vim/local/install.log' && test ! -e '$H/.vim/install.log'"
 check "aucune sauvegarde inutile"        test ! -d "$H/.vim/local/backup"
 check "~/.vimrc.local non créé"          test ! -e "$H/.vimrc.local"
 check "vim démarre sans erreur"          grep -q 'aucune erreur' "$TMP/out.txt"
