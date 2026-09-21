@@ -383,6 +383,16 @@ check_config() { # check_config <dossier> : démarrage à blanc, erreurs éventu
   rm -f "$out"
 }
 
+# Plugins absents (hors ligne, git absent…) : le dire, et rappeler que vim
+# les installera tout seul et le signalera à chaque démarrage d'ici là.
+plugins_notice() { # plugins_notice <dossier de config>
+  [ "$TIER" = minimal ] && return 0
+  [ -d "$1/plugged" ] && [ -n "$(ls "$1/plugged" 2>/dev/null)" ] && return 0
+  warn "Aucun plugin installé pour l'instant."
+  info "  vim les installera tout seul en arrière-plan au prochain démarrage où GitHub"
+  info "  est joignable, et le rappellera à chaque démarrage tant qu'ils manquent."
+}
+
 branches() {
   # refs/heads/X et refs/remotes/<dépôt>/X -> X (sans les HEAD symboliques)
   git -C "$REPO" for-each-ref --format='%(refname)' refs/heads refs/remotes 2>/dev/null \
@@ -427,6 +437,7 @@ do_install() {
     fi
   fi
   check_config "$REPO"
+  plugins_notice "$REPO"
   title "Terminé"
   ok "vim utilise maintenant $(vim_path "$REPO") (branche $BRANCH_CUR)"
   info "Retour arrière : sh $(vim_path "$REPO")/bin/install --uninstall"
@@ -449,6 +460,7 @@ do_try() {
   fi
   [ "$PLUGINS" = no ] || install_plugins "$target"
   check_config "$target"
+  plugins_notice "$target"
   title "Pour essayer"
   info "vim -u $(vim_path "$target/vimrc")"
   info "Alias pratique : alias vimnew='vim -u $(vim_path "$target/vimrc")'"

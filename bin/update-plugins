@@ -4,6 +4,8 @@
 #   sh bin/update-plugins            maintenant (make update)
 #   sh bin/update-plugins --if-due N seulement si la dernière mise à jour a
 #                                    plus de N jours (lancé par vim au démarrage)
+#   sh bin/update-plugins --if-due-minutes N   idem en minutes (plugins manquants :
+#                                    nouvelle tentative au plus une fois par heure)
 #
 # Lance un vim invisible qui exécute :PlugUpdate (installe aussi les plugins
 # manquants et relance leurs commandes de construction). Un verrou empêche
@@ -25,13 +27,13 @@ VIM=${VIM_BIN:-vim}
 
 mkdir -p "$LOCAL" || exit 1
 
-if [ "${1:-}" = "--if-due" ]; then
-  days=${2:-7}
-  # à jour si le témoin a moins de N jours (find -mtime : portable)
-  if [ -f "$STAMP" ] && [ -n "$(find "$STAMP" -mtime -"$days" 2>/dev/null)" ]; then
-    exit 0
-  fi
-fi
+case ${1:-} in
+  --if-due)
+    # à jour si le témoin a moins de N jours (find -mtime : portable)
+    [ -f "$STAMP" ] && [ -n "$(find "$STAMP" -mtime -"${2:-7}" 2>/dev/null)" ] && exit 0 ;;
+  --if-due-minutes)
+    [ -f "$STAMP" ] && [ -n "$(find "$STAMP" -mmin -"${2:-60}" 2>/dev/null)" ] && exit 0 ;;
+esac
 
 command -v git >/dev/null 2>&1 || { echo "git absent : mise à jour impossible" >> "$LOG"; exit 0; }
 

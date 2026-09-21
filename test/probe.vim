@@ -375,6 +375,18 @@ function! s:test_update_notice()
   let l:before = len(split(s:messages(), "\n"))
   call my#update#notify()
   call s:ok('update.no_notice_when_ok', len(split(s:messages(), "\n")) == l:before)
+  " plugin manquant : rappel à chaque démarrage (pas une seule fois)
+  if exists('g:plugs')
+    let g:plugs['faux-plugin-manquant'] = {'dir': '/nonexistent/faux-plugin', 'uri': 'x'}
+    for l:i in [1, 2]
+      let l:before = len(split(s:messages(), "\n"))
+      call my#update#notify()
+      let l:new = split(s:messages(), "\n")[l:before :]
+      call s:ok('update.missing_notice_' . l:i, join(l:new) =~# 'non installé', string(l:new))
+    endfor
+    call s:ok('update.missing_listed', index(my#update#missing(), 'faux-plugin-manquant') >= 0)
+    unlet g:plugs['faux-plugin-manquant']
+  endif
   call delete(l:status)
 endfunction
 

@@ -88,6 +88,9 @@ check "verrou respecté (pas de 2e mise à jour)" sh -c "HOME='$H' VIM_BIN=false
 rmdir "$H/.vim/local/update.lock"
 check "mise à jour exécutée sans verrou"  sh -c "HOME='$H' VIM_BIN=true sh '$H/.vim/bin/update-plugins' && test -f '$H/.vim/local/last-update'"
 check "verrou libéré à la fin"            test ! -d "$H/.vim/local/update.lock"
+check "--if-due-minutes : rien si tentative récente" sh -c "rm -f '$H/.vim/local/update.log'; HOME='$H' VIM_BIN=false sh '$H/.vim/bin/update-plugins' --if-due-minutes 60 && test ! -f '$H/.vim/local/update.log'"
+touch -t 202001010000 "$H/.vim/local/last-update"
+check "--if-due-minutes : relance si plus ancienne"  sh -c "HOME='$H' VIM_BIN=true sh '$H/.vim/bin/update-plugins' --if-due-minutes 60 && test -f '$H/.vim/local/update.log'"
 
 echo "== Accès à GitHub : https ou ssh indisponible (git simulé)"
 # faux git : ls-remote réussit ou échoue selon FAKE_HTTPS / FAKE_SSH, en
@@ -127,6 +130,7 @@ check "pas de règle https->ssh ajoutée"               test ! -f "$H/.config/gi
 new_home offline
 check "hors ligne : installation réussie quand même"  netinst 0 0
 check "hors ligne : signalé clairement"               grep -q 'GitHub injoignable' "$TMP/out.txt"
+check "hors ligne : absence de plugins annoncée"       grep -q 'Aucun plugin installé' "$TMP/out.txt"
 check "hors ligne : config git non modifiée"          sh -c "test ! -f '$H/.gitconfig' && test ! -f '$H/.config/git/config'"
 
 new_home entware
