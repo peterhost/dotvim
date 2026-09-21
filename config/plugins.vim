@@ -39,6 +39,7 @@ call s:P('rafamadriz/friendly-snippets', s:full)
 " --- Fichiers, buffers, fenêtres ---------------------------------------------------
 call s:P('preservim/nerdtree', 1)
 call s:P('ctrlpvim/ctrlp.vim', 1)
+call s:P('jlanzarotta/bufexplorer', v:version >= 704)
 call s:P('junegunn/fzf', s:full, {'do': ':call fzf#install()'})
 call s:P('junegunn/fzf.vim', s:full)
 call s:P('cespare/vim-bclose', 1)

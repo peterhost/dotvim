@@ -98,6 +98,9 @@ function! s:test_mappings()
   call s:ok('map.jf', maparg('jf', 'i') ==# '<Esc>')
   call s:ok('map.azerty_recursive', maparg("'", 'n') ==# '[')
   call s:ok('map.space_fold', maparg('<Space>', 'n') ==# 'za')
+  for l:k in ['be', 'bt', 'bs', 'bv']
+    call s:ok('map.buffers_' . l:k, maparg(',' . l:k, 'n') !=# '', 'absent')
+  endfor
   " Tous nos raccourcis de la forme :Commande doivent viser une commande qui
   " existe (sinon : raccourci mort, comme ,gs -> :Gstatus dans l'ancien vimrc).
   redir => l:all

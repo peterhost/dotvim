@@ -11,3 +11,13 @@ if my#plug#on('tagbar')
   endif
   nnoremap <leader>T :TagbarToggle<CR>
 endif
+
+" Liste des buffers : ,be (ici), ,bt (bascule), ,bs (partage horizontal),
+" ,bv (partage vertical). Raccourcis fournis par bufexplorer ; sans lui
+" (vim < 7.4), équivalent natif : la liste s'affiche, on tape le numéro.
+if !my#plug#on('bufexplorer')
+  nnoremap <leader>be :ls<CR>:buffer<Space>
+  nnoremap <leader>bt :ls<CR>:buffer<Space>
+  nnoremap <leader>bs :ls<CR>:sbuffer<Space>
+  nnoremap <leader>bv :ls<CR>:vertical sbuffer<Space>
+endif

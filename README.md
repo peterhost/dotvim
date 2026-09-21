@@ -129,6 +129,7 @@ Le leader est `,` et le localleader est `=`.
 | Raccourci | Action |
 |---|---|
 | `,ff` `,fb` `,fr` `,fg` | fichiers, buffers, récents, recherche (fzf, sinon ctrlp) |
+| `,be` `,bs` `,bv` | liste des buffers : ici, partage horizontal, partage vertical |
 | `,t` / `,T` | arborescence (NERDTree) / symboles (Tagbar) |
 | `,x` / `,X` | fermer le buffer en gardant la fenêtre / fermer les deux |
 | `Ctrl-h/j/k/l`, flèches | changer de fenêtre (et de panneau tmux) |
