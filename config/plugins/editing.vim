@@ -24,6 +24,22 @@ endif
 " Registres : vim-peekaboo les affiche en tapant " ou @ ; ,y les liste.
 nnoremap <leader>y :registers<CR>
 
+" Historique des copies (vim-yoink, remplace YankRing) : juste après un
+" collage, Ctrl-p remplace par une copie plus ancienne, Ctrl-n par une plus
+" récente (même sens que YankRing). Sinon, Ctrl-p / Ctrl-n gardent leur effet.
+if my#plug#on('vim-yoink')
+  let g:yoinkIncludeDeleteOperations = 1
+  let g:yoinkMaxItems = 20
+  nmap p <Plug>(YoinkPaste_p)
+  nmap P <Plug>(YoinkPaste_P)
+  nmap gp <Plug>(YoinkPaste_gp)
+  nmap gP <Plug>(YoinkPaste_gP)
+  nnoremap <Plug>(my-ctrl-p) <C-p>
+  nnoremap <Plug>(my-ctrl-n) <C-n>
+  nmap <expr> <C-p> yoink#canSwap() ? '<Plug>(YoinkPostPasteSwapBack)' : '<Plug>(my-ctrl-p)'
+  nmap <expr> <C-n> yoink#canSwap() ? '<Plug>(YoinkPostPasteSwapForward)' : '<Plug>(my-ctrl-n)'
+endif
+
 if my#plug#on('tabular')
   nnoremap <leader><C-t> :Tabularize /
 endif

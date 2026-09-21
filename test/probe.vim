@@ -316,10 +316,37 @@ function! s:test_extras()
   silent! bwipeout!
 endfunction
 
+" Historique des copies : copier 3 lignes, coller, puis Ctrl-p / Ctrl-n
+function! s:test_yank_history()
+  if !my#plug#on('vim-yoink') || !exists('*yoink#canSwap')
+    return
+  endif
+  call s:scratch(['un', 'deux', 'trois'], 'text')
+  " frappe simulée (et non :normal) : yoink s'appuie sur l'annulation, qui
+  " regroupe tous les :normal d'une fonction en une seule étape
+  call feedkeys('1Gyy2Gyy3GyyGp', 'xt')
+  let l:seq = [getline(4)]
+  call feedkeys("\<C-p>", 'xt')
+  call add(l:seq, getline(4))
+  call feedkeys("\<C-p>", 'xt')
+  call add(l:seq, getline(4))
+  call feedkeys("\<C-n>", 'xt')
+  call add(l:seq, getline(4))
+  call s:ok('yank.cycle', l:seq ==# ['trois', 'deux', 'un', 'deux'], string(l:seq))
+  " hors collage, Ctrl-n garde son effet (ligne suivante)
+  " CursorMoved n'est émis qu'en attente de frappe : on le déclenche deux
+  " fois (yoink ignore le premier, qui suit le collage lui-même)
+  call feedkeys('1G', 'xt')
+  doautocmd CursorMoved
+  doautocmd CursorMoved
+  call feedkeys("\<C-n>", 'xt')
+  call s:ok('yank.ctrl_n_native', line('.') == 2, 'ligne ' . line('.'))
+endfunction
+
 function! s:run()
   call s:test_startup()
   if exists('g:my_tier') && $VIMTEST_SUITE ==# 'full'
-    for l:t in ['env', 'mappings', 'commands', 'edit', 'filetypes', 'highlights', 'themes', 'plugins', 'writing', 'extras', 'reload']
+    for l:t in ['env', 'mappings', 'commands', 'edit', 'filetypes', 'highlights', 'themes', 'plugins', 'writing', 'extras', 'yank_history', 'reload']
       try
         call call('s:test_' . l:t, [])
       catch

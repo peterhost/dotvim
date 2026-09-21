@@ -32,6 +32,8 @@ call s:P('preservim/nerdcommenter', 1)
 call s:P('ervandew/supertab', 1)
 call s:P('mbbill/undotree', 1)
 call s:P('junegunn/vim-peekaboo', 1)
+" historique des copies (remplace YankRing) : vim 8+
+call s:P('svermeulen/vim-yoink', exists('##TextYankPost'))
 " snippets (remplace xptemplate)
 call s:P('hrsh7th/vim-vsnip', s:full)
 call s:P('rafamadriz/friendly-snippets', s:full)

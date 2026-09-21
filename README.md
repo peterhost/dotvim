@@ -144,6 +144,7 @@ Le leader est `,` et le localleader est `=`.
 | `,Espace` / `Maj-F7` | supprimer les espaces en fin de ligne (ligne / fichier ; en markdown, les doubles espaces sont conservés) |
 | `F8` | réindenter, ou corriger avec ALE (python, js, json…) |
 | `,u` / `,y` | historique d'annulation / registres |
+| `Ctrl-p` / `Ctrl-n` juste après un collage | remplacer par une copie plus ancienne / plus récente |
 | `Maj-Tab` | développer un snippet |
 
 **Git et erreurs**
