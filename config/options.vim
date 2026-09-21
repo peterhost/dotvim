@@ -41,6 +41,26 @@ endif
 set nospell
 set spelllang=fr
 
+" Dictionnaire personnel propre à la machine (zg / zw), dans local/ : jamais
+" versionné, jamais effacé par une mise à jour. L'ancien dictionnaire suivi
+" par git (spell/fr.utf-8.add) est repris une fois s'il est encore là.
+if has('spell')
+  let s:add = g:my_local . '/spell/fr.' . &encoding . '.add'
+  let s:old = g:my_dir . '/spell/fr.' . &encoding . '.add'
+  if exists('*mkdir') && !isdirectory(g:my_local . '/spell')
+    silent! call mkdir(g:my_local . '/spell', 'p')
+  endif
+  if !filereadable(s:add) && filereadable(s:old)
+    silent! call writefile(readfile(s:old), s:add)
+  endif
+  let &spellfile = s:add
+  " liste binaire (.spl) à reconstruire si le fichier de mots est plus récent
+  if filereadable(s:add) && getftime(s:add) > getftime(s:add . '.spl')
+    silent! execute 'mkspell! ' . fnameescape(s:add)
+  endif
+  unlet s:add s:old
+endif
+
 " Caractères invisibles : tabulations discrètes, espaces en fin de ligne marqués.
 set list
 if g:my_utf8

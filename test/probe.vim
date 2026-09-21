@@ -395,6 +395,20 @@ function! s:test_update_notice()
 endfunction
 
 " local/vimrc.local est lu (prioritaire sur ~/.vimrc.local)
+" zg ajoute au dictionnaire de la machine (local/), jamais dans le dépôt
+function! s:test_spell_local()
+  if !has('spell')
+    return
+  endif
+  call s:ok('spell.file_local', &spellfile ==# g:my_local . '/spell/fr.' . &encoding . '.add', &spellfile)
+  call s:scratch(['motinventeparletest'], 'markdown')
+  setlocal spell spelllang=fr
+  normal! gg0zg
+  call s:ok('spell.zg_local', filereadable(&spellfile)
+        \ && index(readfile(&spellfile), 'motinventeparletest') >= 0)
+  call s:ok('spell.repo_untouched', !filereadable(g:my_dir . '/spell/fr.' . &encoding . '.add'))
+endfunction
+
 function! s:test_local_rc()
   call s:ok('local.vimrc_local_read', get(g:, 'my_test_local_rc', '') ==# 'local', get(g:, 'my_test_local_rc', '(non lu)'))
   if my#plug#on('vim-gist')
@@ -405,7 +419,7 @@ endfunction
 function! s:run()
   call s:test_startup()
   if exists('g:my_tier') && $VIMTEST_SUITE ==# 'full'
-    for l:t in ['env', 'mappings', 'commands', 'edit', 'filetypes', 'highlights', 'themes', 'plugins', 'writing', 'extras', 'yank_history', 'python_objects', 'update_notice', 'local_rc', 'reload']
+    for l:t in ['env', 'mappings', 'commands', 'edit', 'filetypes', 'highlights', 'themes', 'plugins', 'writing', 'extras', 'yank_history', 'python_objects', 'update_notice', 'local_rc', 'spell_local', 'reload']
       try
         call call('s:test_' . l:t, [])
       catch

@@ -382,6 +382,20 @@ migrate_local() { # migrate_local <~/.vimrc.local> <nom dans local/>
   log "migration $1 -> $dest"
 }
 
+# Dictionnaire personnel : l'ancien, suivi par git (spell/*.add), est copié
+# dans local/spell/ avant tout changement de branche ou suppression des
+# modifications locales, pour ne perdre aucun mot ajouté.
+migrate_spell() {
+  for f in "$REPO"/spell/*.add; do
+    [ -f "$f" ] || continue
+    dest="$REPO/local/spell/$(basename "$f")"
+    [ -e "$dest" ] && continue
+    mkdir -p "$REPO/local/spell" && cp "$f" "$dest" \
+      && ok "Dictionnaire personnel repris : $(vim_path "$dest") ($(wc -l < "$dest" | tr -d ' ') mots)" \
+      && log "dictionnaire $f -> $dest"
+  done
+}
+
 install_plugins() { # install_plugins <dossier de config>
   if ! has git; then warn "git absent : plugins non installés"; return; fi
   if [ -z "$VIM_BIN" ] || [ "$VIM_EVAL" != 1 ]; then warn "vim sans +eval : plugins inutiles"; return; fi
@@ -450,6 +464,7 @@ do_install() {
   title "Installation"
   : > "$LOG.tmp" && rm -f "$LOG.tmp"
   fix_network
+  migrate_spell
   checkout "$BRANCH" || exit 1
   link_config "$HOME/.vimrc" "$REPO/vimrc"
   link_config "$HOME/.gvimrc" "$REPO/gvimrc"

@@ -195,6 +195,12 @@ check "installation sans git dans le PATH" sh -c "HOME='$H' PATH='$TMP/nogit' MY
 check "git retrouvé dans le dossier supplémentaire" grep -q 'git présent' "$TMP/out.txt"
 check "sans dossier supplémentaire : git signalé absent" sh -c "HOME='$H' PATH='$TMP/nogit' MY_EXTRA_PATHS=/nonexistent '$TMP/nogit/sh' '$H/.vim/bin/install' --yes --no-plugins </dev/null 2>&1 | grep -q 'git absent'"
 
+echo "== Dictionnaire personnel repris dans local/spell/"
+new_home spell
+printf 'collapsologie\nJancovici\n' > "$H/.vim/spell/fr.utf-8.add"
+check "installation réussie"                          inst --yes --no-plugins
+check "mots repris dans local/spell/fr.utf-8.add"     grep -q Jancovici "$H/.vim/local/spell/fr.utf-8.add"
+
 echo "== Historique : ~/.viminfo repris une fois dans local/"
 new_home viminfo
 printf '# viminfo de test\n:commande-ancienne\n' > "$H/.viminfo"
