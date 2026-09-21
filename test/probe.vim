@@ -98,6 +98,7 @@ function! s:test_mappings()
   call s:ok('map.jf', maparg('jf', 'i') ==# '<Esc>')
   call s:ok('map.azerty_recursive', maparg("'", 'n') ==# '[')
   call s:ok('map.space_fold', maparg('<Space>', 'n') ==# 'za')
+  call s:ok('map.ctrlp_not_on_ctrl_p', maparg('<C-p>', 'n') !~? 'ctrlp')
   call s:ok('map.f5_insert', maparg('<F5>', 'i') =~# 'toggle_background')
   call s:ok('map.session_last', maparg(',wl', 'n') =~# 'last_session')
   for l:k in ['be', 'bt', 'bs', 'bv']
