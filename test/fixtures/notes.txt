@@ -1,0 +1,3 @@
+Notes en texte brut, traitées comme du markdown.
+
+- une liste

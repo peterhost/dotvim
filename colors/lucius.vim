@@ -1,7 +1,7 @@
 " ============================================================================
 " Name:     Lucius vim color scheme
 " Author:   Jonathan Filip <jfilip1024@gmail.com>
-" Version:  8.1.2
+" Version:  8.1.7
 " ----------------------------------------------------------------------------
 "
 " Light and dark color scheme for GUI and 256 color terminal.
@@ -88,6 +88,34 @@
 " Setting this will cause the color scheme to use underlined fonts for some
 " items.
 "
+" g:lucius_no_term_bg (default: 0)
+"
+" Setting this will cause the color scheme to not set a background color in
+" the terminal (useful for transparency or terminals with different background
+" colors).
+"
+" License:
+"
+" Copyright (c) 2015 Jonathan Filip
+"
+" Permission is hereby granted, free of charge, to any person obtaining a copy
+" of this software and associated documentation files (the "Software"), to deal
+" in the Software without restriction, including without limitation the rights
+" to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+" copies of the Software, and to permit persons to whom the Software is
+" furnished to do so, subject to the following conditions:
+"
+" The above copyright notice and this permission notice shall be included in
+" all copies or substantial portions of the Software.
+"
+" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+" IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+" FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+" AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+" LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+" OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+" THE SOFTWARE.
+"
 " ============================================================================
 
 
@@ -130,6 +158,12 @@ if exists("g:lucius_use_underline")
     let s:use_underline = g:lucius_use_underline
 else
     let s:use_underline = 1
+endif
+
+if exists("g:lucius_no_term_bg")
+    let s:no_term_bg = g:lucius_no_term_bg
+else
+    let s:no_term_bg = 0
 endif
 
 
@@ -230,7 +264,7 @@ endfunction
 " ============================================================================
 
 let s:normal_items = [
-            \ "ColorColumn", "Comment", "Constant", "Cursor", "CursorColumn",
+            \ "ColorColumn", "Comment", "Conceal", "Constant", "Cursor", "CursorColumn",
             \ "CursorIM", "CursorLine", "CursorLineNr", "DiffAdd", "DiffChange",
             \ "DiffDelete", "Directory", "Error", "ErrorMsg", "Identifier",
             \ "IncSearch", "LineNr", "MatchParen", "ModeMsg", "MoreMsg",
@@ -243,7 +277,7 @@ let s:normal_items = [
 
 let s:bold_items = [
             \ "DiffText", "FoldColumn", "Folded", "StatusLine", "TabLineSel",
-            \ "Title",
+            \ "Title", "CursorLineNr",
             \ ]
 
 let s:underline_items = [
@@ -320,13 +354,12 @@ let g:colors_name="lucius"
 " Text Markup:
 " ----------------------------------------------------------------------------
 
-hi ModeMsg      guifg=fg
-hi Question     guifg=fg
 if s:style == "light"
     hi NonText      guifg=#afafd7
     hi SpecialKey   guifg=#afd7af
     if s:contrast == "low"
         hi Comment      guifg=#9e9e9e
+        hi Conceal      guifg=#9e9e9e
         hi Constant     guifg=#d78700
         hi Directory    guifg=#00af87
         hi Identifier   guifg=#00af00
@@ -337,6 +370,7 @@ if s:style == "light"
         hi Type         guifg=#0087af
     else
         hi Comment      guifg=#808080
+        hi Conceal      guifg=#808080
         hi Constant     guifg=#af5f00
         hi Directory    guifg=#00875f
         hi Identifier   guifg=#008700
@@ -351,6 +385,7 @@ else
     hi SpecialKey   guifg=#5f875f
     if s:contrast == "low"
         hi Comment      guifg=#6c6c6c
+        hi Conceal      guifg=#6c6c6c
         hi Constant     guifg=#afaf87
         hi Directory    guifg=#87af87
         hi Identifier   guifg=#87af5f
@@ -361,6 +396,7 @@ else
         hi Type         guifg=#5fafaf
     elseif s:contrast == "high"
         hi Comment      guifg=#8a8a8a
+        hi Conceal      guifg=#8a8a8a
         hi Constant     guifg=#ffffd7
         hi Directory    guifg=#d7ffd7
         hi Identifier   guifg=#d7ffaf
@@ -371,6 +407,7 @@ else
         hi Type         guifg=#afffff
     else
         hi Comment      guifg=#808080
+        hi Conceal      guifg=#808080
         hi Constant     guifg=#d7d7af
         hi Directory    guifg=#afd7af
         hi Identifier   guifg=#afd787
@@ -415,7 +452,7 @@ else
     hi CursorColumn                 guibg=#444444
     hi CursorLine                   guibg=#444444
     hi IncSearch    guifg=bg
-    hi MatchParen   guifg=bg
+    hi MatchParen   guifg=fg        guibg=#87af00
     hi Search       guifg=bg
     hi Visual                       guibg=#005f87
     if s:contrast == "low"
@@ -423,7 +460,6 @@ else
         hi CursorIM                     guibg=#5f87af
         hi Error        guifg=#d75f5f   guibg=#870000
         hi IncSearch                    guibg=#00afaf
-        hi MatchParen                   guibg=#87af5f
         hi Search                       guibg=#d78700
         hi Todo         guifg=#afaf00   guibg=#5f5f00
     elseif s:contrast == "high"
@@ -431,7 +467,6 @@ else
         hi CursorIM                     guibg=#afd7ff
         hi Error        guifg=#ffafaf   guibg=#af0000
         hi IncSearch                    guibg=#87ffff
-        hi MatchParen                   guibg=#d7ff87
         hi Search                       guibg=#ffaf5f
         hi Todo         guifg=#ffff87   guibg=#87875f
     else
@@ -439,7 +474,6 @@ else
         hi CursorIM                     guibg=#87afd7
         hi Error        guifg=#ff8787   guibg=#870000
         hi IncSearch                    guibg=#5fd7d7
-        hi MatchParen                   guibg=#afd75f
         hi Search                       guibg=#d78700
         hi Todo         guifg=#d7d75f   guibg=#5f5f00
     endif
@@ -450,30 +484,34 @@ endif
 " Messages:
 " ----------------------------------------------------------------------------
 
-hi ModeMsg      guifg=fg
 hi Question     guifg=fg
 if s:style == "light"
     if s:contrast == "low"
         hi ErrorMsg     guifg=#d70000
+        hi ModeMsg      guifg=#0087ff
         hi MoreMsg      guifg=#0087ff
         hi WarningMsg   guifg=#d78700
     else
         hi ErrorMsg     guifg=#af0000
-        hi MoreMsg      guifg=#005fd7
+        hi ModeMsg      guifg=#005faf
+        hi MoreMsg      guifg=#005faf
         hi WarningMsg   guifg=#af5f00
     endif
 else
     if s:contrast == "low"
         hi ErrorMsg     guifg=#d75f5f
-        hi MoreMsg      guifg=#00afaf
+        hi ModeMsg      guifg=#87afaf
+        hi MoreMsg      guifg=#87afaf
         hi WarningMsg   guifg=#af875f
     elseif s:contrast == "high"
         hi ErrorMsg     guifg=#ff8787
-        hi MoreMsg      guifg=#87ffff
+        hi ModeMsg      guifg=#afffff
+        hi MoreMsg      guifg=#afffff
         hi WarningMsg   guifg=#ffaf87
     else
         hi ErrorMsg     guifg=#ff5f5f
-        hi MoreMsg      guifg=#5fd7d7
+        hi ModeMsg      guifg=#afd7d7
+        hi MoreMsg      guifg=#afd7d7
         hi WarningMsg   guifg=#d7875f
     endif
 endif
@@ -492,15 +530,15 @@ hi TabLine      guifg=bg
 hi TabLineSel   guifg=fg
 hi WildMenu     guifg=fg
 if s:style == "light"
-    hi ColorColumn                  guibg=#d7d7af
-    hi CursorLineNr guifg=#9e9e9e   guibg=#dadada
+    hi ColorColumn                  guibg=#e4e4e4
+    hi CursorLineNr guifg=#626262   guibg=#dadada
     hi FoldColumn                   guibg=#bcbcbc
     hi Folded                       guibg=#bcbcbc
     hi LineNr       guifg=#9e9e9e   guibg=#dadada
     hi PmenuSel                     guibg=#afd7ff
     hi SignColumn                   guibg=#d0d0d0
-    hi StatusLineNC guifg=#e4e4e4
-    hi TabLineFill  guifg=#b2b2b2
+    hi StatusLineNC guifg=#dadada
+    hi TabLineFill  guifg=#dadada
     hi VertSplit    guifg=#e4e4e4
     hi WildMenu                     guibg=#afd7ff
     if s:contrast == "low"
@@ -531,15 +569,15 @@ if s:style == "light"
         hi VertSplit                    guibg=#808080
     endif
 else
-    hi ColorColumn                  guibg=#87875f
-    hi CursorLineNr guifg=#626262   guibg=#444444
+    hi ColorColumn                  guibg=#3a3a3a
+    hi CursorLineNr guifg=#9e9e9e   guibg=#444444
     hi FoldColumn                   guibg=#4e4e4e
     hi Folded                       guibg=#4e4e4e
     hi LineNr       guifg=#626262   guibg=#444444
     hi PmenuSel                     guibg=#005f87
     hi SignColumn                   guibg=#4e4e4e
-    hi StatusLineNC guifg=#444444
-    hi TabLineFill  guifg=#444444
+    hi StatusLineNC guifg=#4e4e4e
+    hi TabLineFill  guifg=#4e4e4e
     hi VertSplit    guifg=#626262
     hi WildMenu                     guibg=#005f87
     if s:contrast == "low"
@@ -626,10 +664,10 @@ if s:style == "light"
     hi SpellLocal   guisp=#d7af00
     hi SpellRare    guisp=#5faf00
 else
-    hi SpellBad     guisp=#d70000
-    hi SpellCap     guisp=#00afd7
-    hi SpellLocal   guisp=#d7af00
-    hi SpellRare    guisp=#5faf00
+    hi SpellBad     guisp=#ff5f5f
+    hi SpellCap     guisp=#5fafd7
+    hi SpellLocal   guisp=#d7af5f
+    hi SpellRare    guisp=#5faf5f
 endif
 
 
@@ -677,6 +715,10 @@ for s:item in s:undercurl_items
     call s:AddSpCterm(s:item)
 endfor
 
+if s:no_term_bg == 1
+    hi Normal ctermbg=NONE
+endif
+
 
 " ============================================================================
 " Alternative Bold Definitions:
@@ -712,6 +754,15 @@ hi link VimwikiHeader4 BSpecial
 hi link VimwikiHeader5 BConstant
 hi link VimwikiHeader6 BType
 
+" CoC:
+hi link CocErrorSign ErrorMsg
+hi link CocErrorFloat Pmenu
+hi link CocWarningSign WarningMsg
+hi link CocWarningFloat Pmenu
+hi link CocInfoSign MoreMsg
+hi link CocInfoFloat Pmenu
+hi link CocHintFloat Directory
+hi link CocHintFloat Pmenu
 
 " ============================================================================
 " Preset Commands:
@@ -752,4 +803,3 @@ command! LuciusBlackHighContrast call SetLucius("dark", "high", "high")
             \ | colorscheme lucius
 
 " vim: tw=78
-

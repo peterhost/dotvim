@@ -1,0 +1,52 @@
+#!/bin/sh
+# bin/update-plugins — installe / met à jour les plugins sans interface
+#
+#   sh bin/update-plugins            maintenant (make update)
+#   sh bin/update-plugins --if-due N seulement si la dernière mise à jour a
+#                                    plus de N jours (lancé par vim au démarrage)
+#
+# Lance un vim invisible qui exécute :PlugUpdate (installe aussi les plugins
+# manquants et relance leurs commandes de construction). Un verrou empêche
+# deux mises à jour simultanées. Journal : local/update.log.
+
+set -u
+REPO=$(cd "$(dirname "$0")/.." && pwd)
+LOCAL=${MY_VIM_LOCAL:-$REPO/local}
+STAMP="$LOCAL/last-update"
+LOCK="$LOCAL/update.lock"
+LOG="$LOCAL/update.log"
+VIM=${VIM_BIN:-vim}
+
+mkdir -p "$LOCAL" || exit 1
+
+if [ "${1:-}" = "--if-due" ]; then
+  days=${2:-7}
+  # à jour si le témoin a moins de N jours (find -mtime : portable)
+  if [ -f "$STAMP" ] && [ -n "$(find "$STAMP" -mtime -"$days" 2>/dev/null)" ]; then
+    exit 0
+  fi
+fi
+
+command -v git >/dev/null 2>&1 || { echo "git absent : mise à jour impossible" >> "$LOG"; exit 0; }
+
+# mkdir est atomique : sert de verrou. Un verrou de plus d'une heure est
+# considéré comme abandonné (vim tué pendant la mise à jour).
+if ! mkdir "$LOCK" 2>/dev/null; then
+  if [ -n "$(find "$LOCK" -mmin +60 2>/dev/null)" ]; then
+    rmdir "$LOCK" 2>/dev/null && mkdir "$LOCK" 2>/dev/null || exit 0
+  else
+    exit 0
+  fi
+fi
+trap 'rmdir "$LOCK" 2>/dev/null' EXIT INT TERM
+
+{
+  echo "=== $(date '+%Y-%m-%d %H:%M:%S') mise à jour des plugins"
+  MY_VIM_NO_AUTOUPDATE=1 "$VIM" -N -u "$REPO/vimrc" -i NONE -es \
+    -c 'PlugUpdate --sync' -c 'qa!' </dev/null 2>&1
+  echo "=== fin (code $?)"
+} >> "$LOG" 2>&1
+
+touch "$STAMP"
+# journal limité aux 500 dernières lignes
+tail -n 500 "$LOG" > "$LOG.tmp" 2>/dev/null && mv "$LOG.tmp" "$LOG"

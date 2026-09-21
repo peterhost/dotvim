@@ -1,36 +1,17 @@
-#bundle/*
+# Plugins installés par vim-plug (propres à chaque machine)
+/plugged/
 
-#eclim
-eclim/*
-plugin/*
-undodir/*
+# Données locales : annulation, vues, sessions, thème choisi, caches
+/local/
 
-#Others
-doc/*
-session/*
-sessions/*
-tmp/*
-views/*
-Trashed-Bundles/*
-Session.vim
-logfile
-ftplugin/*
-!ftplugin/help.vim
-simplenoterc
-.netrwhist
+# Ancienne organisation (Vundle) — conservée ignorée pour les vieux clones
+/bundle/
+/vim-powerline-patched-fonts/
 
-tmp
-ttmp
-local/*
+# Divers
+/install.log
 .netrwhist
 *.swp
-
-# Also ignore BUNDLES (as we now use vundle)
-bundle/*
-bundle/
-
-
+*.swo
 .DS_Store
-tags/
-vim-powerline-patched-fonts/
-*.sess
+tags

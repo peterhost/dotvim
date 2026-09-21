@@ -1,0 +1,389 @@
+#!/bin/sh
+# bin/install — installeur guidé de la configuration vim
+#
+#   sh bin/install              mode interactif (menus, valeurs par défaut sur Entrée)
+#   sh bin/install --yes        sans question (ssh, scripts) : installe la branche courante
+#   sh bin/install --try        essai côte à côte, sans rien activer
+#   sh bin/install --branch B   choisir la branche (installation ou essai)
+#   sh bin/install --no-plugins ne pas installer les plugins
+#   sh bin/install --uninstall  retirer la config et restaurer la dernière sauvegarde
+#
+# Écrit en sh POSIX : macOS, Debian/Mint (dash), Synology (ash busybox),
+# Cygwin, MSYS2/Git Bash, WSL. Rien n'est installé hors de $HOME, pas de sudo.
+
+set -u
+REPO=$(cd "$(dirname "$0")/.." && pwd)
+LOG="$REPO/install.log"
+STAMP=$(date +%Y%m%d-%H%M%S)
+MARK="Généré par bin/install"
+
+YES=0; MODE=""; BRANCH=""; PLUGINS=""
+while [ $# -gt 0 ]; do
+  case $1 in
+    -y|--yes) YES=1 ;;
+    --try) MODE=try ;;
+    --uninstall) MODE=uninstall ;;
+    --install) MODE=install ;;
+    --branch) shift; BRANCH=${1:-} ;;
+    --branch=*) BRANCH=${1#--branch=} ;;
+    --no-plugins) PLUGINS=no ;;
+    -h|--help) sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    *) echo "Option inconnue : $1 (voir --help)" >&2; exit 2 ;;
+  esac
+  shift
+done
+# Sans terminal (ssh -T, cron, pipe) : aucune question.
+[ -t 0 ] || YES=1
+
+# --- Affichage -----------------------------------------------------------------------
+if [ -t 1 ] && command -v tput >/dev/null 2>&1 && [ "$(tput colors 2>/dev/null || echo 0)" -ge 8 ]; then
+  C_B=$(tput bold); C_G=$(tput setaf 2); C_R=$(tput setaf 1); C_Y=$(tput setaf 3)
+  C_C=$(tput setaf 6); C_D=$(tput dim 2>/dev/null || true); C_N=$(tput sgr0)
+else
+  C_B=; C_G=; C_R=; C_Y=; C_C=; C_D=; C_N=
+fi
+title() { printf '\n%s%s== %s ==%s\n' "$C_B" "$C_C" "$1" "$C_N"; }
+ok()    { printf '  %s✓%s %s\n' "$C_G" "$C_N" "$1"; }
+warn()  { printf '  %s!%s %s\n' "$C_Y" "$C_N" "$1"; }
+err()   { printf '  %s✗%s %s\n' "$C_R" "$C_N" "$1"; }
+info()  { printf '  %s\n' "$1"; }
+log()   { printf '%s %s\n' "$(date +%H:%M:%S)" "$1" >> "$LOG"; }
+die()   { err "$1"; log "ERREUR $1"; exit 1; }
+
+# ask <question> <défaut o|n> : 0 si oui
+ask() {
+  if [ "$YES" = 1 ]; then [ "$2" = o ]; return; fi
+  if [ "$2" = o ]; then hint="[O/n]"; else hint="[o/N]"; fi
+  printf '%s %s ' "$1" "$hint"
+  read -r answer || answer=""
+  [ -z "$answer" ] && answer=$2
+  case $answer in [oOyY]*) return 0 ;; *) return 1 ;; esac
+}
+
+# choose <défaut> <option1> <option2> … : écrit le numéro choisi dans CHOICE
+choose() {
+  default=$1; shift
+  i=1
+  for opt in "$@"; do
+    if [ "$i" = "$default" ]; then mark="$C_B>$C_N"; else mark=" "; fi
+    printf '  %s %s%d)%s %s\n' "$mark" "$C_C" "$i" "$C_N" "$opt"
+    i=$((i + 1))
+  done
+  CHOICE=$default
+  [ "$YES" = 1 ] && return
+  printf '  Choix [%s] : ' "$default"
+  read -r answer || answer=""
+  case $answer in
+    ''|*[!0-9]*) ;;
+    *) [ "$answer" -ge 1 ] && [ "$answer" -lt "$i" ] && CHOICE=$answer ;;
+  esac
+}
+
+# --- Diagnostic ---------------------------------------------------------------------------
+detect_os() {
+  case $(uname -s 2>/dev/null) in
+    Darwin) OS=macos; OS_LABEL="macOS $(sw_vers -productVersion 2>/dev/null)" ;;
+    CYGWIN*) OS=cygwin; OS_LABEL="Cygwin" ;;
+    MINGW*|MSYS*) OS=msys; OS_LABEL="MSYS2 / Git Bash" ;;
+    Linux)
+      if [ -f /etc/synoinfo.conf ]; then OS=synology; OS_LABEL="Synology DSM"
+      elif grep -qi microsoft /proc/version 2>/dev/null; then OS=wsl; OS_LABEL="WSL"
+      else
+        OS=linux; OS_LABEL=Linux
+        if [ -r /etc/os-release ]; then
+          OS_LABEL=$(. /etc/os-release; printf '%s' "${PRETTY_NAME:-Linux}")
+        fi
+      fi ;;
+    *) OS=unix; OS_LABEL=$(uname -s 2>/dev/null) ;;
+  esac
+}
+
+detect_vim() {
+  VIM_BIN=$(command -v vim 2>/dev/null || true)
+  VIM_VER=0; VIM_EVAL=0; VIM_JOB=0; VIM_SIZE=""
+  [ -n "$VIM_BIN" ] || return
+  out=$("$VIM_BIN" --version 2>/dev/null)
+  VIM_VER=$(printf '%s\n' "$out" | awk '/^VIM - Vi IMproved/ { split($5, v, "."); print v[1] * 100 + v[2]; exit }')
+  VIM_VER=${VIM_VER:-0}
+  case $out in *+eval*) VIM_EVAL=1 ;; esac
+  case $out in *+job*) VIM_JOB=1 ;; esac
+  VIM_SIZE=$(printf '%s\n' "$out" | sed -n 's/^\(Huge\|Big\|Normal\|Small\|Tiny\) version.*/\1/p' | head -1)
+  [ -n "$VIM_SIZE" ] || VIM_SIZE=$(printf '%s\n' "$out" | grep -o '[A-Z][a-z]* version' | head -1 | cut -d' ' -f1)
+}
+
+tier() {
+  if [ "$VIM_EVAL" != 1 ]; then echo minimal
+  elif [ "$VIM_VER" -ge 800 ] && [ "$VIM_JOB" = 1 ]; then echo full
+  elif [ "$VIM_VER" -ge 703 ]; then echo compat
+  else echo minimal; fi
+}
+
+has() { command -v "$1" >/dev/null 2>&1; }
+
+# Commande d'installation suggérée pour un outil, selon le système.
+suggest() {
+  case $OS in
+    macos) pm="brew install" ;;
+    linux|wsl) pm="sudo apt install" ;;
+    synology) pm="opkg install  (Entware)" ;;
+    cygwin) pm="setup-x86_64.exe -q -P" ;;
+    msys) pm="pacman -S" ;;
+    *) pm="(gestionnaire de paquets) " ;;
+  esac
+  case $1 in
+    ruff) echo "pipx install ruff   (ou $pm ruff)" ;;
+    pyright) echo "npm install -g pyright" ;;
+    eslint|prettier) echo "npm install -g $1" ;;
+    typescript-language-server) echo "npm install -g typescript typescript-language-server" ;;
+    ctags) [ "$OS" = macos ] && echo "brew install universal-ctags" || echo "$pm universal-ctags" ;;
+    rg) [ "$OS" = macos ] && echo "brew install ripgrep" || echo "$pm ripgrep" ;;
+    xmllint) [ "$OS" = macos ] && echo "(fourni par macOS)" || echo "$pm libxml2-utils" ;;
+    *) echo "$pm $1" ;;
+  esac
+}
+
+diagnose() {
+  title "Diagnostic"
+  detect_os; detect_vim
+  info "Système      : $OS_LABEL"
+  info "Config       : $(vim_path "$REPO")"
+  if [ -n "$VIM_BIN" ]; then
+    info "vim          : $VIM_BIN ($((VIM_VER / 100)).$((VIM_VER % 100)), ${VIM_SIZE:-?})"
+  else
+    warn "vim introuvable dans le PATH"
+  fi
+  TIER=$(tier)
+  case $TIER in
+    full) ok "Niveau prévu : complet (tous les plugins)" ;;
+    compat) warn "Niveau prévu : compatibilité (vim < 8 : plugins sans tâches de fond)" ;;
+    minimal) warn "Niveau prévu : minimal (options et raccourcis, pas de plugins)" ;;
+  esac
+  if has git; then ok "git présent"; else warn "git absent : plugins impossibles à installer (mode minimal)"; fi
+  if has curl || has wget; then ok "curl/wget présent"; else warn "ni curl ni wget : binaires fzf / markdown-preview non téléchargeables"; fi
+  info "Terminal     : TERM=${TERM:-?}, $(tput colors 2>/dev/null || echo '?') couleurs${COLORTERM:+, COLORTERM=$COLORTERM}"
+  BRANCH_CUR=$(git -C "$REPO" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "?")
+  info "Branche      : $BRANCH_CUR"
+
+  MISSING=""
+  printf '  Outils facultatifs :'
+  for t in fzf rg ctags node jq xmllint ruff pyright eslint prettier typescript-language-server; do
+    if has "$t"; then printf ' %s%s%s' "$C_G" "$t" "$C_N"
+    else printf ' %s%s%s' "$C_D" "$t" "$C_N"; MISSING="$MISSING $t"; fi
+  done
+  printf '\n'
+  if has ctags && ! ctags --version 2>/dev/null | grep -qi universal; then
+    warn "ctags n'est pas universal-ctags : Tagbar ne fonctionnera pas ($(suggest ctags))"
+  fi
+}
+
+# --- Actions ---------------------------------------------------------------------------------
+# Chemin lisible dans un vimrc : ~/… si possible, espaces échappés.
+HOME_REAL=$(cd "$HOME" 2>/dev/null && pwd || printf '%s' "$HOME")
+vim_path() {
+  case $1 in "$HOME_REAL"/*) p="~/${1#"$HOME_REAL"/}" ;; *) p=$1 ;; esac
+  printf '%s' "$p" | sed 's/ /\\ /g'
+}
+
+backup() { # backup <fichier>
+  if [ -e "$1" ] || [ -L "$1" ]; then
+    if grep -q "$MARK" "$1" 2>/dev/null && [ ! -L "$1" ]; then
+      rm -f "$1"; return
+    fi
+    mv "$1" "$1.bak-$STAMP" && ok "Sauvegarde : $(vim_path "$1").bak-$STAMP" && log "sauvegarde $1 -> $1.bak-$STAMP"
+  fi
+}
+
+write_stub() { # write_stub <~/.vimrc> <vimrc du dépôt>
+  backup "$1"
+  {
+    printf '" %s (%s) — ne pas modifier :\n' "$MARK" "$STAMP"
+    printf '" les réglages propres à cette machine vont dans ~/.vimrc.local\n'
+    printf 'source %s\n' "$(vim_path "$2")"
+  } > "$1"
+  ok "$(vim_path "$1") -> $(vim_path "$2")"; log "stub $1 -> $2"
+}
+
+# ~/.vimrc.local est facultatif : lu s'il existe, jamais créé d'office.
+# Ancienne installation : c'était un lien vers le dépôt ; vide, on le retire,
+# sinon on le remplace par un vrai fichier (propre à cette machine).
+migrate_local() { # migrate_local <fichier>
+  [ -L "$1" ] || return 0
+  if [ -s "$1" ] && grep -q '[^[:space:]]' "$1" 2>/dev/null; then
+    tmp="$1.tmp-$STAMP"
+    cat "$1" > "$tmp" && rm -f "$1" && mv "$tmp" "$1"
+    ok "$(vim_path "$1") : lien remplacé par un vrai fichier (contenu conservé)"
+  else
+    rm -f "$1"
+    ok "$(vim_path "$1") : lien vers un fichier vide, retiré"
+  fi
+  log "migration $1"
+}
+
+install_plugins() { # install_plugins <dossier de config>
+  if ! has git; then warn "git absent : plugins non installés"; return; fi
+  if [ -z "$VIM_BIN" ] || [ "$VIM_EVAL" != 1 ]; then warn "vim sans +eval : plugins inutiles"; return; fi
+  info "Installation des plugins (quelques dizaines de secondes)…"
+  log "PlugInstall dans $1"
+  if MY_VIM_NO_AUTOUPDATE=1 "$VIM_BIN" -N -u "$1/vimrc" -i NONE -es -c 'PlugInstall --sync' -c 'qa!' </dev/null >>"$LOG" 2>&1; then
+    mkdir -p "$1/local" && touch "$1/local/last-update"
+    n=$(ls "$1/plugged" 2>/dev/null | wc -l | tr -d ' ')
+    ok "Plugins installés ($n dans $1/plugged)"
+  else
+    warn "PlugInstall a signalé un problème (voir $LOG) ; vim reste utilisable"
+  fi
+}
+
+check_config() { # check_config <dossier> : démarrage à blanc, erreurs éventuelles
+  [ -n "$VIM_BIN" ] || return
+  out="$1/local/check.txt"; mkdir -p "$1/local"; rm -f "$out"
+  MY_VIM_NO_AUTOUPDATE=1 "$VIM_BIN" -N -u "$1/vimrc" -i NONE -es -c "redir! > $out" -c 'silent messages' \
+    -c 'redir END' -c 'qa!' </dev/null >/dev/null 2>&1
+  if [ -f "$out" ] && grep -Eq '^E[0-9]+:|Error detected' "$out"; then
+    warn "vim signale des erreurs au démarrage :"; grep -E '^E[0-9]+:|line' "$out" | head -5 | sed 's/^/      /'
+  else
+    ok "Démarrage de vim vérifié : aucune erreur"
+  fi
+  rm -f "$out"
+}
+
+branches() {
+  # refs/heads/X et refs/remotes/<dépôt>/X -> X (sans les HEAD symboliques)
+  git -C "$REPO" for-each-ref --format='%(refname)' refs/heads refs/remotes 2>/dev/null \
+    | sed -e 's#^refs/heads/##' -e 's#^refs/remotes/[^/]*/##' | grep -v '^HEAD$' | sort -u
+}
+
+checkout() { # checkout <branche> : dans le dépôt courant, arbre propre exigé
+  [ "$1" = "$BRANCH_CUR" ] && return 0
+  if [ -n "$(git -C "$REPO" status --porcelain 2>/dev/null)" ]; then
+    err "Modifications non enregistrées dans $REPO : impossible de changer de branche."
+    info "Utilisez le mode Essai, ou enregistrez/annulez vos modifications."
+    return 1
+  fi
+  git -C "$REPO" checkout -q "$1" 2>>"$LOG" \
+    || git -C "$REPO" checkout -q -b "$1" "origin/$1" 2>>"$LOG" \
+    || { err "Branche introuvable : $1"; return 1; }
+  ok "Branche $1 sélectionnée"; log "checkout $1"; BRANCH_CUR=$1
+}
+
+do_install() {
+  title "Installation"
+  : > "$LOG.tmp" && rm -f "$LOG.tmp"
+  checkout "$BRANCH" || exit 1
+  write_stub "$HOME/.vimrc" "$REPO/vimrc"
+  write_stub "$HOME/.gvimrc" "$REPO/gvimrc"
+  migrate_local "$HOME/.vimrc.local"
+  migrate_local "$HOME/.gvimrc.local"
+  [ "$PLUGINS" = no ] || install_plugins "$REPO"
+  if [ -d "$REPO/bundle" ] && [ -d "$REPO/plugged" ]; then
+    size=$(du -sh "$REPO/bundle" 2>/dev/null | cut -f1)
+    if ask "  Supprimer l'ancien dossier bundle/ de Vundle ($size) ?" n; then
+      rm -rf "$REPO/bundle" && ok "bundle/ supprimé"
+    fi
+  fi
+  check_config "$REPO"
+  title "Terminé"
+  ok "vim utilise maintenant $(vim_path "$REPO") (branche $BRANCH_CUR)"
+  info "Retour arrière : sh $(vim_path "$REPO")/bin/install --uninstall"
+}
+
+do_try() {
+  title "Essai côte à côte"
+  target=$REPO
+  if [ "$BRANCH" != "$BRANCH_CUR" ]; then
+    target="$HOME/.vimnew"
+    [ "$YES" = 1 ] || { printf '  Dossier de l'"'"'essai [%s] : ' "$target"; read -r answer || answer=""; [ -n "$answer" ] && target=$answer; }
+    if [ -e "$target" ]; then
+      die "$target existe déjà : choisissez un autre dossier ou supprimez-le (git worktree remove $target)"
+    fi
+    git -C "$REPO" worktree add -q "$target" "$BRANCH" 2>>"$LOG" \
+      || git -C "$REPO" worktree add -q -b "$BRANCH" "$target" "origin/$BRANCH" 2>>"$LOG" \
+      || die "Impossible de créer $target pour la branche $BRANCH (voir $LOG)"
+    ok "Branche $BRANCH disponible dans $(vim_path "$target")"
+  fi
+  [ "$PLUGINS" = no ] || install_plugins "$target"
+  check_config "$target"
+  title "Pour essayer"
+  info "vim -u $(vim_path "$target/vimrc")"
+  info "Alias pratique : alias vimnew='vim -u $(vim_path "$target/vimrc")'"
+  info "Votre configuration actuelle n'a pas été modifiée."
+}
+
+do_uninstall() {
+  title "Désinstallation"
+  for f in "$HOME/.vimrc" "$HOME/.gvimrc"; do
+    if grep -q "$MARK" "$f" 2>/dev/null; then
+      rm -f "$f" && ok "$f retiré"
+    fi
+    last=$(ls -1 "$f".bak-* 2>/dev/null | sort | tail -1)
+    if [ -n "$last" ] && [ ! -e "$f" ]; then
+      mv "$last" "$f" && ok "$f restauré depuis $last"
+    fi
+  done
+  info "Les plugins ($REPO/plugged) et ~/.vimrc.local sont conservés."
+}
+
+# --- Déroulé -------------------------------------------------------------------------------------
+printf '%s%s' "$C_B" "$C_C"
+cat <<'EOF'
+   _   _ _
+  | | | (_)_ __ ___     Configuration vim — installeur
+  | | | | | '_ ` _ \
+  \ \_/ / | | | | | |   Entrée = valeur par défaut, Ctrl-C = abandon
+   \___/|_|_| |_| |_|
+EOF
+printf '%s' "$C_N"
+log "=== bin/install $STAMP ($*)"
+diagnose
+
+if [ -z "$MODE" ]; then
+  title "Que voulez-vous faire ?"
+  choose 1 "Installer : cette configuration devient celle de vim pour $USER" \
+           "Essayer : à côté de la configuration actuelle, sans rien activer" \
+           "Désinstaller : restaurer la configuration précédente" \
+           "Quitter"
+  case $CHOICE in 1) MODE=install ;; 2) MODE=try ;; 3) MODE=uninstall ;; *) exit 0 ;; esac
+fi
+
+if [ "$MODE" != uninstall ] && [ -z "$BRANCH" ]; then
+  BRANCH=$BRANCH_CUR
+  list=$(branches)
+  if [ "$YES" != 1 ] && [ "$(printf '%s\n' "$list" | grep -c .)" -gt 1 ]; then
+    title "Quelle branche ?"
+    def=1; n=1
+    set --
+    for b in $list; do
+      [ "$b" = "$BRANCH_CUR" ] && def=$n
+      set -- "$@" "$b"; n=$((n + 1))
+    done
+    choose "$def" "$@"
+    n=1; for b in $list; do [ "$n" = "$CHOICE" ] && BRANCH=$b; n=$((n + 1)); done
+  fi
+fi
+
+if [ "$MODE" != uninstall ] && [ -z "$PLUGINS" ]; then
+  if [ "$TIER" = minimal ] || ! has git; then PLUGINS=no
+  elif ask "Installer / mettre à jour les plugins maintenant ?" o; then PLUGINS=yes
+  else PLUGINS=no; fi
+fi
+
+if [ "$MODE" != uninstall ] && [ -n "$MISSING" ]; then
+  title "Outils facultatifs absents"
+  info "La config s'en passe ; ils ajoutent des fonctions. Commandes suggérées :"
+  for t in $MISSING; do printf '    %-28s %s\n' "$t" "$(suggest "$t")"; done
+fi
+
+title "Récapitulatif"
+case $MODE in
+  install) info "Installer la branche $BRANCH depuis $(vim_path "$REPO")" ;;
+  try) info "Essayer la branche $BRANCH sans rien activer" ;;
+  uninstall) info "Retirer la configuration et restaurer la sauvegarde la plus récente" ;;
+esac
+[ "$MODE" = uninstall ] || info "Plugins : $PLUGINS"
+ask "Continuer ?" o || { info "Abandon, rien n'a été modifié."; exit 0; }
+
+case $MODE in
+  install) do_install ;;
+  try) do_try ;;
+  uninstall) do_uninstall ;;
+esac
+log "=== fin"
