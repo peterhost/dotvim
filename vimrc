@@ -58,8 +58,6 @@ if 1
     if exists('+packpath')
       let &packpath = &runtimepath
     endif
-    " historique séparé, pour ne pas mélanger avec l'autre config
-    set viminfo+=n~/.viminfo.vimnew
     unlet s:rtp
   endif
   unlet s:std

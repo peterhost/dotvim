@@ -99,3 +99,14 @@ if exists('*mkdir')
   endfor
   unlet! s:d
 endif
+
+" --- Historique (viminfo) dans local/ ----------------------------------------------------
+" L'ancien ~/.viminfo est copié une fois, pour garder l'historique existant.
+if has('viminfo')
+  let s:vi = g:my_local . '/viminfo'
+  if !filereadable(s:vi) && filereadable(expand('~/.viminfo')) && exists('*writefile')
+    silent! call writefile(readfile(expand('~/.viminfo'), 'b'), s:vi, 'b')
+  endif
+  let &viminfo = substitute(&viminfo, ',\=n[^,]*', '', 'g') . ',n' . s:vi
+  unlet s:vi
+endif

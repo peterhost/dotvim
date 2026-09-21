@@ -185,6 +185,16 @@ check "installation sans git dans le PATH" sh -c "HOME='$H' PATH='$TMP/nogit' MY
 check "git retrouvé dans le dossier supplémentaire" grep -q 'git présent' "$TMP/out.txt"
 check "sans dossier supplémentaire : git signalé absent" sh -c "HOME='$H' PATH='$TMP/nogit' MY_EXTRA_PATHS=/nonexistent '$TMP/nogit/sh' '$H/.vim/bin/install' --yes --no-plugins </dev/null 2>&1 | grep -q 'git absent'"
 
+echo "== Historique : ~/.viminfo repris une fois dans local/"
+new_home viminfo
+printf '# viminfo de test\n:commande-ancienne\n' > "$H/.viminfo"
+HOME=$H MY_VIM_NO_AUTOUPDATE=1 vim -N -u "$H/.vim/vimrc" -es -c 'qa!' </dev/null >/dev/null 2>&1
+check "~/.viminfo copié dans local/viminfo"           grep -q 'commande-ancienne' "$H/.vim/local/viminfo"
+check "~/.viminfo d'origine laissé intact"            grep -q 'commande-ancienne' "$H/.viminfo"
+printf '# autre\n' > "$H/.viminfo"
+HOME=$H MY_VIM_NO_AUTOUPDATE=1 vim -N -u "$H/.vim/vimrc" -es -c 'qa!' </dev/null >/dev/null 2>&1
+check "copie faite une seule fois"                    grep -q 'commande-ancienne' "$H/.vim/local/viminfo"
+
 echo "== Mise à jour : rapport d'échec enregistré pour vim"
 new_home report
 cat > "$TMP/fakevim" <<'FV'
