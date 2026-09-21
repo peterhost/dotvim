@@ -184,6 +184,7 @@ nnoremap <silent> <leader>sc :source $VIMRUNTIME/syntax/hitest.vim<CR>
 
 " --- Thèmes ----------------------------------------------------------------------------------------------
 nnoremap <silent> <F5> :call my#colors#toggle_background()<CR>
+inoremap <silent> <F5> <C-o>:call my#colors#toggle_background()<CR>
 nnoremap <silent> <leader>$n :call my#colors#cycle(1)<CR>
 nnoremap <silent> <leader>$p :call my#colors#cycle(-1)<CR>
 nnoremap <leader>$ :Theme<CR>
