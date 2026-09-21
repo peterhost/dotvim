@@ -31,15 +31,23 @@ inst() { HOME=$H USER=test MY_VIM_NO_AUTOUPDATE=1 ${TEST_SH:-sh} "$H/.vim/bin/in
 echo "== Installation sur une machine vierge"
 new_home fresh
 check "installation --yes réussie"       inst --yes --no-plugins
-check "~/.vimrc est le fichier généré"   grep -q 'source ~/.vim/vimrc' "$H/.vimrc"
-check "~/.gvimrc est le fichier généré"  grep -q 'source ~/.vim/gvimrc' "$H/.gvimrc"
-check "aucune sauvegarde inutile"        test -z "$(ls "$H" | grep bak)"
+check "pas de ~/.vimrc (vim lit ~/.vim/vimrc)" test ! -e "$H/.vimrc"
+check "pas de ~/.gvimrc"                 test ! -e "$H/.gvimrc"
+check "rien d'autre créé dans \$HOME"     test "$(ls -A "$H")" = .vim
+check "aucune sauvegarde inutile"        test ! -d "$H/.vim/local/backup"
 check "~/.vimrc.local non créé"          test ! -e "$H/.vimrc.local"
 check "vim démarre sans erreur"          grep -q 'aucune erreur' "$TMP/out.txt"
 
 echo "== Réinstallation (idempotence)"
 check "2e installation réussie"          inst --yes --no-plugins
-check "toujours aucune sauvegarde"       test -z "$(ls "$H" | grep bak)"
+check "toujours aucune sauvegarde"       test ! -d "$H/.vim/local/backup"
+
+echo "== Config clonée ailleurs que ~/.vim : fichier d'une ligne"
+new_home elsewhere
+mv "$H/.vim" "$H/dotvim"
+check "installation depuis ~/dotvim"     sh -c "HOME='$H' MY_VIM_NO_AUTOUPDATE=1 sh '$H/dotvim/bin/install' --yes --no-plugins </dev/null >/dev/null 2>&1"
+check "~/.vimrc pointe vers ~/dotvim"     grep -q 'source ~/dotvim/vimrc' "$H/.vimrc"
+check "~/.gvimrc pointe vers ~/dotvim"    grep -q 'source ~/dotvim/gvimrc' "$H/.gvimrc"
 
 echo "== Migration depuis l'ancien bootstrap (liens symboliques)"
 new_home legacy
@@ -48,8 +56,9 @@ ln -s "$H/.vim/vimrc" "$H/.vimrc"
 echo '" set guifont=X' > "$H/.vim/gvimrc.local"; ln -s "$H/.vim/gvimrc.local" "$H/.gvimrc.local"
 echo '" perso' > "$H/.gvimrc"
 check "installation réussie"             inst --yes --no-plugins
-check "ancien ~/.vimrc sauvegardé"       test -L "$(ls -d "$H"/.vimrc.bak-* | head -1)"
-check "ancien ~/.gvimrc sauvegardé"      grep -q perso "$(ls -d "$H"/.gvimrc.bak-* | head -1)"
+check "ancien ~/.vimrc sauvegardé dans local/backup" test -L "$(ls -d "$H"/.vim/local/backup/.vimrc.* | head -1)"
+check "ancien ~/.gvimrc sauvegardé"      grep -q perso "$(ls -d "$H"/.vim/local/backup/.gvimrc.* | head -1)"
+check "plus de ~/.vimrc ni de sauvegarde dans \$HOME" sh -c "test ! -e '$H/.vimrc' && ! ls '$H' | grep -q bak"
 check "lien .vimrc.local vide retiré"    test ! -e "$H/.vimrc.local"
 check "lien .gvimrc.local -> vrai fichier" sh -c "test -f '$H/.gvimrc.local' && test ! -L '$H/.gvimrc.local'"
 check "contenu de .gvimrc.local conservé" grep -q guifont "$H/.gvimrc.local"

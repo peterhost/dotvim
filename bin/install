@@ -321,12 +321,16 @@ vim_path() {
   printf '%s' "$p" | sed 's/ /\\ /g'
 }
 
-backup() { # backup <fichier>
+# Sauvegardes rangées dans local/backup/ (rien ne reste dans $HOME).
+BACKUP_DIR="$REPO/local/backup"
+backup() { # backup <fichier> : le met de côté (sauf s'il vient de nous)
   if [ -e "$1" ] || [ -L "$1" ]; then
-    if grep -q "$MARK" "$1" 2>/dev/null && [ ! -L "$1" ]; then
+    if [ ! -L "$1" ] && grep -q "$MARK" "$1" 2>/dev/null; then
       rm -f "$1"; return
     fi
-    mv "$1" "$1.bak-$STAMP" && ok "Sauvegarde : $(vim_path "$1").bak-$STAMP" && log "sauvegarde $1 -> $1.bak-$STAMP"
+    mkdir -p "$BACKUP_DIR"
+    dest="$BACKUP_DIR/$(basename "$1").$STAMP"
+    mv "$1" "$dest" && ok "Sauvegarde : $(vim_path "$1") -> $(vim_path "$dest")" && log "sauvegarde $1 -> $dest"
   fi
 }
 
@@ -334,10 +338,27 @@ write_stub() { # write_stub <~/.vimrc> <vimrc du dépôt>
   backup "$1"
   {
     printf '" %s (%s) — ne pas modifier :\n' "$MARK" "$STAMP"
-    printf '" les réglages propres à cette machine vont dans ~/.vimrc.local\n'
+    printf '" les réglages propres à cette machine vont dans %s\n' "$(vim_path "$REPO/local/vimrc.local")"
     printf 'source %s\n' "$(vim_path "$2")"
   } > "$1"
   ok "$(vim_path "$1") -> $(vim_path "$2")"; log "stub $1 -> $2"
+}
+
+# Depuis vim 7.4, ~/.vim/vimrc et ~/.vim/gvimrc sont lus directement : aucun
+# fichier n'est alors nécessaire dans $HOME. Un fichier d'une ligne reste
+# utile pour un vim plus ancien, ou une config clonée ailleurs que ~/.vim.
+needs_stub() {
+  std=$(cd "$HOME/.vim" 2>/dev/null && pwd || true)
+  [ "${VIM_VER:-0}" -lt 704 ] || [ "$REPO" != "$std" ]
+}
+
+link_config() { # link_config <~/.vimrc> <fichier du dépôt>
+  if needs_stub; then
+    write_stub "$1" "$2"
+  else
+    backup "$1"
+    ok "$(vim_path "$1") inutile : vim lit directement $(vim_path "$2")"
+  fi
 }
 
 # ~/.vimrc.local est facultatif : lu s'il existe, jamais créé d'office.
@@ -425,8 +446,8 @@ do_install() {
   : > "$LOG.tmp" && rm -f "$LOG.tmp"
   fix_network
   checkout "$BRANCH" || exit 1
-  write_stub "$HOME/.vimrc" "$REPO/vimrc"
-  write_stub "$HOME/.gvimrc" "$REPO/gvimrc"
+  link_config "$HOME/.vimrc" "$REPO/vimrc"
+  link_config "$HOME/.gvimrc" "$REPO/gvimrc"
   migrate_local "$HOME/.vimrc.local"
   migrate_local "$HOME/.gvimrc.local"
   [ "$PLUGINS" = no ] || install_plugins "$REPO"
@@ -471,14 +492,20 @@ do_uninstall() {
   title "Désinstallation"
   for f in "$HOME/.vimrc" "$HOME/.gvimrc"; do
     if grep -q "$MARK" "$f" 2>/dev/null; then
-      rm -f "$f" && ok "$f retiré"
+      rm -f "$f" && ok "$(vim_path "$f") retiré"
     fi
-    last=$(ls -1 "$f".bak-* 2>/dev/null | sort | tail -1)
-    if [ -n "$last" ] && [ ! -e "$f" ]; then
-      mv "$last" "$f" && ok "$f restauré depuis $last"
+    # sauvegarde la plus récente : local/backup/ (ou ancien emplacement ~/.vimrc.bak-*)
+    last=$(ls -1d "$BACKUP_DIR/$(basename "$f")".* 2>/dev/null | sort | tail -1)
+    [ -n "$last" ] || last=$(ls -1d "$f".bak-* 2>/dev/null | sort | tail -1)
+    if [ -n "$last" ] && [ ! -e "$f" ] && [ ! -L "$f" ]; then
+      mv "$last" "$f" && ok "$(vim_path "$f") restauré depuis $(vim_path "$last")"
     fi
   done
-  info "Les plugins ($REPO/plugged) et ~/.vimrc.local sont conservés."
+  if [ ! -e "$HOME/.vimrc" ] && [ "$REPO" = "$(cd "$HOME/.vim" 2>/dev/null && pwd)" ]; then
+    warn "Aucune ancienne configuration à restaurer : vim lit toujours $(vim_path "$REPO/vimrc")."
+    info "  Pour la désactiver complètement : renommer ~/.vim."
+  fi
+  info "Les plugins et les réglages locaux ($(vim_path "$REPO/local")) sont conservés."
 }
 
 # --- Déroulé -------------------------------------------------------------------------------------
