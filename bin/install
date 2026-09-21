@@ -12,6 +12,12 @@
 # Cygwin, MSYS2/Git Bash, WSL. Rien n'est installé hors de $HOME, pas de sudo.
 
 set -u
+# Outils installés hors du PATH par défaut (Synology/Entware : /opt/bin, ajouté
+# seulement par le .bashrc interactif ; paquets DSM : /usr/local/bin).
+for d in ${MY_EXTRA_PATHS:-/opt/bin /opt/sbin /usr/local/bin}; do
+  case ":$PATH:" in *":$d:"*) ;; *) [ -d "$d" ] && PATH="$PATH:$d" ;; esac
+done
+export PATH
 REPO=$(cd "$(dirname "$0")/.." && pwd)
 LOG="$REPO/install.log"
 STAMP=$(date +%Y%m%d-%H%M%S)

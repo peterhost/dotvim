@@ -82,6 +82,20 @@ rmdir "$H/.vim/local/update.lock"
 check "mise à jour exécutée sans verrou"  sh -c "HOME='$H' VIM_BIN=true sh '$H/.vim/bin/update-plugins' && test -f '$H/.vim/local/last-update'"
 check "verrou libéré à la fin"            test ! -d "$H/.vim/local/update.lock"
 
+echo "== git hors du PATH (cas Synology : /opt/bin)"
+new_home extrapath
+mkdir -p "$TMP/optbin" "$TMP/nogit"
+ln -s "$(sh -c 'command -v git')" "$TMP/optbin/git"
+# dossier d'outils sans git (sur macOS, /usr/bin contient un git : on ne peut
+# pas simplement le retirer du PATH)
+for c in sh bash env cat ls mkdir rm mv cp ln date sed awk grep tr cut head tail sort uniq wc du \
+         find touch uname dirname basename tput vim script id readlink sw_vers expr stty tee true false; do
+  p=$(sh -c "command -v $c" 2>/dev/null) && [ -x "$p" ] && ln -s "$p" "$TMP/nogit/$c"
+done
+check "installation sans git dans le PATH" sh -c "HOME='$H' PATH='$TMP/nogit' MY_EXTRA_PATHS='$TMP/optbin' MY_VIM_NO_AUTOUPDATE=1 '$TMP/nogit/sh' '$H/.vim/bin/install' --yes --no-plugins </dev/null >'$TMP/out.txt' 2>&1"
+check "git retrouvé dans le dossier supplémentaire" grep -q 'git présent' "$TMP/out.txt"
+check "sans dossier supplémentaire : git signalé absent" sh -c "HOME='$H' PATH='$TMP/nogit' MY_EXTRA_PATHS=/nonexistent '$TMP/nogit/sh' '$H/.vim/bin/install' --yes --no-plugins </dev/null 2>&1 | grep -q 'git absent'"
+
 if [ -n "${TEST_NETWORK:-}" ]; then
   echo "== Premier lancement de vim : installation des plugins en arrière-plan (réseau)"
   new_home firstrun

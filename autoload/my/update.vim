@@ -7,7 +7,9 @@
 
 function! my#update#start()
   let l:days = get(g:, 'my_autoupdate_days', 7)
-  if l:days <= 0 || !empty($MY_VIM_NO_AUTOUPDATE) || !executable('git')
+  " git peut être hors du PATH (Synology : /opt/bin) : le script le retrouve
+  let l:git = executable('git') || executable('/opt/bin/git') || executable('/usr/local/bin/git')
+  if l:days <= 0 || !empty($MY_VIM_NO_AUTOUPDATE) || !l:git
         \ || !executable('sh') || g:my_is_win
     return
   endif

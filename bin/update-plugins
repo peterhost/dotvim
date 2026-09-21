@@ -10,6 +10,12 @@
 # deux mises à jour simultanées. Journal : local/update.log.
 
 set -u
+# Outils installés hors du PATH par défaut (Synology/Entware : /opt/bin, ajouté
+# seulement par le .bashrc interactif ; paquets DSM : /usr/local/bin).
+for d in ${MY_EXTRA_PATHS:-/opt/bin /opt/sbin /usr/local/bin}; do
+  case ":$PATH:" in *":$d:"*) ;; *) [ -d "$d" ] && PATH="$PATH:$d" ;; esac
+done
+export PATH
 REPO=$(cd "$(dirname "$0")/.." && pwd)
 LOCAL=${MY_VIM_LOCAL:-$REPO/local}
 STAMP="$LOCAL/last-update"
