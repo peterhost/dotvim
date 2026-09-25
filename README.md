@@ -19,7 +19,8 @@ cd ~/.vim && sh bin/install                                # ou : make
 
 | Commande | Effet |
 |---|---|
-| `sh bin/install --check` | diagnostic seul, aucune action |
+| `sh bin/install --check` | diagnostic seul, aucune action ; code de sortie 3 si quelque chose est dégradé |
+| `sh bin/install --clean` | supprime les restes (anciens fichiers, transitoires, vieilles sauvegardes) |
 | `sh bin/install --yes` / `make install` | installe sans poser de question (ssh, scripts) |
 | `sh bin/install --try` / `make try` | essai à côté de la config actuelle, sans rien activer |
 | `make update` | `git pull`, puis mise à jour des plugins (ou `sh bin/update-plugins`) |
@@ -33,6 +34,7 @@ Ce que fait l'installation :
 - Pour changer de branche, **les modifications locales de `~/.vim` sont supprimées** : la liste est affichée et une confirmation est demandée. Les dossiers ignorés (`plugged/`, `local/`…) ne sont pas touchés.
 - Les plugins sont installés dans `~/.vim/plugged/`, qui n'est jamais versionné.
 - Les restes de l'ancienne configuration (`bundle/` de Vundle, `~/.vim-fuf-data`, `~/.viminfo.vimnew`) sont listés avec leur taille, puis supprimés après confirmation.
+- **Aucun reste.** En fin d'installation, les restes sont supprimés : anciens fichiers d'une config précédente (`colors/default-light.vim`, `colors/dim.vim`, `spell/*.add` de la racine une fois recopiés dans `local/spell/`, `.netrwhist`, `install.log` de la racine), fichiers transitoires, verrou de mise à jour périmé, sauvegardes au-delà des 3 plus récentes, et journal borné à 500 lignes. Vos données (`local/spell/`, `viminfo`, `undo/`, `sessions/`, `views/`, `*.local`) ne sont jamais touchées. `--check` les signale, `--clean` les supprime.
 - Rien n'est écrit hors de `$HOME`, et `sudo` n'est jamais utilisé : l'installeur donne les commandes, c'est vous qui les lancez.
 
 ### Accès à GitHub

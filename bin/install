@@ -7,7 +7,8 @@
 #   sh bin/install --branch B   choisir la branche (installation ou essai)
 #   sh bin/install --no-plugins ne pas installer les plugins
 #   sh bin/install --uninstall  retirer la config et restaurer la dernière sauvegarde
-#   sh bin/install --check      diagnostic seul (système, vim, GitHub, paquets), aucune action
+#   sh bin/install --check      diagnostic seul (système, vim, GitHub, paquets, restes) ; code 3 si dégradé
+#   sh bin/install --clean      nettoie les restes (rien d'autre)
 #
 # Écrit en sh POSIX : macOS, Debian/Mint (dash), Synology (ash busybox),
 # Cygwin, MSYS2/Git Bash, WSL. Rien n'est installé hors de $HOME, pas de sudo.
@@ -33,10 +34,11 @@ while [ $# -gt 0 ]; do
     --uninstall) MODE=uninstall ;;
     --install) MODE=install ;;
     --check) MODE=check ;;
+    --clean) MODE=clean ;;
     --branch) shift; BRANCH=${1:-} ;;
     --branch=*) BRANCH=${1#--branch=} ;;
     --no-plugins) PLUGINS=no ;;
-    -h|--help) sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) sed -n '2,15p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "Option inconnue : $1 (voir --help)" >&2; exit 2 ;;
   esac
   shift
@@ -116,8 +118,7 @@ detect_vim() {
   VIM_VER=${VIM_VER:-0}
   case $out in *+eval*) VIM_EVAL=1 ;; esac
   case $out in *+job*) VIM_JOB=1 ;; esac
-  VIM_SIZE=$(printf '%s\n' "$out" | sed -n 's/^\(Huge\|Big\|Normal\|Small\|Tiny\) version.*/\1/p' | head -1)
-  [ -n "$VIM_SIZE" ] || VIM_SIZE=$(printf '%s\n' "$out" | grep -o '[A-Z][a-z]* version' | head -1 | cut -d' ' -f1)
+  VIM_SIZE=$(printf '%s\n' "$out" | grep -oE '(Huge|Big|Normal|Small|Tiny) version' | head -1 | cut -d' ' -f1)
 }
 
 tier() {
@@ -426,6 +427,64 @@ check_config() { # check_config <dossier> : démarrage à blanc, erreurs éventu
 
 # Restes de l'ancienne configuration (Vundle, FuzzyFinder, ancien mode
 # essai) : inutiles une fois la nouvelle installée ; listés puis supprimés.
+# --- Zéro reste --------------------------------------------------------------------------
+# Un déploiement ne doit rien laisser derrière lui. On ne touche qu'à une liste
+# connue : restes de l'ancienne configuration, fichiers transitoires, vieilles
+# sauvegardes. Les données de la machine (local/spell, viminfo, undo, sessions,
+# views, *.local) ne sont JAMAIS supprimées.
+LEGACY_FILES="colors/default-light.vim colors/dim.vim .netrwhist install.log"
+BACKUP_KEEP=3
+
+tracked() { git -C "$REPO" ls-files --error-unmatch "$1" >/dev/null 2>&1; }
+
+# Liste les restes présents, un par ligne, sans rien modifier.
+crumbs_list() {
+  for f in $LEGACY_FILES; do
+    [ -e "$REPO/$f" ] || continue
+    tracked "$f" && continue
+    echo "$REPO/$f"
+  done
+  # dictionnaire de l'ancienne config : supprimé seulement si les mots ont bien
+  # été recopiés dans local/spell/ (sinon on préfère le garder)
+  for f in "$REPO"/spell/*.add "$REPO"/spell/*.add.spl; do
+    [ -f "$f" ] || continue
+    rel=${f#"$REPO"/}
+    tracked "$rel" && continue
+    b=${f##*/}; words=${b%.spl}
+    [ -f "$REPO/local/spell/$words" ] || continue
+    echo "$f"
+  done
+  # transitoires
+  for f in "$REPO/local/update-report.txt" "$REPO/local/check.txt"; do
+    [ -f "$f" ] && echo "$f"
+  done
+  if [ -d "$REPO/local/update.lock" ] && [ -n "$(find "$REPO/local/update.lock" -mmin +60 2>/dev/null)" ]; then
+    echo "$REPO/local/update.lock"
+  fi
+  # sauvegardes : on garde les $BACKUP_KEEP plus récentes de chaque fichier
+  for n in .vimrc .gvimrc; do
+    ls -1d "$BACKUP_DIR/$n".* 2>/dev/null | sort \
+      | awk -v k="$BACKUP_KEEP" '{a[NR]=$0} END {for (i = 1; i <= NR - k; i++) print a[i]}'
+  done
+}
+
+prune_crumbs() {
+  list=$(crumbs_list)
+  n=$(printf '%s' "$list" | grep -c . || true)
+  if [ "${n:-0}" -gt 0 ]; then
+    printf '%s\n' "$list" | while IFS= read -r f; do
+      [ -n "$f" ] || continue
+      rm -rf "$f" && log "reste supprimé : $f"
+    done
+    ok "Restes supprimés : $n"
+  fi
+  # journal borné, comme celui des mises à jour
+  if [ -f "$LOG" ] && [ "$(wc -l < "$LOG" | tr -d ' ')" -gt 500 ]; then
+    tail -n 500 "$LOG" > "$LOG.tmp" 2>/dev/null && mv "$LOG.tmp" "$LOG" && ok "Journal tronqué (500 dernières lignes)"
+  fi
+  [ "${n:-0}" -gt 0 ] || ok "Aucun reste : rien à nettoyer"
+}
+
 cleanup_legacy() {
   set --
   [ -d "$REPO/bundle" ] && set -- "$@" "$REPO/bundle"
@@ -490,6 +549,7 @@ do_install() {
   migrate_local "$HOME/.gvimrc.local" gvimrc.local
   [ "$PLUGINS" = no ] || install_plugins "$REPO"
   cleanup_legacy
+  prune_crumbs
   check_config "$REPO"
   plugins_notice "$REPO"
   title "Terminé"
@@ -552,8 +612,29 @@ cat <<'EOF'
 EOF
 printf '%s' "$C_N"
 log "=== bin/install $STAMP ($*)"
+if [ "$MODE" = clean ]; then
+  title "Nettoyage"
+  prune_crumbs
+  exit 0
+fi
 diagnose
-[ "$MODE" = check ] && exit 0
+if [ "$MODE" = check ]; then
+  title "Restes"
+  rc=0
+  crumbs=$(crumbs_list)
+  if [ -n "$crumbs" ]; then
+    warn "Restes détectés ($(printf '%s\n' "$crumbs" | grep -c .)) — « sh bin/install --clean » les supprime :"
+    printf '%s\n' "$crumbs" | while IFS= read -r f; do [ -n "$f" ] && printf '      %s\n' "$(vim_path "$f")"; done
+    rc=3
+  else
+    ok "Aucun reste"
+  fi
+  if [ "$TIER" != minimal ] && [ -z "$(ls "$REPO/plugged" 2>/dev/null)" ]; then
+    warn "Aucun plugin installé"; rc=3
+  fi
+  has git || rc=3
+  exit $rc
+fi
 
 if [ -z "$MODE" ]; then
   title "Que voulez-vous faire ?"

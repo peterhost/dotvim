@@ -86,6 +86,49 @@ check "worktree ~/.vimnew créé"          test -f "$H/.vimnew/vimrc"
 check "~/.vimrc non touché"              test ! -e "$H/.vimrc"
 check "essai refusé si ~/.vimnew existe" sh -c "! HOME='$H' sh '$H/.vim/bin/install' --try --branch master --no-plugins --yes </dev/null"
 
+echo "== Zéro reste : nettoyage garanti par l'installeur"
+new_home crumbs
+# restes de l'ancienne config + transitoires + données à préserver
+mkdir -p "$H/.vim/local/spell" "$H/.vim/local/backup" "$H/.vim/local/undo" "$H/.vim/local/sessions"
+echo 'hi' > "$H/.vim/colors/default-light.vim"; echo 'hi' > "$H/.vim/colors/dim.vim"
+echo 'vieux' > "$H/.vim/.netrwhist"; echo 'vieux' > "$H/.vim/install.log"
+printf 'Jancovici\n' > "$H/.vim/spell/fr.utf-8.add"; echo spl > "$H/.vim/spell/fr.utf-8.add.spl"
+echo x > "$H/.vim/local/update-report.txt"; echo x > "$H/.vim/local/check.txt"
+mkdir -p "$H/.vim/local/update.lock"; touch -t 202001010000 "$H/.vim/local/update.lock"
+for d in 1 2 3 4 5; do echo v > "$H/.vim/local/backup/.vimrc.2026010$d-000000"; done
+echo 'motperso' > "$H/.vim/local/spell/fr.utf-8.add"; echo u > "$H/.vim/local/undo/fichier"
+echo s > "$H/.vim/local/sessions/travail.vim"; echo 'let g:x=1' > "$H/.vim/local/vimrc.local"
+i=0; while [ $i -lt 700 ]; do echo "ligne $i" >> "$H/.vim/local/install.log"; i=$((i + 1)); done
+check "--check signale les restes (code 3)"           sh -c "HOME='$H' sh '$H/.vim/bin/install' --check </dev/null >'$TMP/out.txt' 2>&1; test \$? = 3"
+check "--check liste le dictionnaire de l'ancienne config" grep -q 'spell/fr.utf-8.add' "$TMP/out.txt"
+check "--clean réussit"                               sh -c "HOME='$H' sh '$H/.vim/bin/install' --clean </dev/null >'$TMP/out.txt' 2>&1"
+check "colors/ de l'ancienne config supprimés"        sh -c "test ! -e '$H/.vim/colors/dim.vim' && test ! -e '$H/.vim/colors/default-light.vim'"
+check "spell/*.add de la racine supprimés"            sh -c "test ! -e '$H/.vim/spell/fr.utf-8.add' && test ! -e '$H/.vim/spell/fr.utf-8.add.spl'"
+check ".netrwhist et install.log de la racine supprimés" sh -c "test ! -e '$H/.vim/.netrwhist' && test ! -e '$H/.vim/install.log'"
+check "transitoires supprimés"                        sh -c "test ! -e '$H/.vim/local/update-report.txt' && test ! -e '$H/.vim/local/check.txt'"
+check "verrou périmé supprimé"                        test ! -e "$H/.vim/local/update.lock"
+check "3 sauvegardes gardées, les plus récentes"       sh -c "test \$(ls -A '$H/.vim/local/backup' | wc -l | tr -d ' ') = 3 && test -f '$H/.vim/local/backup/.vimrc.20260105-000000' && test ! -e '$H/.vim/local/backup/.vimrc.20260101-000000'"
+check "journal tronqué à 500 lignes"                  sh -c "test \$(wc -l < '$H/.vim/local/install.log' | tr -d ' ') -le 500"
+check "dictionnaire de la machine intact"             grep -q motperso "$H/.vim/local/spell/fr.utf-8.add"
+check "annulation, sessions et réglages locaux intacts" sh -c "test -f '$H/.vim/local/undo/fichier' && test -f '$H/.vim/local/sessions/travail.vim' && test -f '$H/.vim/local/vimrc.local'"
+check "dépôt propre après nettoyage"                  sh -c "test -z \"\$(git -C '$H/.vim' status --porcelain)\""
+check "--check ne signale plus de reste"               sh -c "HOME='$H' sh '$H/.vim/bin/install' --check </dev/null 2>&1 | grep -q 'Aucun reste'"
+check "--clean idempotent"                            sh -c "HOME='$H' sh '$H/.vim/bin/install' --clean </dev/null 2>&1 | grep -q 'Aucun reste'"
+
+echo "== Zéro reste : le dictionnaire est gardé s'il n'a pas été recopié"
+new_home crumbs2
+printf 'Jancovici\n' > "$H/.vim/spell/fr.utf-8.add"
+check "--clean réussit"                               sh -c "HOME='$H' sh '$H/.vim/bin/install' --clean </dev/null >/dev/null 2>&1"
+check "dictionnaire conservé (pas de copie locale)"   test -f "$H/.vim/spell/fr.utf-8.add"
+
+echo "== Zéro reste : une installation complète ne laisse rien"
+new_home nocrumbs
+echo 'hi' > "$H/.vim/colors/dim.vim"; printf 'mot\n' > "$H/.vim/spell/fr.utf-8.add"
+check "installation réussie"                          inst --yes --no-plugins
+check "mots repris dans local/spell/"                 grep -q mot "$H/.vim/local/spell/fr.utf-8.add"
+check "aucun reste après installation"                sh -c "HOME='$H' sh '$H/.vim/bin/install' --clean </dev/null 2>&1 | grep -q 'Aucun reste'"
+check "dépôt propre"                                  sh -c "test -z \"\$(git -C '$H/.vim' status --porcelain)\""
+
 echo "== Modifications locales : supprimées au changement de branche"
 new_home dirty
 echo x >> "$H/.vim/README.md"
