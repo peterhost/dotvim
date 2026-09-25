@@ -297,18 +297,48 @@ new_home source
 SRC="$H/.vim"
 TGT="$TMP/cible"; mkdir -p "$TGT"
 # 3 = déployé mais dégradé (ici : plugins volontairement non installés)
-dep() { HOME=$TGT MY_VIM_NO_AUTOUPDATE=1 sh "$SRC/bin/deploy-local" --dir "$TGT/.vim" "$@" </dev/null >"$TMP/d.txt" 2>&1; rc=$?; [ "$rc" = 0 ] || [ "$rc" = 3 ]; }
+dep() { HOME=$TGT MY_VIM_NO_AUTOUPDATE=1 sh "$SRC/bin/deploy-local" --dir "$TGT/.vim" "$@" </dev/null >"$TMP/d.txt" 2>"$TMP/d-trace.txt"; rc=$?; [ "$rc" = 0 ] || [ "$rc" = 3 ]; }
 check "machine vierge : clone + installation"         dep --repo-url "$SRC" --no-plugins --json
 check "configuration en place"                        test -f "$TGT/.vim/vimrc"
 check "action « clone » annoncée"                     grep -q '"action":"clone"' "$TMP/d.txt"
 check "état de la machine inclus (imbriqué)"          grep -q '"state":{' "$TMP/d.txt"
 check "aucune décoration en mode json"                sh -c "test \$(wc -l < '$TMP/d.txt' | tr -d ' ') = 1"
-check "relance : action « update »"                   sh -c "HOME='$TGT' MY_VIM_NO_AUTOUPDATE=1 sh '$TGT/.vim/bin/deploy-local' --dir '$TGT/.vim' --no-plugins --json </dev/null 2>&1 | grep -q '\"action\":\"update\"'"
+check "relance : action « update »"                   sh -c "HOME='$TGT' MY_VIM_NO_AUTOUPDATE=1 sh '$TGT/.vim/bin/deploy-local' --dir '$TGT/.vim' --no-plugins --json </dev/null 2>/dev/null | grep -q '\"action\":\"update\"'"
 before=$(git -C "$TGT/.vim" rev-parse HEAD)
 check "--dry-run ne modifie rien"                     sh -c "HOME='$TGT' sh '$TGT/.vim/bin/deploy-local' --dir '$TGT/.vim' --dry-run </dev/null >/dev/null 2>&1 && test \"\$(git -C '$TGT/.vim' rev-parse HEAD)\" = '$before'"
 check "--dry-run annonce « rien à faire »"            sh -c "HOME='$TGT' sh '$TGT/.vim/bin/deploy-local' --dir '$TGT/.vim' --dry-run </dev/null 2>&1 | grep -q 'rien à faire'"
 check "option inconnue : code 2"                      sh -c "HOME='$TGT' sh '$SRC/bin/deploy-local' --nawak </dev/null >/dev/null 2>&1; test \$? = 2"
 check "dossier occupé par autre chose : erreur"       sh -c "mkdir -p '$TMP/occupe' && echo x > '$TMP/occupe/fichier' && HOME='$TGT' sh '$SRC/bin/deploy-local' --dir '$TMP/occupe' --repo-url '$SRC' --json </dev/null 2>&1 | grep -q '\"action\":\"error\"'"
+echo "== Contrat d'état pour l'appelant tiers (deploy-local --check)"
+VIERGE="$TMP/vierge"; mkdir -p "$VIERGE"
+HOME=$VIERGE sh "$SRC/bin/deploy-local" --dir "$VIERGE/.vim" --check --json </dev/null > "$TMP/c.txt" 2>/dev/null; rc=$?
+check "machine vierge : code 4"                       test "$rc" = 4
+check "machine vierge : installed false, status absent" sh -c "grep -q '\"installed\":false' '$TMP/c.txt' && grep -q '\"status\":\"absent\"' '$TMP/c.txt'"
+check "machine vierge : une seule ligne JSON"         test "$(wc -l < "$TMP/c.txt" | tr -d ' ')" = 1
+HOME=$TGT sh "$TGT/.vim/bin/deploy-local" --dir "$TGT/.vim" --check --json </dev/null > "$TMP/c2.txt" 2>/dev/null; rc=$?
+check "machine installée : code 3 (plugins absents)"  test "$rc" = 3
+check "machine installée : installed true + état imbriqué" sh -c "grep -q '\"installed\":true' '$TMP/c2.txt' && grep -q '\"state\":{' '$TMP/c2.txt'"
+check "--check --remote : à jour (up_to_date true)"    sh -c "HOME='$TGT' sh '$TGT/.vim/bin/deploy-local' --dir '$TGT/.vim' --check --remote --json </dev/null 2>/dev/null | grep -q '\"up_to_date\":true'"
+check "--check sans --remote : pas de réseau (null)"   sh -c "HOME='$TGT' sh '$TGT/.vim/bin/deploy-local' --dir '$TGT/.vim' --check --json </dev/null 2>/dev/null | grep -q '\"remote_commit\":null'"
+
+echo "== Simulation : codes de sortie exploitables sans lire le JSON"
+check "à installer : code 4"                          sh -c "HOME='$VIERGE' sh '$SRC/bin/deploy-local' --dir '$VIERGE/.vim' --repo-url '$SRC' --dry-run --json </dev/null >/dev/null 2>&1; test \$? = 4"
+check "rien à faire : code 0"                         sh -c "HOME='$TGT' sh '$TGT/.vim/bin/deploy-local' --dir '$TGT/.vim' --dry-run --json </dev/null >/dev/null 2>&1"
+(cd "$SRC" && git checkout -q master && echo "# suite" >> README.md && git add -A \
+  && git -c user.name=t -c user.email=t@t commit -qm "nouveau commit" >/dev/null)
+check "mise à jour disponible : code 5"               sh -c "HOME='$TGT' sh '$TGT/.vim/bin/deploy-local' --dir '$TGT/.vim' --dry-run --json </dev/null >/dev/null 2>&1; test \$? = 5"
+check "simulation : rien n'a été modifié"             sh -c "test \"\$(git -C '$TGT/.vim' rev-parse HEAD)\" != \"\$(git -C '$SRC' rev-parse HEAD)\""
+
+echo "== Trace en direct : JSON sur stdout, étapes sur stderr"
+check "mise à jour en json"                           sh -c "HOME='$TGT' MY_VIM_NO_AUTOUPDATE=1 sh '$TGT/.vim/bin/deploy-local' --dir '$TGT/.vim' --no-plugins --json </dev/null >'$TMP/o.txt' 2>'$TMP/t.txt'; rc=\$?; test \$rc = 0 -o \$rc = 3"
+check "stdout : une seule ligne, du JSON"             sh -c "test \$(wc -l < '$TMP/o.txt' | tr -d ' ') = 1 && head -c1 '$TMP/o.txt' | grep -q '{'"
+check "stderr : étapes présentes"                     sh -c "grep -q 'Installation' '$TMP/t.txt'"
+
+echo "== --https : adresse du dépôt forcée (compte sans clé SSH)"
+git -C "$TGT/.vim" remote set-url origin git@github.com:peterhost/dotvim.git
+check "--check --https bascule l'adresse en https"    sh -c "HOME='$TGT' sh '$TGT/.vim/bin/deploy-local' --dir '$TGT/.vim' --check --https --json </dev/null >/dev/null 2>&1; git -C '$TGT/.vim' remote get-url origin | grep -q '^https://github.com/'"
+git -C "$TGT/.vim" remote set-url origin "$SRC"
+
 check "aucun nom de machine dans les outils"          sh -c "! grep -rniE 'nas1|nas2|bikini|192\.168|tomneale|pierrelhoste' '$SRC/bin' '$SRC/config' '$SRC/autoload' '$SRC/vimrc'"
 
 if [ -n "${TEST_NETWORK:-}" ]; then

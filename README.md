@@ -69,8 +69,11 @@ Ces commandes servent à un appelant tiers (interface de déploiement, supervisi
 # le script est envoyé par ssh, et clone depuis GitHub
 ssh <hôte> 'sh -s -- --yes --json' < ~/.vim/bin/deploy-local
 
-# demander l'état d'une machine, sans rien modifier
-ssh <hôte> 'sh ~/.vim/bin/install --check --json'
+# état d'une machine, installée ou non (répond toujours une ligne JSON)
+ssh <hôte> 'sh -s -- --check --json' < ~/.vim/bin/deploy-local
+
+# ce qui serait fait, sans rien modifier
+ssh <hôte> 'sh -s -- --dry-run --json' < ~/.vim/bin/deploy-local
 ```
 
 | Commande | Rôle |
@@ -80,7 +83,20 @@ ssh <hôte> 'sh ~/.vim/bin/install --check --json'
 | `bin/install --clean` | supprime les restes |
 | `bin/update-plugins` | installe et met à jour les plugins (`--if-due N` jours, `--if-due-minutes N`) |
 
-**Codes de sortie**, communs à ces commandes : `0` conforme, `1` erreur, `2` usage, `3` déployé mais dégradé (plugins manquants, restes, outil absent). En mode `--json`, rien d'autre que le JSON n'est écrit sur la sortie standard.
+`bin/deploy-local --check` est le point d'entrée unique pour l'état : il répond **même sur une machine où la configuration est absente** (`"installed": false`, `"status": "absent"`), et imbrique l'état complet de `bin/install --check --json` dans le champ `state`. Avec `--remote`, il interroge le dépôt (seul cas où le réseau sert) et renseigne `remote_commit` et `up_to_date`. `--https` force l'adresse GitHub en https, pour un compte sans clé SSH.
+
+**Codes de sortie**, communs à ces commandes :
+
+| Code | Sens |
+|---|---|
+| 0 | conforme, ou rien à faire |
+| 1 | erreur |
+| 2 usage | option inconnue |
+| 3 | déployé mais dégradé (plugins manquants, restes, outil absent) |
+| 4 | configuration absente (à installer) |
+| 5 | mise à jour disponible (avec `--dry-run`, ou `--check --remote`) |
+
+En mode `--json`, la sortie standard ne contient **que** le JSON, sur une seule ligne ; les étapes sont écrites au fil de l'eau sur la **sortie d'erreur**, ce qui permet de suivre un déploiement en direct.
 
 ## Essayer une autre branche sans rien casser
 

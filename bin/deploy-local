@@ -13,11 +13,21 @@
 #   --no-plugins    ne pas installer les plugins
 #   --json          sortie lisible par un programme (rien d'autre n'est affiché)
 #   --dry-run       dit ce qui serait fait, sans rien modifier
+#   --check         état de la machine, sans rien modifier (répond même si la
+#                   configuration est absente)
+#   --remote        avec --check ou --dry-run : interroge le dépôt distant pour
+#                   dire si la machine est à jour (seul cas où le réseau sert)
+#   --https         force l'adresse GitHub en https (compte sans clé SSH)
 #   --help
 #
 # Ce script ne connaît aucune machine : ni nom d'hôte, ni alias ssh, ni adresse.
-# Tout vient des arguments. Codes de sortie : 0 conforme, 1 erreur, 2 usage,
-# 3 déployé mais dégradé (plugins manquants, outil absent…).
+# Tout vient des arguments.
+#
+# Codes de sortie : 0 conforme (ou rien à faire), 1 erreur, 2 usage,
+# 3 déployé mais dégradé (plugins manquants, outil absent…),
+# 4 configuration absente (à installer), 5 mise à jour disponible.
+# Avec --json, la sortie standard ne contient QUE le JSON (une ligne) ; les
+# étapes sont écrites au fil de l'eau sur la sortie d'erreur.
 #
 # Il n'a pas besoin d'exister sur la machine cible : envoyé par ssh, il clone
 # la configuration depuis GitHub si le dossier est absent (installation de zéro).
@@ -36,7 +46,7 @@ export PATH
 DIR="$HOME/.vim"
 REPO_URL=""
 BRANCH=master
-YES=0; PLUGINS=""; JSON=0; DRY=0
+YES=0; PLUGINS=""; JSON=0; DRY=0; MODE=deploy; REMOTE=0; FORCE_HTTPS=0
 DEFAULT_URL="https://github.com/peterhost/dotvim.git"
 
 while [ $# -gt 0 ]; do
@@ -51,14 +61,19 @@ while [ $# -gt 0 ]; do
     --no-plugins) PLUGINS=no ;;
     --json) JSON=1 ;;
     --dry-run) DRY=1 ;;
-    -h|--help) sed -n '2,27p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    --check|--etat) MODE=check ;;
+    --remote) REMOTE=1 ;;
+    --https) FORCE_HTTPS=1 ;;
+    -h|--help) sed -n '2,38p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "Option inconnue : $1 (voir --help)" >&2; exit 2 ;;
   esac
   shift
 done
 [ -t 0 ] || YES=1
 
-say() { [ "$JSON" = 1 ] || printf '%s\n' "$1"; }
+# Étapes : sur la sortie standard en mode humain, sur la sortie d'erreur en
+# mode json (pour qu'un appelant puisse suivre en direct sans polluer le JSON).
+say() { if [ "$JSON" = 1 ]; then printf '%s\n' "$1" >&2; else printf '%s\n' "$1"; fi; }
 fail() { # fail <message>
   if [ "$JSON" = 1 ]; then
     printf '{"action":"error","message":"%s","exit":1}\n' "$(printf '%s' "$1" | sed 's/"/\\"/g')"
@@ -70,6 +85,62 @@ fail() { # fail <message>
 
 command -v git >/dev/null 2>&1 || fail "git est absent : impossible de déployer"
 
+# Adresse https imposée (compte sans clé SSH GitHub).
+to_https() {
+  case $(git -C "$DIR" remote get-url origin 2>/dev/null) in
+    git@github.com:*|ssh://git@github.com/*)
+      new=$(git -C "$DIR" remote get-url origin \
+        | sed -e 's#^git@github\.com:#https://github.com/#' -e 's#^ssh://git@github\.com/#https://github.com/#')
+      git -C "$DIR" remote set-url origin "$new" && say "adresse du dépôt passée en https : $new" ;;
+  esac
+}
+
+# Commit de la branche sur le dépôt distant (réseau), vide si injoignable.
+remote_commit() {
+  git -C "$DIR" ls-remote origin "refs/heads/$BRANCH" 2>/dev/null | cut -c1-7
+}
+
+# --check : écrit TOUJOURS une ligne JSON, même si la configuration est absente.
+#   installed  false  -> status "absent", code 4
+#   installed  true   -> état complet de bin/install --check --json
+#                        code 0 conforme, 3 dégradé, 5 mise à jour disponible (--remote)
+do_check() {
+  if [ ! -d "$DIR/.git" ]; then
+    if [ "$JSON" = 1 ]; then
+      printf '{"module":"vim","installed":false,"dir":"%s","status":"absent","up_to_date":null,"remote_commit":null,"state":null,"exit":4}\n' "$DIR"
+    else
+      printf 'configuration absente : %s\n' "$DIR"
+    fi
+    exit 4
+  fi
+  [ "$FORCE_HTTPS" = 1 ] && to_https
+  commit=$(git -C "$DIR" rev-parse --short HEAD 2>/dev/null || echo "")
+  branch_cur=$(git -C "$DIR" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+  state=$(sh "$DIR/bin/install" --check --json </dev/null 2>/dev/null)
+  state_rc=$?
+  rc=$state_rc
+  rcommit=""; uptodate=null
+  if [ "$REMOTE" = 1 ]; then
+    rcommit=$(remote_commit)
+    if [ -n "$rcommit" ]; then
+      full=$(git -C "$DIR" rev-parse HEAD 2>/dev/null | cut -c1-7)
+      if [ "$rcommit" = "$full" ]; then uptodate=true; else uptodate=false; [ "$rc" = 0 ] && rc=5; fi
+    fi
+  fi
+  case $rc in 0) status=ok ;; 3) status=degraded ;; 5) status=outdated ;; *) status=error ;; esac
+  if [ "$JSON" = 1 ]; then
+    printf '{"module":"vim","installed":true,"dir":"%s","branch":"%s","commit":"%s","remote_commit":%s,"up_to_date":%s,"status":"%s","state":%s,"exit":%s}\n' \
+      "$DIR" "$branch_cur" "$commit" \
+      "$([ -n "$rcommit" ] && printf '"%s"' "$rcommit" || echo null)" "$uptodate" "$status" "${state:-null}" "$rc"
+  else
+    printf 'configuration présente : %s (%s @ %s) — %s\n' "$DIR" "$branch_cur" "$commit" "$status"
+    [ "$REMOTE" = 1 ] && [ -n "$rcommit" ] && printf 'dépôt distant : %s (%s)\n' "$rcommit" "$([ "$uptodate" = true ] && echo "à jour" || echo "mise à jour disponible")"
+  fi
+  exit $rc
+}
+
+[ "$MODE" = check ] && do_check
+
 # --- Dépôt : clone ou mise à jour -------------------------------------------------------
 ACTION=update
 BEFORE=""
@@ -78,8 +149,11 @@ if [ ! -d "$DIR/.git" ]; then
     && fail "$DIR existe et n'est pas un dépôt git"
   ACTION=clone
   [ -n "$REPO_URL" ] || REPO_URL=$DEFAULT_URL
+  [ "$FORCE_HTTPS" = 1 ] && REPO_URL=$(printf '%s' "$REPO_URL" \
+    | sed -e 's#^git@github\.com:#https://github.com/#' -e 's#^ssh://git@github\.com/#https://github.com/#')
   if [ "$DRY" = 1 ]; then
     say "à faire : cloner $REPO_URL dans $DIR (branche $BRANCH), puis installer"
+    DRY_ACTION=installation; DRY_RC=4
   else
     say "clonage de $REPO_URL dans ${DIR}…"
     git clone -q --branch "$BRANCH" "$REPO_URL" "$DIR" 2>/dev/null \
@@ -91,6 +165,7 @@ else
 fi
 
 if [ "$ACTION" = update ]; then
+  [ "$FORCE_HTTPS" = 1 ] && [ "$DRY" = 0 ] && to_https
   # dictionnaire personnel : sauvegardé avant la mise à jour, car l'ancien
   # fichier suivi par git peut disparaître
   if [ "$DRY" = 0 ]; then
@@ -104,13 +179,16 @@ if [ "$ACTION" = update ]; then
 
   # récupération ; si l'adresse ssh échoue (compte sans clé), passage en https
   if [ "$DRY" = 1 ]; then
-    remote=$(git -C "$DIR" ls-remote origin "refs/heads/$BRANCH" 2>/dev/null | cut -c1-7)
-    if [ -z "$remote" ]; then
+    DRY_REMOTE=$(remote_commit)
+    if [ -z "$DRY_REMOTE" ]; then
       say "dépôt injoignable : rien ne serait déployé"
-    elif [ "$remote" = "$(git -C "$DIR" rev-parse --short "$BRANCH" 2>/dev/null)" ]; then
+      DRY_ACTION=inconnu; DRY_RC=1
+    elif [ "$DRY_REMOTE" = "$(git -C "$DIR" rev-parse HEAD 2>/dev/null | cut -c1-7)" ]; then
       say "déjà à jour ($BRANCH @ $BEFORE) : rien à faire"
+      DRY_ACTION=rien; DRY_RC=0
     else
-      say "à faire : passer $BRANCH de $BEFORE à ${remote} puis installer"
+      say "à faire : passer $BRANCH de $BEFORE à $DRY_REMOTE, puis installer"
+      DRY_ACTION=maj; DRY_RC=5
     fi
   else
     if ! git -C "$DIR" fetch -q origin 2>/dev/null; then
@@ -132,16 +210,20 @@ fi
 
 if [ "$DRY" = 1 ]; then
   if [ "$JSON" = 1 ]; then
-    printf '{"action":"dry-run","dir":"%s","branch":"%s","commit":"%s","exit":0}\n' "$DIR" "$BRANCH" "$BEFORE"
+    printf '{"action":"dry-run","a_faire":"%s","dir":"%s","branch":"%s","commit":"%s","remote_commit":%s,"up_to_date":%s,"exit":%s}\n' \
+      "${DRY_ACTION:-inconnu}" "$DIR" "$BRANCH" "$BEFORE" \
+      "$([ -n "${DRY_REMOTE:-}" ] && printf '"%s"' "$DRY_REMOTE" || echo null)" \
+      "$([ "${DRY_ACTION:-}" = rien ] && echo true || echo false)" "${DRY_RC:-0}"
   fi
-  exit 0
+  exit "${DRY_RC:-0}"
 fi
 
 # --- Installation ------------------------------------------------------------------------
 set -- --yes
 [ "$PLUGINS" = no ] && set -- "$@" --no-plugins
 if [ "$JSON" = 1 ]; then
-  sh "$DIR/bin/install" "$@" </dev/null >/dev/null 2>&1
+  # étapes visibles en direct par l'appelant, sans polluer le JSON
+  sh "$DIR/bin/install" "$@" </dev/null >&2 2>&1
 else
   sh "$DIR/bin/install" "$@" </dev/null
 fi
