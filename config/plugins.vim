@@ -70,8 +70,10 @@ call s:P('preservim/tagbar', 1)
 call s:P('pangloss/vim-javascript', 1)
 " objets et déplacements classe/fonction en python (remplace python-mode)
 call s:P('jeetsukumaran/vim-pythonsense', v:version >= 704)
+" npm_config_cache : le cache de npm reste dans le dossier du plugin, jamais
+" dans ~/.npm (rien ne doit être écrit hors de ~/.vim)
 call s:P('heavenshell/vim-jsdoc', s:full && s:node,
-      \ executable('npm') ? {'do': 'make install'} : {})
+      \ executable('npm') ? {'do': 'npm_config_cache=./.npm-cache make install'} : {})
 call s:P('othree/html5.vim', 1)
 call s:P('ap/vim-css-color', v:version >= 704,
       \ {'for': ['css', 'scss', 'sass', 'less', 'stylus', 'html', 'vim']})

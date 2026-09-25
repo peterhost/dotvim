@@ -65,7 +65,8 @@ L'installeur teste https et ssh, puis s'adapte :
 Ces commandes servent à un appelant tiers (interface de déploiement, supervision…). **Cette configuration ne connaît aucune machine** : ni nom d'hôte, ni alias ssh, ni adresse. Tout vient des arguments, et chaque commande agit sur la machine où elle tourne. C'est à l'appelant d'apporter la connaissance du parc et de faire le ssh.
 
 ```sh
-# déployer sur une machine distante (clone si besoin, puis installation)
+# déployer sur une machine distante, même si ~/.vim n'y existe pas encore :
+# le script est envoyé par ssh, et clone depuis GitHub
 ssh <hôte> 'sh -s -- --yes --json' < ~/.vim/bin/deploy-local
 
 # demander l'état d'une machine, sans rien modifier
@@ -74,7 +75,7 @@ ssh <hôte> 'sh ~/.vim/bin/install --check --json'
 
 | Commande | Rôle |
 |---|---|
-| `bin/deploy-local` | clone ou met à jour puis installe, sur la machine courante. `--dir`, `--repo-url`, `--branch`, `--yes`, `--no-plugins`, `--json`, `--dry-run`. Bascule l'adresse du dépôt en https si ssh échoue (compte sans clé) |
+| `bin/deploy-local` | **installe de zéro** (clone depuis GitHub si le dossier est absent) ou met à jour, puis installe, sur la machine courante. `--dir`, `--repo-url`, `--branch`, `--yes`, `--no-plugins`, `--json`, `--dry-run`. Bascule l'adresse du dépôt en https si ssh échoue (compte sans clé) |
 | `bin/install --check --json` | état de la machine sur une seule ligne : OS, vim et niveau, git, joignabilité GitHub, branche, commit, plugins installés / déclarés / manquants, restes, paquets manquants, état des mises à jour |
 | `bin/install --clean` | supprime les restes |
 | `bin/update-plugins` | installe et met à jour les plugins (`--if-due N` jours, `--if-due-minutes N`) |

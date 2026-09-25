@@ -19,6 +19,9 @@
 # Tout vient des arguments. Codes de sortie : 0 conforme, 1 erreur, 2 usage,
 # 3 déployé mais dégradé (plugins manquants, outil absent…).
 #
+# Il n'a pas besoin d'exister sur la machine cible : envoyé par ssh, il clone
+# la configuration depuis GitHub si le dossier est absent (installation de zéro).
+#
 # Ce qu'il fait : cloner si besoin, sauvegarder le dictionnaire personnel,
 # récupérer la branche demandée (en basculant l'adresse en https si ssh échoue),
 # puis lancer bin/install, qui installe les plugins et ne laisse aucun reste.

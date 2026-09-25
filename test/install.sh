@@ -312,6 +312,13 @@ check "dossier occupé par autre chose : erreur"       sh -c "mkdir -p '$TMP/occ
 check "aucun nom de machine dans les outils"          sh -c "! grep -rniE 'nas1|nas2|bikini|192\.168|tomneale|pierrelhoste' '$SRC/bin' '$SRC/config' '$SRC/autoload' '$SRC/vimrc'"
 
 if [ -n "${TEST_NETWORK:-}" ]; then
+  echo "== Installation de zéro depuis GitHub (réseau)"
+  SCRATCH="$TMP/from-scratch"; mkdir -p "$SCRATCH"
+  check "HOME vierge : clone depuis GitHub + installation" sh -c "HOME='$SCRATCH' sh '$ROOT/bin/deploy-local' --yes --json </dev/null >'$TMP/fs.json' 2>&1"
+  check "action « clone » et état ok"                  sh -c "grep -q '\"action\":\"clone\"' '$TMP/fs.json' && grep -q '\"status\":\"ok\"' '$TMP/fs.json'"
+  check "plugins installés"                            sh -c "test \$(ls '$SCRATCH/.vim/plugged' | wc -l | tr -d ' ') -ge 50"
+  check "rien d'autre que .vim dans le HOME"           test "$(ls -A "$SCRATCH")" = .vim
+
   echo "== Premier lancement de vim : installation des plugins en arrière-plan (réseau)"
   new_home firstrun
   inst --yes --no-plugins
