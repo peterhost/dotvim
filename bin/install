@@ -9,6 +9,7 @@
 #   sh bin/install --uninstall  retirer la config et restaurer la dernière sauvegarde
 #   sh bin/install --check      diagnostic seul (système, vim, GitHub, paquets, restes) ; code 3 si dégradé
 #   sh bin/install --clean      nettoie les restes (rien d'autre)
+#   sh bin/install --check --json   état de la machine en JSON (pour un appelant tiers)
 #
 # Écrit en sh POSIX : macOS, Debian/Mint (dash), Synology (ash busybox),
 # Cygwin, MSYS2/Git Bash, WSL. Rien n'est installé hors de $HOME, pas de sudo.
@@ -26,7 +27,7 @@ mkdir -p "$REPO/local" 2>/dev/null || true
 STAMP=$(date +%Y%m%d-%H%M%S)
 MARK="Généré par bin/install"
 
-YES=0; MODE=""; BRANCH=""; PLUGINS=""
+YES=0; MODE=""; BRANCH=""; PLUGINS=""; JSON=0
 while [ $# -gt 0 ]; do
   case $1 in
     -y|--yes) YES=1 ;;
@@ -35,6 +36,7 @@ while [ $# -gt 0 ]; do
     --install) MODE=install ;;
     --check) MODE=check ;;
     --clean) MODE=clean ;;
+    --json) JSON=1 ;;
     --branch) shift; BRANCH=${1:-} ;;
     --branch=*) BRANCH=${1#--branch=} ;;
     --no-plugins) PLUGINS=no ;;
@@ -256,6 +258,8 @@ entware_check() {
   for cmd in ctags rg; do
     has "$cmd" && "$cmd" --version 2>&1 >/dev/null | grep -q 'libpcre2.*no version information' && upgrade="libpcre2"
   done
+  OPKG_NEEDED="$need$want"
+  if [ "$JSON" = 1 ]; then return 0; fi
   title "Paquets Entware (opkg)"
   if [ -z "$need$want$upgrade" ]; then ok "Rien à installer"; fi
   [ -n "$need" ] && warn "Indispensable : $need (sans lui, pas de https : plugins impossibles)"
@@ -601,7 +605,70 @@ do_uninstall() {
   info "Les plugins et les réglages locaux ($(vim_path "$REPO/local")) sont conservés."
 }
 
+# --- État lisible par un programme (--check --json) -------------------------------------
+# Destiné à un appelant tiers (interface de déploiement, supervision…). Cette
+# configuration ne connaît aucune machine : elle décrit seulement celle où elle
+# tourne. Codes de sortie : 0 conforme, 1 erreur, 2 usage, 3 dégradé.
+json_str() { printf '"%s"' "$(printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e 's/\t/ /g')"; }
+
+# Nombre de plugins déclarés / manquants (demandé à vim, qui seul connaît la liste).
+plugins_state() {
+  PLUG_TOTAL=0; PLUG_MISSING=0
+  PLUG_INSTALLED=$(ls "$REPO/plugged" 2>/dev/null | wc -l | tr -d ' ')
+  [ -n "$VIM_BIN" ] && [ "$VIM_EVAL" = 1 ] || return 0
+  # en mode -es, « echo » ne sort pas sur la sortie standard : on passe par redir
+  tmp="$REPO/local/plugins-state.$$"
+  MY_VIM_NO_AUTOUPDATE=1 "$VIM_BIN" -N -u "$REPO/vimrc" -i NONE -es \
+    -c "redir! > $tmp" \
+    -c 'silent echo len(keys(get(g:, "plugs", {}))) len(my#update#missing())' \
+    -c 'redir END' -c 'qa!' </dev/null >/dev/null 2>&1
+  out=$(tr -d '\r' < "$tmp" 2>/dev/null | grep -E '^[0-9]+ [0-9]+$' | head -1)
+  rm -f "$tmp"
+  [ -n "$out" ] || return 0
+  PLUG_TOTAL=${out%% *}; PLUG_MISSING=${out##* }
+}
+
+print_json() {
+  crumbs=$(crumbs_list | grep -c . || true)
+  plugins_state
+  upd=$(head -1 "$REPO/local/update-status" 2>/dev/null || echo unknown)
+  commit=$(git -C "$REPO" rev-parse --short HEAD 2>/dev/null || echo "")
+  remote=$(origin_url)
+  rc=0
+  [ "${crumbs:-0}" -gt 0 ] && rc=3
+  [ "${PLUG_MISSING:-0}" -gt 0 ] && rc=3
+  [ "$TIER" != minimal ] && [ "${PLUG_INSTALLED:-0}" = 0 ] && rc=3
+  has git || rc=3
+  printf '{'
+  printf '"host":%s,'    "$(json_str "$(hostname 2>/dev/null)")"
+  printf '"user":%s,'    "$(json_str "$(id -un 2>/dev/null)")"
+  printf '"os":%s,'      "$(json_str "$OS_LABEL")"
+  printf '"os_kind":%s,' "$(json_str "$OS")"
+  printf '"dir":%s,'     "$(json_str "$REPO")"
+  printf '"vim":%s,'     "$(json_str "$([ -n "$VIM_BIN" ] && printf '%s.%s' "$((VIM_VER / 100))" "$((VIM_VER % 100))")")"
+  printf '"vim_path":%s,' "$(json_str "$VIM_BIN")"
+  printf '"vim_build":%s,' "$(json_str "$VIM_SIZE")"
+  printf '"tier":%s,'    "$(json_str "$TIER")"
+  printf '"git":%s,'     "$(json_str "$(git --version 2>/dev/null | sed 's/git version //')")"
+  printf '"github_https":%s,' "$([ "${NET_HTTPS:-0}" = 1 ] && echo true || echo false)"
+  printf '"github_ssh":%s,'   "$([ "${NET_SSH:-0}" = 1 ] && echo true || echo false)"
+  printf '"remote":%s,'  "$(json_str "$remote")"
+  printf '"branch":%s,'  "$(json_str "$BRANCH_CUR")"
+  printf '"commit":%s,'  "$(json_str "$commit")"
+  printf '"plugins_installed":%s,' "${PLUG_INSTALLED:-0}"
+  printf '"plugins_declared":%s,'  "${PLUG_TOTAL:-0}"
+  printf '"plugins_missing":%s,'   "${PLUG_MISSING:-0}"
+  printf '"last_update":%s,' "$(json_str "$upd")"
+  printf '"crumbs":%s,' "${crumbs:-0}"
+  printf '"opkg_missing":%s,' "$(json_str "$(printf '%s' "${OPKG_NEEDED:-}" | sed 's/^ //')")"
+  printf '"tools_missing":%s,' "$(json_str "$(printf '%s' "$MISSING" | sed 's/^ //')")"
+  printf '"status":%s'  "$(json_str "$([ "$rc" = 0 ] && echo ok || echo degraded)")"
+  printf '}\n'
+  return $rc
+}
+
 # --- Déroulé -------------------------------------------------------------------------------------
+if [ "$JSON" != 1 ]; then
 printf '%s%s' "$C_B" "$C_C"
 cat <<'EOF'
    _   _ _
@@ -611,13 +678,25 @@ cat <<'EOF'
    \___/|_|_| |_| |_|
 EOF
 printf '%s' "$C_N"
+fi
 log "=== bin/install $STAMP ($*)"
+if [ "$MODE" = check ] && [ "$JSON" = 1 ]; then
+  # aucune sortie décorative : seulement le JSON
+  { diagnose; } >/dev/null 2>&1
+  print_json
+  exit $?
+fi
 if [ "$MODE" = clean ]; then
   title "Nettoyage"
   prune_crumbs
   exit 0
 fi
 diagnose
+if [ "$MODE" = check ] && [ "$JSON" = 1 ]; then
+  print_json
+  exit $?
+fi
+
 if [ "$MODE" = check ]; then
   title "Restes"
   rc=0

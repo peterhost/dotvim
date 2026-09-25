@@ -278,6 +278,39 @@ check "état : échec pour 1 plugin"                    grep -qx 'fail 1' "$H/.v
 check "conseil https enregistré"                      grep -q '^conseil: git sans support https' "$H/.vim/local/update-status"
 check "rapport ajouté au journal"                     grep -q 'remote helper' "$H/.vim/local/update.log"
 
+echo "== État JSON pour un appelant tiers (--check --json)"
+new_home json
+HOME=$H sh "$H/.vim/bin/install" --check --json </dev/null > "$TMP/j.txt" 2>"$TMP/e.txt"; rc=$?
+check "code 3 (aucun plugin installé)"                test "$rc" = 3
+check "une seule ligne, rien d'autre"                 test "$(wc -l < "$TMP/j.txt" | tr -d ' ')" = 1
+check "pas de décoration sur la sortie"               sh -c "! grep -q 'Diagnostic' '$TMP/j.txt'"
+for k in host user os dir vim tier git github_https branch commit plugins_installed plugins_declared plugins_missing crumbs status; do
+  check "champ $k présent" grep -q "\"$k\":" "$TMP/j.txt"
+done
+check "JSON bien formé (accolades appariées)"         sh -c "head -c1 '$TMP/j.txt' | grep -q '{' && tail -c2 '$TMP/j.txt' | grep -q '}'"
+echo 'hi' > "$H/.vim/colors/dim.vim"
+check "restes comptés dans le JSON"                   sh -c "HOME='$H' sh '$H/.vim/bin/install' --check --json </dev/null 2>/dev/null | grep -q '\"crumbs\":1'"
+check "option inconnue : code 2"                      sh -c "HOME='$H' sh '$H/.vim/bin/install' --nawak </dev/null >/dev/null 2>&1; test \$? = 2"
+
+echo "== Déploiement par un appelant tiers (bin/deploy-local)"
+new_home source
+SRC="$H/.vim"
+TGT="$TMP/cible"; mkdir -p "$TGT"
+# 3 = déployé mais dégradé (ici : plugins volontairement non installés)
+dep() { HOME=$TGT MY_VIM_NO_AUTOUPDATE=1 sh "$SRC/bin/deploy-local" --dir "$TGT/.vim" "$@" </dev/null >"$TMP/d.txt" 2>&1; rc=$?; [ "$rc" = 0 ] || [ "$rc" = 3 ]; }
+check "machine vierge : clone + installation"         dep --repo-url "$SRC" --no-plugins --json
+check "configuration en place"                        test -f "$TGT/.vim/vimrc"
+check "action « clone » annoncée"                     grep -q '"action":"clone"' "$TMP/d.txt"
+check "état de la machine inclus (imbriqué)"          grep -q '"state":{' "$TMP/d.txt"
+check "aucune décoration en mode json"                sh -c "test \$(wc -l < '$TMP/d.txt' | tr -d ' ') = 1"
+check "relance : action « update »"                   sh -c "HOME='$TGT' MY_VIM_NO_AUTOUPDATE=1 sh '$TGT/.vim/bin/deploy-local' --dir '$TGT/.vim' --no-plugins --json </dev/null 2>&1 | grep -q '\"action\":\"update\"'"
+before=$(git -C "$TGT/.vim" rev-parse HEAD)
+check "--dry-run ne modifie rien"                     sh -c "HOME='$TGT' sh '$TGT/.vim/bin/deploy-local' --dir '$TGT/.vim' --dry-run </dev/null >/dev/null 2>&1 && test \"\$(git -C '$TGT/.vim' rev-parse HEAD)\" = '$before'"
+check "--dry-run annonce « rien à faire »"            sh -c "HOME='$TGT' sh '$TGT/.vim/bin/deploy-local' --dir '$TGT/.vim' --dry-run </dev/null 2>&1 | grep -q 'rien à faire'"
+check "option inconnue : code 2"                      sh -c "HOME='$TGT' sh '$SRC/bin/deploy-local' --nawak </dev/null >/dev/null 2>&1; test \$? = 2"
+check "dossier occupé par autre chose : erreur"       sh -c "mkdir -p '$TMP/occupe' && echo x > '$TMP/occupe/fichier' && HOME='$TGT' sh '$SRC/bin/deploy-local' --dir '$TMP/occupe' --repo-url '$SRC' --json </dev/null 2>&1 | grep -q '\"action\":\"error\"'"
+check "aucun nom de machine dans les outils"          sh -c "! grep -rniE 'nas1|nas2|bikini|192\.168|tomneale|pierrelhoste' '$SRC/bin' '$SRC/config' '$SRC/autoload' '$SRC/vimrc'"
+
 if [ -n "${TEST_NETWORK:-}" ]; then
   echo "== Premier lancement de vim : installation des plugins en arrière-plan (réseau)"
   new_home firstrun

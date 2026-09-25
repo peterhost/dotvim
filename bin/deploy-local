@@ -1,0 +1,163 @@
+#!/bin/sh
+# bin/deploy-local — installe ou met à jour cette configuration vim SUR LA
+# MACHINE OÙ CE SCRIPT TOURNE.
+#
+#   sh bin/deploy-local [options]
+#   ssh <hôte> 'sh -s -- --yes --json' < bin/deploy-local     (appelant tiers)
+#
+#   --dir D         dossier de la configuration (défaut : ~/.vim)
+#   --repo-url URL  dépôt à cloner si le dossier est absent
+#                   (défaut : l'origine du dépôt existant, sinon celui d'origine)
+#   --branch B      branche à déployer (défaut : master)
+#   --yes           aucune question (défaut si l'entrée n'est pas un terminal)
+#   --no-plugins    ne pas installer les plugins
+#   --json          sortie lisible par un programme (rien d'autre n'est affiché)
+#   --dry-run       dit ce qui serait fait, sans rien modifier
+#   --help
+#
+# Ce script ne connaît aucune machine : ni nom d'hôte, ni alias ssh, ni adresse.
+# Tout vient des arguments. Codes de sortie : 0 conforme, 1 erreur, 2 usage,
+# 3 déployé mais dégradé (plugins manquants, outil absent…).
+#
+# Ce qu'il fait : cloner si besoin, sauvegarder le dictionnaire personnel,
+# récupérer la branche demandée (en basculant l'adresse en https si ssh échoue),
+# puis lancer bin/install, qui installe les plugins et ne laisse aucun reste.
+
+set -u
+# Outils hors du PATH par défaut (Synology/Entware : /opt/bin ; paquets DSM).
+for d in ${MY_EXTRA_PATHS:-/opt/bin /opt/sbin /usr/local/bin}; do
+  case ":$PATH:" in *":$d:"*) ;; *) [ -d "$d" ] && PATH="$PATH:$d" ;; esac
+done
+export PATH
+
+DIR="$HOME/.vim"
+REPO_URL=""
+BRANCH=master
+YES=0; PLUGINS=""; JSON=0; DRY=0
+DEFAULT_URL="https://github.com/peterhost/dotvim.git"
+
+while [ $# -gt 0 ]; do
+  case $1 in
+    --dir) shift; DIR=${1:-} ;;
+    --dir=*) DIR=${1#--dir=} ;;
+    --repo-url) shift; REPO_URL=${1:-} ;;
+    --repo-url=*) REPO_URL=${1#--repo-url=} ;;
+    --branch) shift; BRANCH=${1:-master} ;;
+    --branch=*) BRANCH=${1#--branch=} ;;
+    -y|--yes) YES=1 ;;
+    --no-plugins) PLUGINS=no ;;
+    --json) JSON=1 ;;
+    --dry-run) DRY=1 ;;
+    -h|--help) sed -n '2,27p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    *) echo "Option inconnue : $1 (voir --help)" >&2; exit 2 ;;
+  esac
+  shift
+done
+[ -t 0 ] || YES=1
+
+say() { [ "$JSON" = 1 ] || printf '%s\n' "$1"; }
+fail() { # fail <message>
+  if [ "$JSON" = 1 ]; then
+    printf '{"action":"error","message":"%s","exit":1}\n' "$(printf '%s' "$1" | sed 's/"/\\"/g')"
+  else
+    printf 'ÉCHEC : %s\n' "$1" >&2
+  fi
+  exit 1
+}
+
+command -v git >/dev/null 2>&1 || fail "git est absent : impossible de déployer"
+
+# --- Dépôt : clone ou mise à jour -------------------------------------------------------
+ACTION=update
+BEFORE=""
+if [ ! -d "$DIR/.git" ]; then
+  [ -e "$DIR" ] && [ -n "$(ls -A "$DIR" 2>/dev/null)" ] \
+    && fail "$DIR existe et n'est pas un dépôt git"
+  ACTION=clone
+  [ -n "$REPO_URL" ] || REPO_URL=$DEFAULT_URL
+  if [ "$DRY" = 1 ]; then
+    say "à faire : cloner $REPO_URL dans $DIR (branche $BRANCH), puis installer"
+  else
+    say "clonage de $REPO_URL dans ${DIR}…"
+    git clone -q --branch "$BRANCH" "$REPO_URL" "$DIR" 2>/dev/null \
+      || git clone -q "$REPO_URL" "$DIR" \
+      || fail "clonage impossible depuis $REPO_URL"
+  fi
+else
+  BEFORE=$(git -C "$DIR" rev-parse --short HEAD 2>/dev/null || echo "")
+fi
+
+if [ "$ACTION" = update ]; then
+  # dictionnaire personnel : sauvegardé avant la mise à jour, car l'ancien
+  # fichier suivi par git peut disparaître
+  if [ "$DRY" = 0 ]; then
+    mkdir -p "$DIR/local/spell"
+    for f in "$DIR"/spell/*.add; do
+      [ -f "$f" ] || continue
+      b=${f##*/}
+      [ -e "$DIR/local/spell/$b" ] || { cp "$f" "$DIR/local/spell/$b" && say "dictionnaire personnel repris : $b"; }
+    done
+  fi
+
+  # récupération ; si l'adresse ssh échoue (compte sans clé), passage en https
+  if [ "$DRY" = 1 ]; then
+    remote=$(git -C "$DIR" ls-remote origin "refs/heads/$BRANCH" 2>/dev/null | cut -c1-7)
+    if [ -z "$remote" ]; then
+      say "dépôt injoignable : rien ne serait déployé"
+    elif [ "$remote" = "$(git -C "$DIR" rev-parse --short "$BRANCH" 2>/dev/null)" ]; then
+      say "déjà à jour ($BRANCH @ $BEFORE) : rien à faire"
+    else
+      say "à faire : passer $BRANCH de $BEFORE à ${remote} puis installer"
+    fi
+  else
+    if ! git -C "$DIR" fetch -q origin 2>/dev/null; then
+      case $(git -C "$DIR" remote get-url origin 2>/dev/null) in
+        git@github.com:*|ssh://git@github.com/*)
+          new=$(git -C "$DIR" remote get-url origin \
+            | sed -e 's#^git@github\.com:#https://github.com/#' -e 's#^ssh://git@github\.com/#https://github.com/#')
+          git -C "$DIR" remote set-url origin "$new" && say "adresse du dépôt passée en https : $new"
+          git -C "$DIR" fetch -q origin || fail "récupération impossible" ;;
+        *) fail "récupération impossible (dépôt injoignable)" ;;
+      esac
+    fi
+    git -C "$DIR" checkout -q "$BRANCH" 2>/dev/null \
+      || git -C "$DIR" checkout -q -b "$BRANCH" "origin/$BRANCH" \
+      || fail "branche introuvable : $BRANCH"
+    git -C "$DIR" reset -q --hard "origin/$BRANCH" || fail "mise à jour impossible"
+  fi
+fi
+
+if [ "$DRY" = 1 ]; then
+  if [ "$JSON" = 1 ]; then
+    printf '{"action":"dry-run","dir":"%s","branch":"%s","commit":"%s","exit":0}\n' "$DIR" "$BRANCH" "$BEFORE"
+  fi
+  exit 0
+fi
+
+# --- Installation ------------------------------------------------------------------------
+set -- --yes
+[ "$PLUGINS" = no ] && set -- "$@" --no-plugins
+if [ "$JSON" = 1 ]; then
+  sh "$DIR/bin/install" "$@" </dev/null >/dev/null 2>&1
+else
+  sh "$DIR/bin/install" "$@" </dev/null
+fi
+install_rc=$?
+
+AFTER=$(git -C "$DIR" rev-parse --short HEAD 2>/dev/null || echo "")
+
+# --- Compte rendu ------------------------------------------------------------------------
+if [ "$JSON" = 1 ]; then
+  state=$(sh "$DIR/bin/install" --check --json </dev/null 2>/dev/null)
+  state_rc=$?
+  printf '{"action":"%s","dir":"%s","branch":"%s","commit_before":"%s","commit":"%s","install_exit":%s,"state":%s,"exit":%s}\n' \
+    "$ACTION" "$DIR" "$BRANCH" "$BEFORE" "$AFTER" "$install_rc" "${state:-null}" \
+    "$([ "$install_rc" = 0 ] && echo "$state_rc" || echo 1)"
+  [ "$install_rc" = 0 ] || exit 1
+  exit "$state_rc"
+fi
+
+[ "$install_rc" = 0 ] || fail "bin/install a échoué (code $install_rc)"
+say "déploiement terminé : $ACTION, $BRANCH @ $AFTER"
+sh "$DIR/bin/install" --check </dev/null >/dev/null 2>&1
+exit $?
