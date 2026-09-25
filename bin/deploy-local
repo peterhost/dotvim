@@ -15,8 +15,12 @@
 #   --dry-run       dit ce qui serait fait, sans rien modifier
 #   --check         état de la machine, sans rien modifier (répond même si la
 #                   configuration est absente)
-#   --remote        avec --check ou --dry-run : interroge le dépôt distant pour
-#                   dire si la machine est à jour (seul cas où le réseau sert)
+#   --remote        avec --check : interroge le dépôt distant pour dire si la
+#                   machine est à jour (seul cas où le réseau sert)
+#   --offline       ne touche jamais au réseau : compare au dernier commit connu
+#                   localement (référence du dernier fetch). Utile pour un plan
+#                   hors ligne ; le JSON dit alors remote_source "cache" et
+#                   depuis quand cette information date (fetched_at)
 #   --https         force l'adresse GitHub en https (compte sans clé SSH)
 #   --help
 #
@@ -46,7 +50,7 @@ export PATH
 DIR="$HOME/.vim"
 REPO_URL=""
 BRANCH=master
-YES=0; PLUGINS=""; JSON=0; DRY=0; MODE=deploy; REMOTE=0; FORCE_HTTPS=0
+YES=0; PLUGINS=""; JSON=0; DRY=0; MODE=deploy; REMOTE=0; FORCE_HTTPS=0; OFFLINE=0
 DEFAULT_URL="https://github.com/peterhost/dotvim.git"
 
 while [ $# -gt 0 ]; do
@@ -63,8 +67,9 @@ while [ $# -gt 0 ]; do
     --dry-run) DRY=1 ;;
     --check|--etat) MODE=check ;;
     --remote) REMOTE=1 ;;
+    --offline) OFFLINE=1 ;;
     --https) FORCE_HTTPS=1 ;;
-    -h|--help) sed -n '2,38p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) sed -n '2,44p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "Option inconnue : $1 (voir --help)" >&2; exit 2 ;;
   esac
   shift
@@ -95,10 +100,27 @@ to_https() {
   esac
 }
 
-# Commit de la branche sur le dépôt distant (réseau), vide si injoignable.
+# Commit de la branche sur le dépôt distant. Avec --offline : dernier commit
+# connu localement (référence du dernier fetch), sans aucun accès réseau.
 remote_commit() {
-  git -C "$DIR" ls-remote origin "refs/heads/$BRANCH" 2>/dev/null | cut -c1-7
+  if [ "$OFFLINE" = 1 ]; then
+    git -C "$DIR" rev-parse --short "origin/$BRANCH" 2>/dev/null
+  else
+    git -C "$DIR" ls-remote origin "refs/heads/$BRANCH" 2>/dev/null | cut -c1-7
+  fi
 }
+
+# Date du dernier fetch (information « cache »), vide si inconnue.
+fetched_at() {
+  for f in "$DIR/.git/FETCH_HEAD" "$DIR/.git/refs/remotes/origin/$BRANCH"; do
+    [ -f "$f" ] || continue
+    date -r "$f" '+%Y-%m-%dT%H:%M:%S' 2>/dev/null && return 0
+  done
+  return 0
+}
+
+remote_source() { [ "$OFFLINE" = 1 ] && echo cache || echo network; }
+json_fetched_at() { d=$(fetched_at); [ -n "$d" ] && printf '"%s"' "$d" || echo null; }
 
 # --check : écrit TOUJOURS une ligne JSON, même si la configuration est absente.
 #   installed  false  -> status "absent", code 4
@@ -129,9 +151,12 @@ do_check() {
   fi
   case $rc in 0) status=ok ;; 3) status=degraded ;; 5) status=outdated ;; *) status=error ;; esac
   if [ "$JSON" = 1 ]; then
-    printf '{"module":"vim","installed":true,"dir":"%s","branch":"%s","commit":"%s","remote_commit":%s,"up_to_date":%s,"status":"%s","state":%s,"exit":%s}\n' \
+    printf '{"module":"vim","installed":true,"dir":"%s","branch":"%s","commit":"%s","remote_commit":%s,"remote_source":%s,"fetched_at":%s,"up_to_date":%s,"status":"%s","state":%s,"exit":%s}\n' \
       "$DIR" "$branch_cur" "$commit" \
-      "$([ -n "$rcommit" ] && printf '"%s"' "$rcommit" || echo null)" "$uptodate" "$status" "${state:-null}" "$rc"
+      "$([ -n "$rcommit" ] && printf '"%s"' "$rcommit" || echo null)" \
+      "$([ "$REMOTE" = 1 ] && printf '"%s"' "$(remote_source)" || echo null)" \
+      "$([ "$REMOTE" = 1 ] && [ "$OFFLINE" = 1 ] && json_fetched_at || echo null)" \
+      "$uptodate" "$status" "${state:-null}" "$rc"
   else
     printf 'configuration présente : %s (%s @ %s) — %s\n' "$DIR" "$branch_cur" "$commit" "$status"
     [ "$REMOTE" = 1 ] && [ -n "$rcommit" ] && printf 'dépôt distant : %s (%s)\n' "$rcommit" "$([ "$uptodate" = true ] && echo "à jour" || echo "mise à jour disponible")"
@@ -181,7 +206,7 @@ if [ "$ACTION" = update ]; then
   if [ "$DRY" = 1 ]; then
     DRY_REMOTE=$(remote_commit)
     if [ -z "$DRY_REMOTE" ]; then
-      say "dépôt injoignable : rien ne serait déployé"
+      say "$([ "$OFFLINE" = 1 ] && echo "aucun commit distant connu localement (jamais récupéré) : impossible de savoir" || echo "dépôt injoignable : rien ne serait déployé")"
       DRY_ACTION=inconnu; DRY_RC=1
     elif [ "$DRY_REMOTE" = "$(git -C "$DIR" rev-parse HEAD 2>/dev/null | cut -c1-7)" ]; then
       say "déjà à jour ($BRANCH @ $BEFORE) : rien à faire"
@@ -210,9 +235,10 @@ fi
 
 if [ "$DRY" = 1 ]; then
   if [ "$JSON" = 1 ]; then
-    printf '{"action":"dry-run","a_faire":"%s","dir":"%s","branch":"%s","commit":"%s","remote_commit":%s,"up_to_date":%s,"exit":%s}\n' \
+    printf '{"action":"dry-run","a_faire":"%s","dir":"%s","branch":"%s","commit":"%s","remote_commit":%s,"remote_source":"%s","fetched_at":%s,"up_to_date":%s,"exit":%s}\n' \
       "${DRY_ACTION:-inconnu}" "$DIR" "$BRANCH" "$BEFORE" \
       "$([ -n "${DRY_REMOTE:-}" ] && printf '"%s"' "$DRY_REMOTE" || echo null)" \
+      "$(remote_source)" "$([ "$OFFLINE" = 1 ] && json_fetched_at || echo null)" \
       "$([ "${DRY_ACTION:-}" = rien ] && echo true || echo false)" "${DRY_RC:-0}"
   fi
   exit "${DRY_RC:-0}"

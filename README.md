@@ -83,7 +83,7 @@ ssh <hôte> 'sh -s -- --dry-run --json' < ~/.vim/bin/deploy-local
 | `bin/install --clean` | supprime les restes |
 | `bin/update-plugins` | installe et met à jour les plugins (`--if-due N` jours, `--if-due-minutes N`) |
 
-`bin/deploy-local --check` est le point d'entrée unique pour l'état : il répond **même sur une machine où la configuration est absente** (`"installed": false`, `"status": "absent"`), et imbrique l'état complet de `bin/install --check --json` dans le champ `state`. Avec `--remote`, il interroge le dépôt (seul cas où le réseau sert) et renseigne `remote_commit` et `up_to_date`. `--https` force l'adresse GitHub en https, pour un compte sans clé SSH.
+`bin/deploy-local --check` est le point d'entrée unique pour l'état : il répond **même sur une machine où la configuration est absente** (`"installed": false`, `"status": "absent"`), et imbrique l'état complet de `bin/install --check --json` dans le champ `state`. Avec `--remote`, il interroge le dépôt (seul cas où le réseau sert) et renseigne `remote_commit` et `up_to_date`. Avec `--offline`, il ne touche **jamais** au réseau : la comparaison se fait avec le dernier commit connu localement (la référence du dernier `fetch`), et le JSON indique alors `"remote_source": "cache"` et la date de cette information (`fetched_at`) — utile pour dresser un plan sans réseau. `--https` force l'adresse GitHub en https, pour un compte sans clé SSH.
 
 **Codes de sortie**, communs à ces commandes :
 

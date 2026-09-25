@@ -329,6 +329,14 @@ check "rien à faire : code 0"                         sh -c "HOME='$TGT' sh '$T
 check "mise à jour disponible : code 5"               sh -c "HOME='$TGT' sh '$TGT/.vim/bin/deploy-local' --dir '$TGT/.vim' --dry-run --json </dev/null >/dev/null 2>&1; test \$? = 5"
 check "simulation : rien n'a été modifié"             sh -c "test \"\$(git -C '$TGT/.vim' rev-parse HEAD)\" != \"\$(git -C '$SRC' rev-parse HEAD)\""
 
+echo "== Plan hors ligne (--offline) : aucun accès réseau"
+check "hors ligne : compare au dernier commit connu"  sh -c "HOME='$TGT' sh '$TGT/.vim/bin/deploy-local' --dir '$TGT/.vim' --dry-run --offline --json </dev/null 2>/dev/null | grep -q '\"remote_source\":\"cache\"'"
+check "hors ligne : date de la dernière récupération"  sh -c "HOME='$TGT' sh '$TGT/.vim/bin/deploy-local' --dir '$TGT/.vim' --dry-run --offline --json </dev/null 2>/dev/null | grep -qE '\"fetched_at\":\"[0-9]{4}-'"
+check "hors ligne : code 0 tant qu'aucun fetch n'a vu le nouveau commit" sh -c "HOME='$TGT' sh '$TGT/.vim/bin/deploy-local' --dir '$TGT/.vim' --dry-run --offline --json </dev/null >/dev/null 2>&1"
+git -C "$TGT/.vim" fetch -q origin
+check "après récupération : code 5 sans réseau"        sh -c "HOME='$TGT' sh '$TGT/.vim/bin/deploy-local' --dir '$TGT/.vim' --dry-run --offline --json </dev/null >/dev/null 2>&1; test \$? = 5"
+check "dépôt injoignable simulé : message explicite"  sh -c "git -C '$TGT/.vim' remote set-url origin /introuvable && HOME='$TGT' sh '$TGT/.vim/bin/deploy-local' --dir '$TGT/.vim' --dry-run --json </dev/null 2>&1 | grep -q 'injoignable'; git -C '$TGT/.vim' remote set-url origin '$SRC'"
+
 echo "== Trace en direct : JSON sur stdout, étapes sur stderr"
 check "mise à jour en json"                           sh -c "HOME='$TGT' MY_VIM_NO_AUTOUPDATE=1 sh '$TGT/.vim/bin/deploy-local' --dir '$TGT/.vim' --no-plugins --json </dev/null >'$TMP/o.txt' 2>'$TMP/t.txt'; rc=\$?; test \$rc = 0 -o \$rc = 3"
 check "stdout : une seule ligne, du JSON"             sh -c "test \$(wc -l < '$TMP/o.txt' | tr -d ' ') = 1 && head -c1 '$TMP/o.txt' | grep -q '{'"
