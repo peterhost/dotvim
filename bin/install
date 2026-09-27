@@ -402,18 +402,95 @@ migrate_spell() {
   done
 }
 
+# Échecs signalés par vim-plug dans son rapport : « x <nom>: » suivi du détail.
+# Ils sont annoncés dès que le rapport existe, nom et cause, sur la sortie
+# d'erreur — sans quoi une pose se terminait sur un message d'apparence
+# réussie alors qu'un greffon manquait.
+report_failures() { # report_failures <rapport>
+  [ -f "$1" ] || return 0
+  awk '
+    function flush() {
+      if (name != "") {
+        why = (best != "" ? best : first)
+        if (why == "") why = "cause inconnue (voir le journal)"
+        printf "  greffon %s : échec — %s\n", name, why
+      }
+      name = ""; first = ""; best = ""
+    }
+    /^x / { flush(); name = $0; sub(/^x /, "", name); sub(/:[ \t]*$/, "", name); next }
+    /^[-x] / { flush(); next }
+    name != "" && /^[ \t]+[^ \t]/ {
+      line = $0; gsub(/^[ \t]+/, "", line); gsub(/[ \t]+$/, " ", line)
+      if (first == "") first = line
+      # on retient la ligne qui dit vraiment pourquoi
+      if (best == "" && line ~ /fatal:|error:|not found|Not Found|Permission denied|Could not resolve|timed out|denied|remote:/) best = line
+    }
+    END { flush() }
+  ' "$1" >&2
+}
+
 install_plugins() { # install_plugins <dossier de config>
   if ! has git; then warn "git absent : plugins non installés"; return; fi
   if [ -z "$VIM_BIN" ] || [ "$VIM_EVAL" != 1 ]; then warn "vim sans +eval : plugins inutiles"; return; fi
-  info "Installation des plugins (quelques dizaines de secondes)…"
+  plugins_state   # renseigne PLUG_TOTAL (déclarés) et PLUG_INSTALLED
+  total=${PLUG_TOTAL:-0}
+  info "Installation des plugins${total:+ (}${total:+$total}${total:+ déclarés)}…"
   log "PlugInstall dans $1"
-  if MY_VIM_NO_AUTOUPDATE=1 "$VIM_BIN" -N -u "$1/vimrc" -i NONE -es -c 'PlugInstall --sync' -c 'qa!' </dev/null >>"$LOG" 2>&1; then
-    mkdir -p "$1/local" && touch "$1/local/last-update"
-    n=$(ls "$1/plugged" 2>/dev/null | wc -l | tr -d ' ')
-    ok "Plugins installés ($n dans $1/plugged)"
-  else
-    warn "PlugInstall a signalé un problème (voir $LOG) ; vim reste utilisable"
+  report="$1/local/install-report.txt"
+  mkdir -p "$1/local"
+
+  # Progression : chaque greffon qui apparaît dans plugged/ est annoncé sur la
+  # sortie d'erreur, pour qu'un appelant (ou l'utilisateur) voie défiler la
+  # phase longue au lieu d'une seule ligne d'attente.
+  guard="$1/local/.progress.$$"; seen="$1/local/.seen.$$"
+  : > "$guard"; : > "$seen"
+  (
+    while [ -f "$guard" ]; do
+      for d in "$1"/plugged/*/; do
+        [ -d "$d" ] || continue
+        n=$(basename "$d")
+        grep -qxF "$n" "$seen" 2>/dev/null && continue
+        printf '%s\n' "$n" >> "$seen"
+        printf '  greffon %s/%s : %s\n' "$(grep -c . "$seen" | tr -d ' ')" "${total:-?}" "$n" >&2
+      done
+      sleep 1
+    done
+  ) &
+  progress=$!
+
+  MY_VIM_NO_AUTOUPDATE=1 "$VIM_BIN" -N -u "$1/vimrc" -i NONE -es \
+    -c 'PlugInstall --sync' -c "silent! write! $report" -c 'qa!' </dev/null >>"$LOG" 2>&1
+  rc=$?
+  rm -f "$guard"; wait "$progress" 2>/dev/null; rm -f "$seen"
+  cat "$report" >> "$LOG" 2>/dev/null
+  report_failures "$report"
+
+  # Vérification : l'installation n'est pas terminée parce que vim a rendu la
+  # main, mais parce que les greffons attendus sont là. Un échec passager
+  # (réseau) est retenté une fois, puis nommé.
+  plugins_state
+  if [ "${PLUG_MISSING:-0}" -gt 0 ]; then
+    warn "$PLUG_MISSING greffon(s) manquant(s) après l'installation : nouvel essai"
+    log "nouvel essai pour : $PLUG_MISSING_NAMES"
+    MY_VIM_NO_AUTOUPDATE=1 "$VIM_BIN" -N -u "$1/vimrc" -i NONE -es \
+      -c 'PlugInstall --sync' -c "silent! write! $report" -c 'qa!' </dev/null >>"$LOG" 2>&1
+    cat "$report" >> "$LOG" 2>/dev/null
+    report_failures "$report"
+    plugins_state
   fi
+  rm -f "$report"
+
+  if [ "${PLUG_MISSING:-0}" -gt 0 ]; then
+    err "Greffon(s) NON installé(s) : $PLUG_MISSING_NAMES"
+    info "  vim les réinstallera seul en arrière-plan et le rappellera à chaque démarrage."
+  else
+    mkdir -p "$1/local" && touch "$1/local/last-update"
+    ok "Plugins installés (${PLUG_INSTALLED:-?}/${PLUG_TOTAL:-?})"
+  fi
+  if [ "${PLUG_SKIPPED:-0}" -gt 0 ]; then
+    info "  $PLUG_SKIPPED greffon(s) écarté(s) sur cette machine (vim ou outil manquant) : $PLUG_SKIPPED_NAMES"
+  fi
+  [ "$rc" = 0 ] || warn "PlugInstall a signalé un problème (voir $(vim_path "$LOG"))"
 }
 
 check_config() { # check_config <dossier> : démarrage à blanc, erreurs éventuelles
@@ -625,11 +702,22 @@ do_uninstall() {
 # Destiné à un appelant tiers (interface de déploiement, supervision…). Cette
 # configuration ne connaît aucune machine : elle décrit seulement celle où elle
 # tourne. Codes de sortie : 0 conforme, 1 erreur, 2 usage, 3 dégradé.
+# Liste de mots -> tableau JSON
+json_list() {
+  printf '['
+  first=1
+  for w in ${1:-}; do
+    [ "$first" = 1 ] || printf ','
+    json_str "$w"; first=0
+  done
+  printf ']'
+}
+
 json_str() { printf '"%s"' "$(printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e 's/\t/ /g')"; }
 
 # Nombre de plugins déclarés / manquants (demandé à vim, qui seul connaît la liste).
 plugins_state() {
-  PLUG_TOTAL=0; PLUG_MISSING=0
+  PLUG_TOTAL=0; PLUG_MISSING=0; PLUG_MISSING_NAMES=""; PLUG_SKIPPED=0; PLUG_SKIPPED_NAMES=""
   PLUG_INSTALLED=$(ls "$REPO/plugged" 2>/dev/null | wc -l | tr -d ' ')
   [ -n "$VIM_BIN" ] && [ "$VIM_EVAL" = 1 ] || return 0
   # en mode -es, « echo » ne sort pas sur la sortie standard : on passe par redir
@@ -637,9 +725,14 @@ plugins_state() {
   MY_VIM_NO_AUTOUPDATE=1 "$VIM_BIN" -N -u "$REPO/vimrc" -i NONE -es \
     -c "redir! > $tmp" \
     -c 'silent echo len(keys(get(g:, "plugs", {}))) len(my#update#missing())' \
+    -c 'silent echo join(my#update#missing(), " ")' \
+    -c 'silent echo join(my#update#skipped(), " ")' \
     -c 'redir END' -c 'qa!' </dev/null >/dev/null 2>&1
   out=$(tr -d '\r' < "$tmp" 2>/dev/null | grep -E '^[0-9]+ [0-9]+$' | head -1)
+  PLUG_MISSING_NAMES=$(tr -d '\r' < "$tmp" 2>/dev/null | sed -n '3p')
+  PLUG_SKIPPED_NAMES=$(tr -d '\r' < "$tmp" 2>/dev/null | sed -n '4p')
   rm -f "$tmp"
+  PLUG_SKIPPED=$(printf '%s' "$PLUG_SKIPPED_NAMES" | wc -w | tr -d ' ')
   [ -n "$out" ] || return 0
   PLUG_TOTAL=${out%% *}; PLUG_MISSING=${out##* }
 }
@@ -674,6 +767,9 @@ print_json() {
   printf '"plugins_installed":%s,' "${PLUG_INSTALLED:-0}"
   printf '"plugins_declared":%s,'  "${PLUG_TOTAL:-0}"
   printf '"plugins_missing":%s,'   "${PLUG_MISSING:-0}"
+  printf '"plugins_missing_names":%s,' "$(json_list "$PLUG_MISSING_NAMES")"
+  printf '"plugins_skipped":%s,' "${PLUG_SKIPPED:-0}"
+  printf '"plugins_skipped_names":%s,' "$(json_list "$PLUG_SKIPPED_NAMES")"
   printf '"last_update":%s,' "$(json_str "$upd")"
   printf '"crumbs":%s,' "${crumbs:-0}"
   printf '"opkg_missing":%s,' "$(json_str "$(printf '%s' "${OPKG_NEEDED:-}" | sed 's/^ //')")"

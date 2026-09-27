@@ -79,12 +79,14 @@ ssh <hôte> 'sh -s -- --dry-run --json' < ~/.vim/bin/deploy-local
 | Commande | Rôle |
 |---|---|
 | `bin/deploy-local` | **installe de zéro** (clone depuis GitHub si le dossier est absent) ou met à jour, puis installe, sur la machine courante. `--dir`, `--repo-url`, `--branch`, `--yes`, `--no-plugins`, `--json`, `--dry-run`. Bascule l'adresse du dépôt en https si ssh échoue (compte sans clé) |
-| `bin/install --check --json` | état de la machine sur une seule ligne : OS, vim et niveau, git, joignabilité GitHub, branche, commit, plugins installés / déclarés / manquants, restes, paquets manquants, état des mises à jour |
+| `bin/install --check --json` | état de la machine sur une seule ligne : OS, vim et niveau, git, joignabilité GitHub, branche, commit, greffons installés / déclarés / manquants (**avec leurs noms**) / écartés sur cette machine, restes, paquets manquants, état des mises à jour |
 | `bin/install --clean` | supprime les restes |
 | `bin/deploy-local --purge --yes` | **effacement complet** : restaure l'ancienne configuration, puis supprime le dossier entier, `local/` compris (dictionnaire, sessions, annulations, historique vim de la machine). `~/.viminfo` n'est pas touché. Refuse tout dossier qui n'est pas cette configuration, et exige un `--yes` écrit explicitement |
 | `bin/update-plugins` | installe et met à jour les plugins (`--if-due N` jours, `--if-due-minutes N`) |
 
 `bin/deploy-local --check` est le point d'entrée unique pour l'état : il répond **même sur une machine où la configuration est absente** (`"installed": false`, `"status": "absent"`), et imbrique l'état complet de `bin/install --check --json` dans le champ `state`. Le champ `active` distingue le dossier **présent** de la configuration **lue par vim** : un dépôt cloné ailleurs et non branché donne `"active": false`, et, à l'inverse, un ancien lien `~/.vimrc` qui mène à ce dossier suffit à la rendre active (`active_reason` le dit). Avec `--remote`, il interroge le dépôt (seul cas où le réseau sert) et renseigne `remote_commit` et `up_to_date`. `--https` force l'adresse GitHub en https, pour un compte sans clé SSH.
+
+Deux comptes distincts pour les greffons : `plugins_missing` (+ `plugins_missing_names`) désigne ce qui **devrait** être là et manque — c'est réparable, et vim s'en charge seul ; `plugins_skipped` (+ `plugins_skipped_names`) désigne ce qui est **écarté sur cette machine** (vim trop ancien, outil absent) et n'a donc pas à y être. Seul le premier rend l'état « dégradé ».
 
 **Codes de sortie**, communs à ces commandes :
 
@@ -113,6 +115,7 @@ vim -u ~/.vimnew/vimrc                   # config, plugins et historique sépar�
 - Ils sont déclarés dans `config/plugins.vim` (vim-plug).
 - Ils sont installés par `make`, ou **au premier lancement de vim** si ce n'est pas encore fait.
 - Ils sont **mis à jour automatiquement en arrière-plan** au lancement de vim, au plus une fois tous les 7 jours. Vim n'est ni ralenti ni bloqué, et les nouvelles versions sont prises en compte au démarrage suivant.
+- L'installation **vérifie son résultat** : chaque greffon apparaît au fil de l'eau (`greffon 12/54 : nom`), un échec est nommé avec sa cause (`greffon x : échec — fatal: …`), les manquants sont retentés une fois, et le message final ne parle de succès que si tout est là.
 - Si une mise à jour échoue, vim le signale **une fois**, au démarrage suivant, avec le conseil adapté (par exemple `git-http` sur un NAS).
 - Le journal s'ouvre avec `:PluginsUpdateLog`. Le délai se règle avec `let g:my_autoupdate_days = 14` dans `~/.vim/local/vimrc.local` ; `0` désactive la mise à jour automatique.
 

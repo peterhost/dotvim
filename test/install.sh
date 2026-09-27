@@ -309,6 +309,35 @@ check "--dry-run ne modifie rien"                     sh -c "HOME='$TGT' sh '$TG
 check "--dry-run annonce « rien à faire »"            sh -c "HOME='$TGT' sh '$TGT/.vim/bin/deploy-local' --dir '$TGT/.vim' --dry-run </dev/null 2>&1 | grep -q 'rien à faire'"
 check "option inconnue : code 2"                      sh -c "HOME='$TGT' sh '$SRC/bin/deploy-local' --nawak </dev/null >/dev/null 2>&1; test \$? = 2"
 check "dossier occupé par autre chose : erreur"       sh -c "mkdir -p '$TMP/occupe' && echo x > '$TMP/occupe/fichier' && HOME='$TGT' sh '$SRC/bin/deploy-local' --dir '$TMP/occupe' --repo-url '$SRC' --json </dev/null 2>&1 | grep -q '\"action\":\"error\"'"
+echo "== Greffons : nommés, et « écarté ici » distingué de « manquant »"
+new_home greffons
+HOME=$H sh "$H/.vim/bin/install" --check --json </dev/null > "$TMP/g.json" 2>/dev/null
+check "les manquants sont nommés, pas seulement comptés" sh -c "grep -q '\"plugins_missing_names\":\[\"' '$TMP/g.json'"
+check "champ des greffons écartés présent"            grep -q '"plugins_skipped"' "$TMP/g.json"
+mkdir -p "$H/.vim/local"; echo "let g:my_disabled = ['ale']" > "$H/.vim/local/vimrc.local"
+HOME=$H sh "$H/.vim/bin/install" --check --json </dev/null > "$TMP/g2.json" 2>/dev/null
+check "un greffon écarté ici est classé « écarté »"    sh -c "grep -q '\"plugins_skipped_names\":\[.*\"ale\"' '$TMP/g2.json'"
+check "et pas compté comme manquant"                  sh -c "! sed 's/.*\"plugins_missing_names\":\\[\\([^]]*\\)\\].*/\\1/' '$TMP/g2.json' | grep -q '\"ale\"'"
+rm -f "$H/.vim/local/vimrc.local"
+
+echo "== Échec d'installation d'un greffon : nommé, avec sa cause"
+new_home casse
+python3 - "$H/.vim" <<'PYEOF' 2>/dev/null || true
+import sys
+p = sys.argv[1] + '/config/plugins.vim'
+s = open(p).read().replace("call plug#end()", "call s:P('peterhost/greffon-qui-nexiste-pas', 1)\ncall plug#end()")
+open(p, 'w').write(s)
+PYEOF
+if grep -q 'greffon-qui-nexiste-pas' "$H/.vim/config/plugins.vim" 2>/dev/null; then
+  HOME=$H MY_VIM_NO_AUTOUPDATE=1 sh "$H/.vim/bin/install" --yes </dev/null >"$TMP/k.txt" 2>&1
+  check "l'échec est nommé avec sa cause"              grep -q 'greffon greffon-qui-nexiste-pas : échec — ' "$TMP/k.txt"
+  check "un nouvel essai a lieu"                       grep -q 'nouvel essai' "$TMP/k.txt"
+  check "le message final n'annonce pas un succès"     sh -c "grep -q 'NON installé' '$TMP/k.txt' && ! grep -q 'Plugins installés' '$TMP/k.txt'"
+  check "le greffon est nommé dans l'état JSON"        sh -c "HOME='$H' sh '$H/.vim/bin/install' --check --json </dev/null 2>/dev/null | grep -q 'greffon-qui-nexiste-pas'"
+else
+  echo "  (ignoré : python3 indisponible pour préparer le cas)"
+fi
+
 echo "== Contrat d'état pour l'appelant tiers (deploy-local --check)"
 VIERGE="$TMP/vierge"; mkdir -p "$VIERGE"
 HOME=$VIERGE sh "$SRC/bin/deploy-local" --dir "$VIERGE/.vim" --check --json </dev/null > "$TMP/c.txt" 2>/dev/null; rc=$?

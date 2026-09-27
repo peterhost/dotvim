@@ -5,12 +5,24 @@
 " il ne ralentit ni ne bloque vim. Les nouvelles versions sont utilisées au
 " démarrage suivant. :PluginsUpdateLog affiche le journal.
 
-" Plugins déclarés mais pas installés (hors ligne à l'installation, échec…).
+" Greffons qui DEVRAIENT être là et ne le sont pas : déclarés, actifs sur cette
+" machine, mais absents du disque (échec d'installation, machine hors ligne…).
 function! my#update#missing()
   if !exists('g:plugs')
     return []
   endif
-  return sort(filter(keys(g:plugs), '!isdirectory(g:plugs[v:val].dir)'))
+  return sort(filter(keys(g:plugs),
+        \ '!isdirectory(g:plugs[v:val].dir) && !has_key(get(g:, "my_plug_off", {}), v:val)'))
+endfunction
+
+" Greffons écartés sur cette machine (vim trop ancien, outil absent…) et non
+" installés : ce n'est pas un défaut, rien ne peut ni ne doit y être fait ici.
+function! my#update#skipped()
+  if !exists('g:plugs')
+    return []
+  endif
+  return sort(filter(keys(g:plugs),
+        \ '!isdirectory(g:plugs[v:val].dir) && has_key(get(g:, "my_plug_off", {}), v:val)'))
 endfunction
 
 function! my#update#start()
