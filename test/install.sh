@@ -339,6 +339,36 @@ git -C "$TGT/.vim" remote set-url origin git@github.com:peterhost/dotvim.git
 check "--check --https bascule l'adresse en https"    sh -c "HOME='$TGT' sh '$TGT/.vim/bin/deploy-local' --dir '$TGT/.vim' --check --https --json </dev/null >/dev/null 2>&1; git -C '$TGT/.vim' remote get-url origin | grep -q '^https://github.com/'"
 git -C "$TGT/.vim" remote set-url origin "$SRC"
 
+echo "== Configuration active ou seulement présente (champ active)"
+ACT="$TMP/actif"; mkdir -p "$ACT"
+HOME=$ACT MY_VIM_NO_AUTOUPDATE=1 sh "$SRC/bin/deploy-local" --dir "$ACT/.vim" --repo-url "$SRC" --no-plugins --yes --json </dev/null >/dev/null 2>&1
+check "posée dans ~/.vim : active"                    sh -c "HOME='$ACT' sh '$ACT/.vim/bin/deploy-local' --dir '$ACT/.vim' --check --json </dev/null 2>/dev/null | grep -q '\"active\":true'"
+AIL="$TMP/ailleurs"; mkdir -p "$AIL"
+HOME=$AIL MY_VIM_NO_AUTOUPDATE=1 sh "$SRC/bin/deploy-local" --dir "$AIL/dotvim" --repo-url "$SRC" --no-plugins --yes --json </dev/null >/dev/null 2>&1
+rm -f "$AIL/.vimrc"
+check "clonée ailleurs et débranchée : non active"     sh -c "HOME='$AIL' sh '$AIL/dotvim/bin/deploy-local' --dir '$AIL/dotvim' --check --json </dev/null 2>/dev/null | grep -q '\"active\":false'"
+ln -s "$AIL/dotvim/vimrc" "$AIL/.vimrc"
+check "ancien lien ~/.vimrc qui y mène : active"       sh -c "HOME='$AIL' sh '$AIL/dotvim/bin/deploy-local' --dir '$AIL/dotvim' --check --json </dev/null 2>/dev/null | grep -q '\"active\":true'"
+check "désinstallation : prévient que la config reste active" sh -c "HOME='$AIL' sh '$AIL/dotvim/bin/install' --uninstall </dev/null 2>&1 | grep -q 'reste ACTIVE'"
+
+echo "== Effacement complet (--purge) : garde-fous puis suppression"
+PUR="$TMP/purge"; mkdir -p "$PUR"
+HOME=$PUR MY_VIM_NO_AUTOUPDATE=1 sh "$SRC/bin/deploy-local" --dir "$PUR/.vim" --repo-url "$SRC" --no-plugins --yes --json </dev/null >/dev/null 2>&1
+mkdir -p "$PUR/.vim/local/spell" "$PUR/.vim/local/sessions"; printf 'mot1\nmot2\n' > "$PUR/.vim/local/spell/fr.utf-8.add"
+echo s > "$PUR/.vim/local/sessions/a.vim"; printf 'historique\n' > "$PUR/.viminfo"
+mkdir -p "$TMP/etranger"; echo precieux > "$TMP/etranger/fichier"
+check "refuse un dossier qui n'est pas la config"     sh -c "HOME='$PUR' sh '$SRC/bin/deploy-local' --dir '$TMP/etranger' --purge --yes --json </dev/null 2>&1 | grep -q '\"action\":\"error\"'"
+check "le dossier étranger est intact"                test -f "$TMP/etranger/fichier"
+check "sans --yes explicite : refus (code 2)"         sh -c "HOME='$PUR' sh '$PUR/.vim/bin/deploy-local' --dir '$PUR/.vim' --purge --json </dev/null >/dev/null 2>&1; test \$? = 2"
+check "et le dossier est intact"                      test -d "$PUR/.vim"
+check "dit ce qu'il emporte (dictionnaire, sessions)" sh -c "HOME='$PUR' sh '$PUR/.vim/bin/deploy-local' --dir '$PUR/.vim' --purge --json </dev/null 2>&1 | grep -q 'mot(s) de dictionnaire'"
+check "avec --yes : suppression effectuée"            sh -c "HOME='$PUR' sh '$PUR/.vim/bin/deploy-local' --dir '$PUR/.vim' --purge --yes --json </dev/null >'$TMP/p.json' 2>/dev/null"
+check "dossier supprimé"                              test ! -e "$PUR/.vim"
+check "~/.viminfo conservé"                           grep -q historique "$PUR/.viminfo"
+check "JSON : removed true, données comptées"         sh -c "grep -q '\"removed\":true' '$TMP/p.json' && grep -q '\"spell_words\":2' '$TMP/p.json' && grep -q '\"viminfo_kept\":true' '$TMP/p.json'"
+check "rien à supprimer deux fois (code 4)"           sh -c "HOME='$PUR' sh '$SRC/bin/deploy-local' --dir '$PUR/.vim' --purge --yes --json </dev/null >/dev/null 2>&1; test \$? = 4"
+check "après purge, --check dit absent"               sh -c "HOME='$PUR' sh '$SRC/bin/deploy-local' --dir '$PUR/.vim' --check --json </dev/null 2>/dev/null | grep -q '\"status\":\"absent\"'"
+
 check "aucun nom de machine dans les outils"          sh -c "! grep -rniE 'nas1|nas2|bikini|192\.168|tomneale|pierrelhoste' '$SRC/bin' '$SRC/config' '$SRC/autoload' '$SRC/vimrc'"
 
 if [ -n "${TEST_NETWORK:-}" ]; then

@@ -598,9 +598,25 @@ do_uninstall() {
       mv "$last" "$f" && ok "$(vim_path "$f") restauré depuis $(vim_path "$last")"
     fi
   done
-  if [ ! -e "$HOME/.vimrc" ] && [ "$REPO" = "$(cd "$HOME/.vim" 2>/dev/null && pwd)" ]; then
-    warn "Aucune ancienne configuration à restaurer : vim lit toujours $(vim_path "$REPO/vimrc")."
-    info "  Pour la désactiver complètement : renommer ~/.vim."
+  # Après restauration, la configuration peut rester active : soit parce que
+  # vim lit ~/.vim/vimrc quand il n'y a pas de ~/.vimrc, soit parce que le
+  # fichier restauré mène lui-même à cette configuration (ancien lien
+  # symbolique ~/.vimrc -> .vim/vimrc, vu sur un hôte du parc).
+  still=""
+  if [ ! -e "$HOME/.vimrc" ] && [ ! -L "$HOME/.vimrc" ] \
+     && [ "$REPO" = "$(cd "$HOME/.vim" 2>/dev/null && pwd || true)" ]; then
+    still="aucun ~/.vimrc : vim lit directement $(vim_path "$REPO/vimrc")"
+  elif [ -L "$HOME/.vimrc" ]; then
+    # comparaison en chemins physiques (readlink -f les résout, pwd non)
+    t=$(readlink -f "$HOME/.vimrc" 2>/dev/null || true)
+    repo_phys=$(cd "$REPO" 2>/dev/null && pwd -P || printf '%s' "$REPO")
+    case $t in "$repo_phys"/*) still="~/.vimrc (restauré) pointe vers $(vim_path "$t")" ;; esac
+  elif [ -f "$HOME/.vimrc" ] && grep -qF "$REPO/vimrc" "$HOME/.vimrc" 2>/dev/null; then
+    still="~/.vimrc (restauré) charge $(vim_path "$REPO/vimrc")"
+  fi
+  if [ -n "$still" ]; then
+    warn "La configuration reste ACTIVE : $still"
+    info "  Pour la désactiver vraiment : renommer ou supprimer $(vim_path "$REPO")."
   fi
   info "Les plugins et les réglages locaux ($(vim_path "$REPO/local")) sont conservés."
 }

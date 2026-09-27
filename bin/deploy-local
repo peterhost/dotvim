@@ -18,6 +18,10 @@
 #   --remote        avec --check ou --dry-run : interroge le dépôt distant pour
 #                   dire si la machine est à jour (seul cas où le réseau sert)
 #   --https         force l'adresse GitHub en https (compte sans clé SSH)
+#   --purge         EFFACEMENT COMPLET : restaure l'ancienne configuration puis
+#                   supprime le dossier entier, y compris local/ (dictionnaire
+#                   personnel, sessions, annulations, historique vim de cette
+#                   machine). Exige --yes. ~/.viminfo n'est pas touché.
 #   --help
 #
 # Ce script ne connaît aucune machine : ni nom d'hôte, ni alias ssh, ni adresse.
@@ -46,7 +50,7 @@ export PATH
 DIR="$HOME/.vim"
 REPO_URL=""
 BRANCH=master
-YES=0; PLUGINS=""; JSON=0; DRY=0; MODE=deploy; REMOTE=0; FORCE_HTTPS=0
+YES=0; YES_EXPLICIT=0; PLUGINS=""; JSON=0; DRY=0; MODE=deploy; REMOTE=0; FORCE_HTTPS=0
 DEFAULT_URL="https://github.com/peterhost/dotvim.git"
 
 while [ $# -gt 0 ]; do
@@ -57,19 +61,32 @@ while [ $# -gt 0 ]; do
     --repo-url=*) REPO_URL=${1#--repo-url=} ;;
     --branch) shift; BRANCH=${1:-master} ;;
     --branch=*) BRANCH=${1#--branch=} ;;
-    -y|--yes) YES=1 ;;
+    -y|--yes) YES=1; YES_EXPLICIT=1 ;;
     --no-plugins) PLUGINS=no ;;
     --json) JSON=1 ;;
     --dry-run) DRY=1 ;;
     --check|--etat) MODE=check ;;
+    --purge) MODE=purge ;;
     --remote) REMOTE=1 ;;
     --https) FORCE_HTTPS=1 ;;
-    -h|--help) sed -n '2,38p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) sed -n '2,42p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     *) echo "Option inconnue : $1 (voir --help)" >&2; exit 2 ;;
   esac
   shift
 done
 [ -t 0 ] || YES=1
+
+# Chemin normalisé : indispensable pour comparer des chemins (sur macOS, /var
+# est un lien vers /private/var, et les comparaisons littérales échouent).
+norm_dir() {
+  d=$1
+  # pwd -P : chemin physique, comparable à la sortie de readlink -f
+  if [ -d "$d" ]; then (cd "$d" 2>/dev/null && pwd -P) && return 0; fi
+  parent=$(dirname "$d")
+  if [ -d "$parent" ]; then printf '%s/%s\n' "$(cd "$parent" && pwd -P)" "$(basename "$d")"; else printf '%s\n' "$d"; fi
+}
+DIR=$(norm_dir "$DIR")
+HOME_REAL=$(cd "$HOME" 2>/dev/null && pwd -P || printf '%s' "$HOME")
 
 # Étapes : sur la sortie standard en mode humain, sur la sortie d'erreur en
 # mode json (pour qu'un appelant puisse suivre en direct sans polluer le JSON).
@@ -100,6 +117,38 @@ remote_commit() {
   git -C "$DIR" ls-remote origin "refs/heads/$BRANCH" 2>/dev/null | cut -c1-7
 }
 
+# La configuration est-elle ACTIVE, c'est-à-dire lue par vim ? Le dossier peut
+# être présent sans l'être (cloné ailleurs, ou désactivé), et inversement une
+# ancienne installation peut le réactiver : sur un hôte du parc, un lien
+# ~/.vimrc de 2017 pointait vers .vim/vimrc, donc vers cette configuration.
+points_to_dir() { # points_to_dir <fichier>
+  f=$1
+  [ -e "$f" ] || [ -L "$f" ] || return 1
+  if [ -L "$f" ]; then
+    t=$(readlink -f "$f" 2>/dev/null || true)
+    if [ -z "$t" ]; then
+      t=$(readlink "$f")
+      case $t in /*) ;; *) t="$(cd "$(dirname "$f")" 2>/dev/null && pwd)/$t" ;; esac
+    fi
+    case $t in "$DIR"/*) return 0 ;; esac
+    return 1
+  fi
+  grep -qF "$DIR/vimrc" "$f" 2>/dev/null && return 0
+  grep -qF "$(printf '%s' "$DIR/vimrc" | sed "s#^$HOME_REAL/#~/#")" "$f" 2>/dev/null && return 0
+  return 1
+}
+
+config_active() {
+  if points_to_dir "$HOME/.vimrc" || points_to_dir "$HOME/_vimrc"; then
+    ACTIVE=true; ACTIVE_WHY="un fichier de $HOME mène à $DIR/vimrc"
+  elif [ ! -e "$HOME/.vimrc" ] && [ ! -L "$HOME/.vimrc" ] \
+       && [ "$DIR" = "$(norm_dir "$HOME/.vim")" ] && [ -f "$DIR/vimrc" ]; then
+    ACTIVE=true; ACTIVE_WHY="vim lit directement $DIR/vimrc (aucun ~/.vimrc)"
+  else
+    ACTIVE=false; ACTIVE_WHY="dossier présent mais non branché à vim"
+  fi
+}
+
 # --check : écrit TOUJOURS une ligne JSON, même si la configuration est absente.
 #   installed  false  -> status "absent", code 4
 #   installed  true   -> état complet de bin/install --check --json
@@ -107,13 +156,14 @@ remote_commit() {
 do_check() {
   if [ ! -d "$DIR/.git" ]; then
     if [ "$JSON" = 1 ]; then
-      printf '{"module":"vim","installed":false,"dir":"%s","status":"absent","up_to_date":null,"remote_commit":null,"state":null,"exit":4}\n' "$DIR"
+      printf '{"module":"vim","installed":false,"active":false,"active_reason":"rien d'"'"'installé","dir":"%s","status":"absent","up_to_date":null,"remote_commit":null,"state":null,"exit":4}\n' "$DIR"
     else
       printf 'configuration absente : %s\n' "$DIR"
     fi
     exit 4
   fi
   [ "$FORCE_HTTPS" = 1 ] && to_https
+  config_active
   commit=$(git -C "$DIR" rev-parse --short HEAD 2>/dev/null || echo "")
   branch_cur=$(git -C "$DIR" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
   state=$(sh "$DIR/bin/install" --check --json </dev/null 2>/dev/null)
@@ -129,17 +179,73 @@ do_check() {
   fi
   case $rc in 0) status=ok ;; 3) status=degraded ;; 5) status=outdated ;; *) status=error ;; esac
   if [ "$JSON" = 1 ]; then
-    printf '{"module":"vim","installed":true,"dir":"%s","branch":"%s","commit":"%s","remote_commit":%s,"up_to_date":%s,"status":"%s","state":%s,"exit":%s}\n' \
-      "$DIR" "$branch_cur" "$commit" \
+    printf '{"module":"vim","installed":true,"active":%s,"active_reason":"%s","dir":"%s","branch":"%s","commit":"%s","remote_commit":%s,"up_to_date":%s,"status":"%s","state":%s,"exit":%s}\n' \
+      "$ACTIVE" "$ACTIVE_WHY" "$DIR" "$branch_cur" "$commit" \
       "$([ -n "$rcommit" ] && printf '"%s"' "$rcommit" || echo null)" "$uptodate" "$status" "${state:-null}" "$rc"
   else
     printf 'configuration présente : %s (%s @ %s) — %s\n' "$DIR" "$branch_cur" "$commit" "$status"
+    printf 'active pour vim : %s (%s)\n' "$([ "$ACTIVE" = true ] && echo oui || echo non)" "$ACTIVE_WHY"
     [ "$REMOTE" = 1 ] && [ -n "$rcommit" ] && printf 'dépôt distant : %s (%s)\n' "$rcommit" "$([ "$uptodate" = true ] && echo "à jour" || echo "mise à jour disponible")"
   fi
   exit $rc
 }
 
+# --purge : effacement complet. Refuse tout dossier qui n'est pas cette
+# configuration (présence de vimrc, bin/install et d'un dépôt git), pour qu'une
+# erreur d'argument ne puisse pas emporter autre chose.
+do_purge() {
+  if [ ! -d "$DIR" ]; then
+    if [ "$JSON" = 1 ]; then
+      printf '{"action":"purge","dir":"%s","installed":false,"removed":false,"status":"absent","exit":4}\n' "$DIR"
+    else
+      say "rien à supprimer : $DIR n'existe pas"
+    fi
+    exit 4
+  fi
+  if [ ! -f "$DIR/vimrc" ] || [ ! -f "$DIR/bin/install" ] || [ ! -d "$DIR/.git" ]; then
+    fail "$DIR ne ressemble pas à cette configuration (vimrc, bin/install, dépôt git) : rien supprimé"
+  fi
+  # Ce qui va disparaître, dit avant de le faire.
+  size=$(du -sh "$DIR" 2>/dev/null | cut -f1)
+  plugins=$(ls "$DIR/plugged" 2>/dev/null | wc -l | tr -d ' ')
+  words=0; [ -f "$DIR/local/spell/fr.utf-8.add" ] && words=$(wc -l < "$DIR/local/spell/fr.utf-8.add" | tr -d ' ')
+  sessions=$(ls "$DIR/local/sessions" 2>/dev/null | wc -l | tr -d ' ')
+  undos=$(ls "$DIR/local/undo" 2>/dev/null | wc -l | tr -d ' ')
+  say "effacement complet de $DIR ($size) :"
+  say "  $plugins greffon(s), et les données de cette machine : $words mot(s) de dictionnaire,"
+  say "  $sessions session(s), $undos fichier(s) d'annulation, l'historique vim (local/viminfo)."
+  say "  ~/.viminfo n'est pas touché."
+  # Destructeur : --yes doit être explicite. Sans terminal et sans --yes, on
+  # refuse (le mode « aucune question » automatique ne vaut pas consentement).
+  if [ "$YES_EXPLICIT" != 1 ]; then
+    if [ -t 0 ]; then
+      printf 'Confirmer la suppression de %s ? [o/N] ' "$DIR"
+      read -r answer || answer=""
+      case $answer in [oOyY]*) ;; *) say "abandon, rien supprimé"; exit 0 ;; esac
+    else
+      if [ "$JSON" = 1 ]; then
+        printf '{"action":"purge","dir":"%s","removed":false,"status":"refusé","message":"--purge exige --yes explicite","exit":2}\n' "$DIR"
+      else
+        printf 'ABANDON : --purge exige --yes explicite (rien supprimé)\n' >&2
+      fi
+      exit 2
+    fi
+  fi
+  # 1) rendre à la machine sa configuration d'avant (restaure ~/.vimrc…)
+  restored=$(sh "$DIR/bin/install" --uninstall </dev/null 2>&1 | grep -c 'restauré' || true)
+  # 2) puis supprimer le dossier
+  rm -rf "$DIR" || fail "suppression impossible : $DIR"
+  if [ "$JSON" = 1 ]; then
+    printf '{"action":"purge","dir":"%s","installed":false,"removed":true,"size_before":"%s","plugins_removed":%s,"local_removed":{"spell_words":%s,"sessions":%s,"undo_files":%s},"restored_files":%s,"viminfo_kept":true,"status":"absent","exit":0}\n' \
+      "$DIR" "$size" "$plugins" "$words" "$sessions" "$undos" "${restored:-0}"
+  else
+    say "supprimé : $DIR"
+  fi
+  exit 0
+}
+
 [ "$MODE" = check ] && do_check
+[ "$MODE" = purge ] && do_purge
 
 # --- Dépôt : clone ou mise à jour -------------------------------------------------------
 ACTION=update

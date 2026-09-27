@@ -81,9 +81,10 @@ ssh <hôte> 'sh -s -- --dry-run --json' < ~/.vim/bin/deploy-local
 | `bin/deploy-local` | **installe de zéro** (clone depuis GitHub si le dossier est absent) ou met à jour, puis installe, sur la machine courante. `--dir`, `--repo-url`, `--branch`, `--yes`, `--no-plugins`, `--json`, `--dry-run`. Bascule l'adresse du dépôt en https si ssh échoue (compte sans clé) |
 | `bin/install --check --json` | état de la machine sur une seule ligne : OS, vim et niveau, git, joignabilité GitHub, branche, commit, plugins installés / déclarés / manquants, restes, paquets manquants, état des mises à jour |
 | `bin/install --clean` | supprime les restes |
+| `bin/deploy-local --purge --yes` | **effacement complet** : restaure l'ancienne configuration, puis supprime le dossier entier, `local/` compris (dictionnaire, sessions, annulations, historique vim de la machine). `~/.viminfo` n'est pas touché. Refuse tout dossier qui n'est pas cette configuration, et exige un `--yes` écrit explicitement |
 | `bin/update-plugins` | installe et met à jour les plugins (`--if-due N` jours, `--if-due-minutes N`) |
 
-`bin/deploy-local --check` est le point d'entrée unique pour l'état : il répond **même sur une machine où la configuration est absente** (`"installed": false`, `"status": "absent"`), et imbrique l'état complet de `bin/install --check --json` dans le champ `state`. Avec `--remote`, il interroge le dépôt (seul cas où le réseau sert) et renseigne `remote_commit` et `up_to_date`. `--https` force l'adresse GitHub en https, pour un compte sans clé SSH.
+`bin/deploy-local --check` est le point d'entrée unique pour l'état : il répond **même sur une machine où la configuration est absente** (`"installed": false`, `"status": "absent"`), et imbrique l'état complet de `bin/install --check --json` dans le champ `state`. Le champ `active` distingue le dossier **présent** de la configuration **lue par vim** : un dépôt cloné ailleurs et non branché donne `"active": false`, et, à l'inverse, un ancien lien `~/.vimrc` qui mène à ce dossier suffit à la rendre active (`active_reason` le dit). Avec `--remote`, il interroge le dépôt (seul cas où le réseau sert) et renseigne `remote_commit` et `up_to_date`. `--https` force l'adresse GitHub en https, pour un compte sans clé SSH.
 
 **Codes de sortie**, communs à ces commandes :
 
@@ -95,6 +96,8 @@ ssh <hôte> 'sh -s -- --dry-run --json' < ~/.vim/bin/deploy-local
 | 3 | déployé mais dégradé (plugins manquants, restes, outil absent) |
 | 4 | configuration absente (à installer) |
 | 5 | mise à jour disponible (avec `--dry-run`, ou `--check --remote`) |
+
+`bin/install --uninstall` **désactive** (il restaure la configuration précédente) mais ne supprime rien : le dossier, les greffons et `local/` restent. Il prévient d'ailleurs quand la configuration reste active malgré tout — par exemple si le fichier restauré est un ancien lien `~/.vimrc` qui pointe vers ce même dossier. Pour tout effacer, c'est `bin/deploy-local --purge --yes`.
 
 En mode `--json`, la sortie standard ne contient **que** le JSON, sur une seule ligne ; les étapes sont écrites au fil de l'eau sur la **sortie d'erreur**, ce qui permet de suivre un déploiement en direct.
 
