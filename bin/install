@@ -442,9 +442,12 @@ install_plugins() { # install_plugins <dossier de config>
   # Progression : chaque greffon qui apparaît dans plugged/ est annoncé sur la
   # sortie d'erreur, pour qu'un appelant (ou l'utilisateur) voie défiler la
   # phase longue au lieu d'une seule ligne d'attente.
+  plugins_hooks
+  [ -n "$PLUG_HOOKS" ] && info "  à construire après clonage (npm, téléchargements) : $PLUG_HOOKS"
   guard="$1/local/.progress.$$"; seen="$1/local/.seen.$$"
   : > "$guard"; : > "$seen"
   (
+    announced=0; waited=0
     while [ -f "$guard" ]; do
       for d in "$1"/plugged/*/; do
         [ -d "$d" ] || continue
@@ -453,6 +456,23 @@ install_plugins() { # install_plugins <dossier de config>
         printf '%s\n' "$n" >> "$seen"
         printf '  greffon %s/%s : %s\n' "$(grep -c . "$seen" | tr -d ' ')" "${total:-?}" "$n" >&2
       done
+      # tous les clonages faits : la suite est la construction, longue et muette
+      if [ "$announced" = 0 ] && [ -n "$total" ] && [ "$total" != 0 ] \
+         && [ "$(grep -c . "$seen" | tr -d ' ')" -ge "$total" ]; then
+        announced=1; waited=0
+        if [ -n "$PLUG_HOOKS" ]; then
+          printf '  clonages terminés — construction de : %s\n' "$PLUG_HOOKS" >&2
+        else
+          printf '  clonages terminés — vérifications finales…\n' >&2
+        fi
+      fi
+      # battement pendant la construction, pour ne pas paraître figé
+      if [ "$announced" = 1 ]; then
+        waited=$((waited + 1))
+        if [ $((waited % 15)) = 0 ]; then
+          printf '  construction en cours… (%s s)\n' "$waited" >&2
+        fi
+      fi
       sleep 1
     done
   ) &
@@ -465,6 +485,7 @@ install_plugins() { # install_plugins <dossier de config>
   cat "$report" >> "$LOG" 2>/dev/null
   report_failures "$report"
 
+  info "  vérification des greffons…"
   # Vérification : l'installation n'est pas terminée parce que vim a rendu la
   # main, mais parce que les greffons attendus sont là. Un échec passager
   # (réseau) est retenté une fois, puis nommé.
@@ -716,6 +737,21 @@ json_list() {
 json_str() { printf '"%s"' "$(printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e 's/\t/ /g')"; }
 
 # Nombre de plugins déclarés / manquants (demandé à vim, qui seul connaît la liste).
+# Greffons déclarés avec une commande de construction (crochet « do » de
+# vim-plug : npm, téléchargement de binaire…). C'est la phase la plus longue
+# après les clonages, et elle était muette.
+plugins_hooks() {
+  PLUG_HOOKS=""
+  [ -n "$VIM_BIN" ] && [ "$VIM_EVAL" = 1 ] || return 0
+  tmp="$REPO/local/hooks.$$"
+  MY_VIM_NO_AUTOUPDATE=1 "$VIM_BIN" -N -u "$REPO/vimrc" -i NONE -es \
+    -c "redir! > $tmp" \
+    -c "silent echo join(sort(filter(keys(get(g:, 'plugs', {})), 'has_key(g:plugs[v:val], \"do\")')), ' ')" \
+    -c 'redir END' -c 'qa!' </dev/null >/dev/null 2>&1
+  PLUG_HOOKS=$(tr -d '\r' < "$tmp" 2>/dev/null | sed -n '2p')
+  rm -f "$tmp"
+}
+
 plugins_state() {
   PLUG_TOTAL=0; PLUG_MISSING=0; PLUG_MISSING_NAMES=""; PLUG_SKIPPED=0; PLUG_SKIPPED_NAMES=""
   PLUG_INSTALLED=$(ls "$REPO/plugged" 2>/dev/null | wc -l | tr -d ' ')

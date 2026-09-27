@@ -115,7 +115,8 @@ vim -u ~/.vimnew/vimrc                   # config, plugins et historique sépar�
 - Ils sont déclarés dans `config/plugins.vim` (vim-plug).
 - Ils sont installés par `make`, ou **au premier lancement de vim** si ce n'est pas encore fait.
 - Ils sont **mis à jour automatiquement en arrière-plan** au lancement de vim, au plus une fois tous les 7 jours. Vim n'est ni ralenti ni bloqué, et les nouvelles versions sont prises en compte au démarrage suivant.
-- L'installation **vérifie son résultat** : chaque greffon apparaît au fil de l'eau (`greffon 12/54 : nom`), un échec est nommé avec sa cause (`greffon x : échec — fatal: …`), les manquants sont retentés une fois, et le message final ne parle de succès que si tout est là.
+- L'installation **dit où elle en est** : les greffons à construire sont annoncés d'avance, chaque clonage apparaît au fil de l'eau (`greffon 12/54 : nom`), la fin des clonages et le début de la construction (npm, téléchargements) sont signalés, avec un battement toutes les 15 secondes pendant cette phase longue, puis la vérification.
+- Elle **vérifie son résultat** : un échec est nommé avec sa cause (`greffon x : échec — fatal: …`), les manquants sont retentés une fois, et le message final ne parle de succès que si tout est là.
 - Si une mise à jour échoue, vim le signale **une fois**, au démarrage suivant, avec le conseil adapté (par exemple `git-http` sur un NAS).
 - Le journal s'ouvre avec `:PluginsUpdateLog`. Le délai se règle avec `let g:my_autoupdate_days = 14` dans `~/.vim/local/vimrc.local` ; `0` désactive la mise à jour automatique.
 

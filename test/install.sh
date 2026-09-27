@@ -320,6 +320,12 @@ check "un greffon écarté ici est classé « écarté »"    sh -c "grep -q '\"
 check "et pas compté comme manquant"                  sh -c "! sed 's/.*\"plugins_missing_names\":\\[\\([^]]*\\)\\].*/\\1/' '$TMP/g2.json' | grep -q '\"ale\"'"
 rm -f "$H/.vim/local/vimrc.local"
 
+echo "== Phases annoncées pendant l'installation des greffons"
+new_home phases
+HOME=$H MY_VIM_NO_AUTOUPDATE=1 sh "$H/.vim/bin/install" --yes --no-plugins </dev/null >/dev/null 2>&1
+# la liste des greffons à construire est calculée par vim, sans rien installer
+check "greffons à construire identifiés"              sh -c "HOME='$H' MY_VIM_NO_AUTOUPDATE=1 vim -N -u '$H/.vim/vimrc' -i NONE -es -c 'redir! > $TMP/h.txt' -c \"silent echo join(sort(filter(keys(get(g:, 'plugs', {})), 'has_key(g:plugs[v:val], \\\"do\\\")')), ' ')\" -c 'redir END' -c 'qa!' </dev/null >/dev/null 2>&1; grep -q 'fzf' '$TMP/h.txt'"
+
 echo "== Échec d'installation d'un greffon : nommé, avec sa cause"
 new_home casse
 python3 - "$H/.vim" <<'PYEOF' 2>/dev/null || true
