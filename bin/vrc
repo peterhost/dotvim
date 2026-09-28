@@ -136,10 +136,13 @@ cmd_greffons() {
   printf '%s\n' "$liste" | awk -F'|' -v b="$C_R_BAD" -v d="$C_R_TEXT" -v r="$T_RESET" '
     { c = ($1 == "manquant" ? b : ($1 == "écarté" ? d : ""))
       printf "  %s%s%s\t%s%s%s\n", c, $2, r, c, $1, r }' | tui_table
-  printf '%s\n' "$liste" | awk -F'|' '{ n[$1]++ } END {
-    printf "  %d installé(s)", n["installé"]
+  # La ligne de compte porte un REPÈRE en tête quand quelque chose manque (le même
+  # que tui_err / tui_ok), et non un mot en capitales : c'est le repère qui est mis
+  # en forme par l'interface à onglets, pas le vocabulaire français.
+  printf '%s\n' "$liste" | awk -F'|' -v ko="$TUI_KO" -v ok="$TUI_OK" '{ n[$1]++ } END {
+    printf "  %s %d installé(s)", (n["manquant"] ? ko : ok), n["installé"]
     if (n["écarté"]) printf ", %d écarté(s) sur cette machine (vim ou outil manquant)", n["écarté"]
-    if (n["manquant"]) printf ", %d MANQUANT(S) — « vrc maj »", n["manquant"]
+    if (n["manquant"]) printf ", %d manquant(s) — « vrc maj »", n["manquant"]
     printf "\n" }'
 }
 
