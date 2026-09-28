@@ -102,6 +102,15 @@ $trouve"
   fi
 fi
 
+# ---------------------------------------------------------------- 2 bis. messages des commits à venir
+# Un nom de machine dans un message de commit est aussi public que dans un fichier. Ceux qui ne sont
+# pas encore poussés sont RÉPARABLES (amend, rebase) : on les vérifie donc, et on refuse. Vécu : le
+# nom d'un hôte écrit dans une docstring ET dans le message qui la validait.
+MESSAGES=
+if [ $# = 0 ] && git rev-parse --abbrev-ref '@{upstream}' >/dev/null 2>&1; then
+  MESSAGES=$(git log '@{upstream}..HEAD' --format='%s%n%b' 2>/dev/null)
+fi
+
 # ---------------------------------------------------------------- 3. littéraux interdits (hors dépôt)
 # ADAPTÉ : liste propre à ce dépôt (local/ n'est jamais suivi par git), ou
 # celle partagée par dotlib si elle est là.
@@ -119,6 +128,10 @@ if [ -r "$LISTE" ]; then
     exceptions=""
     case "$ligne" in *!*) exceptions=${ligne#*!} ;; esac
     t=$(suivis | xargs grep -niF -- "$mot" 2>/dev/null)
+    if [ -n "$MESSAGES" ] && printf '%s\n' "$MESSAGES" | grep -qiF -- "$mot"; then
+      t="$t
+message d'un commit non poussé : $(printf '%s\n' "$MESSAGES" | grep -iF -- "$mot" | head -1)"
+    fi
     # ADAPTÉ : une exception vaut pour un PRÉFIXE de chemin, fichier ou dossier
     # (« spell/ » couvre tout le dictionnaire). L'original exigeait un chemin de
     # fichier exact, si bien qu'une exception de dossier ne faisait rien.

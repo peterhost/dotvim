@@ -1,121 +1,57 @@
 #!/usr/bin/env python3
-"""bin/vrc-interface — vrc en onglets, dans le terminal (curses).
+"""bin/vrc-interface — les onglets de « vrc ui », posés sur le socle commun de dotlib.
 
-Lancé par « vrc interface ». Six onglets : les raccourcis (vim, et ceux du
-shell s'ils sont disponibles), l'état de la machine, les greffons, les thèmes,
-les journaux, les commandes maison.
+L'affichage lui-même n'est plus ici : il vit dans ~/.dotlib/lib/onglets.py, partagé
+avec la configuration bash pour que les deux interfaces soient identiques et corrigées
+au même endroit. Ce fichier ne garde que ce qui est propre à vim : où trouver les
+données, comment les produire, et dans quel ordre les montrer.
 
-Rien n'est calculé au lancement : chaque onglet charge son contenu quand on
-l'ouvre, et le garde. « r » recharge l'onglet courant.
+Le socle absent, trop ancien, ou d'une API que nous ne savons pas employer : on rend 4
+avec une ligne sur la sortie d'erreur, et bin/vrc affiche le même contenu à la suite.
+L'utilisateur n'est jamais les mains vides.
 
-Aucune dépendance : seulement la bibliothèque standard. Si le terminal ne
-permet pas curses, on sort avec le code 4 et bin/vrc affiche tout à la suite.
+Ce fichier a porté sa propre interface curses jusqu'à ce que le socle ait été éprouvé
+sur les machines du parc — jusqu'au 2026-09-29, et sur la plus contrainte d'entre elles
+(python 3.8, aucune couleur, aucune locale transmise) pour la dernière vérification.
+L'historique la garde si elle manque un jour.
 """
 
 import sys
 
-# Aucun cache d'octets, et c'est posé AVANT tout import : le jour où ce fichier
-# importera le socle commun de dotlib (~/.dotlib/lib/onglets.py), python voudrait
-# écrire un __pycache__ chez lui — un reste dans SON dépôt, et une écriture hors
-# de ~/.vim. Vu en vrai ici même (commit ec0d242), donc verrouillé d'avance.
+# Aucun cache d'octets, et c'est posé AVANT tout import : importer le socle commun ferait
+# écrire un __pycache__ chez dotlib — un reste dans SON dépôt, et une écriture hors de
+# ~/.vim. Vu en vrai ici même (commit ec0d242), donc verrouillé d'avance.
 sys.dont_write_bytecode = True
 
-import curses
 import os
-import re
-import subprocess
 
 REPO = os.environ.get("VRC_REPO") or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-SGR = re.compile(r"\033\[[0-9;]*m")
-
-AIDE = "  ←→ onglet · Tab volet · ↑↓ jk défiler · Ctrl-d/u · g/G · / filtrer · r · q"
 
 
-def sortie(commande, cwd=None, env=None, delai=120):
-    """La sortie d'une commande, sans couleurs, ou son erreur — jamais d'exception.
+def module_dotlib():
+    """Le socle commun d'interface à onglets de dotlib, s'il est utilisable.
 
-    Même signature que onglets.sortie() de dotlib : les producteurs d'onglets sont
-    ainsi les mêmes, qu'ils tournent sur le socle commun ou sur notre repli.
+    On ne teste JAMAIS la présence du dossier ~/.dotlib : dotlib peut être posé et
+    complet sans porter ce module, qui est arrivé dans une version plus récente. On
+    teste donc le fichier et l'API, et rien d'autre. Inutilisable pour quelque raison
+    que ce soit → None, et vrc affiche son contenu à la suite, sans onglets.
     """
-    # NO_COLOR suffit à obtenir du texte nu ; on garde le vrai TERM, sinon vim
-    # annoncerait le thème d'un terminal sans couleurs.
-    e = dict(os.environ, NO_COLOR="1")
-    if env:
-        e.update(env)
+    dossier = os.path.join(os.environ.get("DOTLIB_DIR") or os.path.expanduser("~/.dotlib"), "lib")
+    if not os.path.isfile(os.path.join(dossier, "onglets.py")):
+        return None
     try:
-        r = subprocess.run(commande, cwd=cwd or REPO, env=e, stdin=subprocess.DEVNULL,
-                           stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=delai)
-        texte = r.stdout.decode("utf-8", "replace")
-    except FileNotFoundError:
-        return ["(commande absente : %s)" % commande[0]]
-    except subprocess.TimeoutExpired:
-        return ["(trop long, abandonné après %d s : %s)" % (delai, " ".join(commande))]
-    return [SGR.sub("", l).rstrip() for l in texte.splitlines()]
-
-
-def palette_dotlib():
-    """Les couleurs du thème actif du shell — celui que règle « brc theme ».
-
-    dotlib publie ses palettes en données : share/palettes.tsv, une ligne
-    « palette · fond · rôle · hexa · index 256 couleurs ». On lit l'index, donc les
-    mêmes couleurs que les outils du shell, sans rien recalculer. La palette et le
-    fond viennent des variables exportées par le shell, sinon de local/theme.conf.
-
-    Rend {rôle: index} ou {} : rien n'est obligatoire, et sans dotlib on garde les
-    couleurs de base du terminal.
-    """
-    dossier = os.environ.get("DOTLIB_DIR") or os.path.expanduser("~/.dotlib")
-    palette = os.environ.get("DOTLIB_PALETTE_EFF", "")
-    fond = os.environ.get("DOTLIB_THEME_EFF", "")
-    if not palette or not fond:
-        try:
-            with open(os.path.join(dossier, "local", "theme.conf"), encoding="utf-8") as f:
-                for ligne in f:
-                    cle, _, valeur = ligne.strip().partition("=")
-                    if cle == "DOTLIB_PALETTE" and not palette:
-                        palette = valeur
-                    elif cle == "DOTLIB_THEME" and not fond:
-                        fond = valeur
-        except OSError:
-            pass
-    if fond not in ("dark", "light"):
-        fond = "dark"                     # « auto » est résolu par le shell, pas ici
-    if not palette or palette in ("xterm", "actuel"):
-        return {}                         # « couleurs du terminal » : on n'y touche pas
-    roles = {}
-    try:
-        with open(os.path.join(dossier, "share", "palettes.tsv"), encoding="utf-8") as f:
-            for ligne in f:
-                champs = ligne.rstrip("\n").split("\t")
-                if len(champs) >= 5 and champs[0] == palette and champs[1] == fond:
-                    roles[champs[2]] = int(champs[4])
-    except (OSError, ValueError):
-        return {}
-    return roles
-
-
-def plier(texte, largeur):
-    """Coupe un texte à la largeur donnée, sur les espaces quand c'est possible.
-
-    Tronquer perdait la fin des descriptions longues ; on les replie donc sur autant
-    de lignes d'écran qu'il faut. Un mot plus long que la largeur est coupé net : mieux
-    vaut une coupure qu'une ligne qui déborde.
-    """
-    if largeur < 8:                       # place dérisoire : on ne plie pas, on coupe
-        return [texte[: max(1, largeur)]]
-    morceaux = []
-    reste = texte
-    while reste:
-        if len(reste) <= largeur:
-            morceaux.append(reste)
-            break
-        coupe = reste.rfind(" ", 0, largeur + 1)
-        if coupe <= 0:
-            coupe = largeur
-        morceaux.append(reste[:coupe].rstrip())
-        reste = reste[coupe:].lstrip()
-    return morceaux or [""]
-
+        if dossier not in sys.path:
+            sys.path.insert(0, dossier)
+        import onglets
+        acceptees = getattr(onglets, "API_COMPATIBLES", None) or (getattr(onglets, "API", 0),)
+        if 1 not in tuple(acceptees):
+            return None
+        for necessaire in ("Onglet", "sortie", "lancer"):
+            if not hasattr(onglets, necessaire):
+                return None
+    except Exception:
+        return None
+    return onglets
 
 def raccourcis_tsv(sortie):
     """Les raccourcis de vim, et ceux du shell si sa propre aide est là."""
@@ -134,39 +70,9 @@ def raccourcis_tsv(sortie):
             break
     return lignes
 
-
-class Onglet:
-    """Un onglet : un titre, de quoi produire son contenu, et où il en est."""
-
-    def __init__(self, titre, produire, genre="texte", action=None):
-        self.titre = titre
-        self.produire = produire
-        self.genre = genre
-        self.liste = genre == "raccourcis"   # colonne de gauche + volet de droite
-        self.contenu = None
-        self.rang = 0               # sélection dans la colonne de gauche
-        self.haut = 0               # première ligne d'écran affichée du volet
-        self.total_ecran = 0        # lignes d'écran du volet (après pliage), pour le compteur
-        self.focus = "gauche"       # volet actif : « gauche » (les sections) ou « droite »
-        self.colonne = 0            # abscisse du séparateur, pour situer la souris
-        self.debut_noms = 0         # première section affichée (clic sur la liste)
-        self.hauteur = 1            # hauteur visible du volet, pour les pages
-
-    def charger(self):
-        if self.contenu is None:
-            self.contenu = self.produire()
-        return self.contenu
-
-    def recharger(self):
-        self.contenu = None
-        self.haut = 0
-        self.charger()
-
-
 def construire(mod):
-    """Les six onglets, bâtis avec le module qui les affichera : le socle commun de
-    dotlib, ou nous-mêmes. Les deux exposent Onglet() et sortie() de la même façon,
-    donc ces producteurs ne connaissent pas celui qui les emploie."""
+    """Les six onglets, bâtis avec le module qui les affichera. Les producteurs ne
+    connaissent du socle que Onglet() et sortie() : rien de plus ne doit leur servir."""
     K = os.path.join(REPO, "bin", "keys")
     V = os.path.join(REPO, "bin", "vrc")
 
@@ -192,434 +98,13 @@ def construire(mod):
         mod.Onglet("Commandes", texte("sh", K, "--commandes")),
     ]
 
-
-class Interface:
-    def __init__(self, ecran, liste=None):
-        self.ecran = ecran
-        self.onglets = liste if liste is not None else construire(sys.modules[__name__])
-        self.actif = 0
-        self.filtre = ""
-        self.saisie = False
-        self.message = ""
-
-    # --- couleurs ---------------------------------------------------------------------
-    def couleurs(self):
-        """Cinq rôles, plus la surbrillance de la sélection. Trois niveaux de repli :
-        la palette du shell (256 couleurs), les couleurs de base, puis le monochrome."""
-        self.paires = {"titre": 0, "touche": 0, "portee": 0, "mauvais": 0, "onglet": 0,
-                       "choix": 0}
-        if not curses.has_colors():
-            return
-        curses.start_color()
-        try:
-            curses.use_default_colors()
-            fond = -1
-        except curses.error:
-            fond = curses.COLOR_BLACK
-        palette = palette_dotlib()
-        # rôles de dotlib ↔ rôles d'ici : les touches sont des « clés », les titres des
-        # « notes », la portée un chemin grisé, le mauvais un « bad », l'onglet une date
-        corresp = (("titre", "note"), ("touche", "key"), ("portee", "path"),
-                   ("mauvais", "bad"), ("onglet", "date"))
-        if palette and getattr(curses, "COLORS", 8) >= 256 and all(r in palette for _, r in corresp):
-            for i, (nom, role) in enumerate(corresp, start=1):
-                try:
-                    curses.init_pair(i, palette[role], fond)
-                    self.paires[nom] = curses.color_pair(i)
-                except curses.error:
-                    pass
-            if "match_fg" in palette and "match_bg" in palette:
-                try:
-                    curses.init_pair(6, palette["match_fg"], palette["match_bg"])
-                    self.paires["choix"] = curses.color_pair(6)
-                except curses.error:
-                    pass
-            return
-        for i, (nom, couleur) in enumerate((("titre", curses.COLOR_YELLOW),
-                                            ("touche", curses.COLOR_CYAN),
-                                            ("portee", curses.COLOR_BLUE),
-                                            ("mauvais", curses.COLOR_RED),
-                                            ("onglet", curses.COLOR_GREEN)), start=1):
-            try:
-                curses.init_pair(i, couleur, fond)
-                self.paires[nom] = curses.color_pair(i)
-            except curses.error:
-                pass
-
-    def attr(self, nom, gras=False):
-        a = self.paires.get(nom, 0)
-        return a | curses.A_BOLD if gras else a
-
-    # --- dessin -----------------------------------------------------------------------
-    def ecrire(self, y, x, texte, attr=0):
-        h, l = self.ecran.getmaxyx()
-        if y < 0 or y >= h or x >= l:
-            return
-        texte = texte[: max(0, l - x - 1)]
-        try:
-            self.ecran.addstr(y, x, texte, attr)
-        except curses.error:
-            pass
-
-    def barre(self):
-        h, l = self.ecran.getmaxyx()
-        x = 1
-        for i, o in enumerate(self.onglets):
-            etiquette = " %d %s " % (i + 1, o.titre)
-            attr = curses.A_REVERSE | curses.A_BOLD if i == self.actif else self.attr("onglet")
-            self.ecrire(0, x, etiquette, attr)
-            x += len(etiquette) + 1
-        droite = "vrc · %s" % os.path.basename(REPO)
-        self.ecrire(0, max(x + 1, l - len(droite) - 2), droite, self.attr("portee"))
-        self.ecrire(1, 0, "─" * (l - 1), self.attr("portee"))
-
-    def pied(self):
-        h, l = self.ecran.getmaxyx()
-        self.ecrire(h - 2, 0, "─" * (l - 1), self.attr("portee"))
-        # Le compteur se pose SUR le filet, et après lui : écrit dans la zone de
-        # contenu, il effaçait la fin de la dernière ligne — d'autant plus depuis
-        # que les lignes se replient et remplissent la largeur.
-        total = getattr(self.onglets[self.actif], "total_ecran", 0)
-        vu = self.onglets[self.actif].haut
-        if total > h - 4:
-            marque = " %d/%d " % (min(vu + h - 4, total), total)
-            self.ecrire(h - 2, max(0, l - len(marque) - 3), marque, self.attr("portee"))
-        if self.saisie:
-            self.ecrire(h - 1, 0, "  filtre : " + self.filtre + "_", curses.A_BOLD)
-        elif self.message:
-            self.ecrire(h - 1, 0, "  " + self.message, self.attr("titre", True))
-        else:
-            aide = AIDE
-            o = self.onglets[self.actif]
-            if self.deux_volets(o):
-                aide = ("  [section] " if o.focus == "droite" else "  [liste] ") + AIDE.strip()
-            if self.filtre:
-                aide = "  filtre « %s » (Échap) ·%s" % (self.filtre, AIDE[1:])
-            self.ecrire(h - 1, 0, aide, self.attr("portee"))
-
-    def garde(self, o, entrees):
-        """Les entrées retenues par le filtre."""
-        if not self.filtre:
-            return entrees
-        f = self.filtre.lower()
-        return [e for e in entrees if f in " ".join(e).lower()]
-
-    def dessiner_raccourcis(self, o, haut, hauteur, largeur):
-        d = o.charger()
-        themes = d["themes"]
-        entrees = self.garde(o, d["entrees"])
-        if self.filtre:      # ne garder que les thèmes qui ont encore quelque chose
-            themes = [t for t in themes if any(e[1] == t for e in entrees)]
-        if not themes:
-            self.ecrire(haut + 1, 2, "rien ne correspond à « %s »" % self.filtre, self.attr("mauvais"))
-            return
-        o.rang = max(0, min(o.rang, len(themes) - 1))
-        colonne = min(26, max(14, max(len(t) for t in themes) + 6))
-        # géométrie publiée pour la souris et les pages
-        o.colonne, o.hauteur = colonne, hauteur
-        debut = max(0, min(o.rang - hauteur + 2, len(themes) - hauteur))
-        o.debut_noms = debut
-        for i, t in enumerate(themes[debut:debut + hauteur]):
-            rang = debut + i
-            n = sum(1 for e in entrees if e[1] == t)
-            if rang == o.rang:
-                # la section choisie reste reconnaissable quand le focus est à droite,
-                # mais c'est le volet actif qui porte la surbrillance
-                if o.focus == "gauche":
-                    attr = self.paires.get("choix") or curses.A_REVERSE
-                    attr |= curses.A_BOLD
-                else:
-                    attr = self.attr("titre", True) | curses.A_UNDERLINE
-            else:
-                attr = self.attr("titre", True)
-            self.ecrire(haut + i, 1, t[: colonne - 6].ljust(colonne - 5), attr)
-            self.ecrire(haut + i, colonne - 4, "%3d" % n, self.attr("portee"))
-        for y in range(hauteur):
-            self.ecrire(haut + y, colonne, "│", self.attr("portee"))
-        # volet des raccourcis du thème choisi
-        choisi = themes[o.rang]
-        lignes = [e for e in entrees if e[1] == choisi]
-        # colonne des sources : seulement quand il y en a plus d'une (vim et bash)
-        sources = set(e[0] for e in lignes)
-        largeur_src = 0 if sources <= {"vim"} else max(len(x) for x in sources) + 1
-        # jamais plus d'un tiers de la largeur : sur un terminal étroit, une liste de
-        # touches ne doit pas étouffer la description
-        largeur_touches = min(34, max(largeur // 3, 10), max([8] + [len(e[2]) for e in lignes]) + 2)
-        x_desc = colonne + 2 + largeur_src + largeur_touches
-        place = largeur - x_desc - 1
-        # Une entrée occupe autant de lignes d'écran que sa description en demande :
-        # on déroule donc tout l'onglet en lignes d'écran, et c'est sur elles que
-        # porte le défilement (sinon « une ligne » ne voudrait plus rien dire).
-        ecran = []
-        for e in lignes:
-            source, _, touches, description, portee = e[:5]
-            texte = description + ("  (%s)" % portee if portee and portee != "global" else "")
-            # les touches se replient aussi : une liste comme « Ctrl-h / Ctrl-j /
-            # Ctrl-k / Ctrl-l » perdait sa fin quand la colonne était bornée
-            t_lignes = plier(touches if touches.strip() else "Espace", largeur_touches - 1)
-            d_lignes = plier(texte, place)
-            for j in range(max(len(t_lignes), len(d_lignes))):
-                segments = []
-                if j == 0 and largeur_src:
-                    segments.append((colonne + 2, source, self.attr("portee")))
-                if j < len(t_lignes):
-                    segments.append((colonne + 2 + largeur_src, t_lignes[j], self.attr("touche", True)))
-                if j < len(d_lignes):
-                    segments.append((x_desc, d_lignes[j], 0))
-                ecran.append(segments)
-        o.total_ecran = len(ecran)
-        o.haut = max(0, min(o.haut, max(0, len(ecran) - hauteur)))
-        for i, segments in enumerate(ecran[o.haut:o.haut + hauteur]):
-            for x, t, a in segments:
-                self.ecrire(haut + i, x, t, a)
-
-    def dessiner_texte(self, o, haut, hauteur, largeur):
-        lignes = o.charger()
-        if self.filtre:
-            f = self.filtre.lower()
-            lignes = [l for l in lignes if f in l.lower()]
-        if not lignes:
-            self.ecrire(haut + 1, 2, "(rien à afficher)", self.attr("portee"))
-            return
-        # les lignes trop longues se replient, la suite décalée de trois colonnes pour
-        # qu'on voie qu'elle appartient à la ligne précédente
-        ecran = []
-        for l in lignes:
-            attr = 0
-            nu = l.strip()
-            if nu.startswith("=="):
-                attr = self.attr("titre", True)
-            elif nu.startswith("✗") or "MANQUANT" in l or nu.startswith("!"):
-                attr = self.attr("mauvais")
-            elif nu.startswith("✓"):
-                attr = self.attr("onglet")
-            morceaux = plier(l, largeur - 2)
-            ecran.append((morceaux[0], attr))
-            for m in morceaux[1:]:
-                ecran.append(("   " + m, attr))
-        o.total_ecran = len(ecran)
-        o.hauteur = hauteur
-        o.haut = max(0, min(o.haut, max(0, len(ecran) - hauteur)))
-        for i, (texte, attr) in enumerate(ecran[o.haut:o.haut + hauteur]):
-            self.ecrire(haut + i, 1, texte, attr)
-
-    def dessiner(self):
-        self.ecran.erase()
-        h, l = self.ecran.getmaxyx()
-        self.barre()
-        haut, hauteur = 2, max(1, h - 4)
-        o = self.onglets[self.actif]
-        if o.contenu is None:
-            self.ecrire(haut + 1, 2, "chargement…", self.attr("portee"))
-            self.pied()
-            self.ecran.refresh()
-            o.charger()
-            self.ecran.erase()
-            self.barre()
-        try:
-            if o.liste:
-                self.dessiner_raccourcis(o, haut, hauteur, l)
-            else:
-                self.dessiner_texte(o, haut, hauteur, l)
-        except Exception as e:                       # un onglet cassé ne ferme pas tout
-            self.ecrire(haut + 1, 2, "onglet illisible : %s" % e, self.attr("mauvais"))
-        self.pied()
-        self.ecran.refresh()
-
-    # --- boucle ------------------------------------------------------------------------
-    def deux_volets(self, o):
-        return o.liste          # les raccourcis ont une liste de sections à gauche
-
-    def deplacer(self, pas, o=None):
-        """Déplace ce qui a le focus : la section à gauche, le contenu à droite."""
-        o = o or self.onglets[self.actif]
-        if self.deux_volets(o) and o.focus == "gauche":
-            o.rang += pas
-            o.haut = 0          # nouvelle section : on la lit depuis le début
-        else:
-            o.haut = max(0, min(o.haut + pas, max(0, o.total_ecran - 1)))
-
-    def page(self, sens, fraction=1):
-        o = self.onglets[self.actif]
-        pas = max(1, int(o.hauteur * fraction))
-        self.deplacer(sens * pas, o)
-
-    def bord(self, fin):
-        o = self.onglets[self.actif]
-        if self.deux_volets(o) and o.focus == "gauche":
-            o.rang = 10 ** 6 if fin else 0
-            o.haut = 0
-        else:
-            o.haut = max(0, o.total_ecran - o.hauteur) if fin else 0
-
-    def souris(self):
-        """Molette et clic. La molette agit sur le volet SOUS le pointeur, ce qui est
-        ce qu'on attend d'une souris ; un clic donne le focus, et choisit la section."""
-        try:
-            _, x, y, _, etat = curses.getmouse()
-        except curses.error:
-            return
-        o = self.onglets[self.actif]
-        deux = self.deux_volets(o)
-        cote = "gauche" if (deux and x <= o.colonne) else "droite"
-        haut_zone = 2
-        if etat & curses.BUTTON4_PRESSED:                       # molette vers le haut
-            self.deplacer(-3, o) if cote == o.focus else self.defiler_cote(o, cote, -3)
-        elif etat & getattr(curses, "BUTTON5_PRESSED", 0x200000):
-            self.deplacer(3, o) if cote == o.focus else self.defiler_cote(o, cote, 3)
-        elif etat & curses.BUTTON1_PRESSED:
-            if deux:
-                o.focus = cote
-            if cote == "gauche" and haut_zone <= y < haut_zone + o.hauteur:
-                o.rang = max(0, o.debut_noms + (y - haut_zone))
-                o.haut = 0
-
-    def defiler_cote(self, o, cote, pas):
-        """Défiler un volet sans lui donner le focus (molette hors du volet actif)."""
-        if cote == "gauche":
-            o.rang = max(0, o.rang + pas)
-            o.haut = 0
-        else:
-            o.haut = max(0, min(o.haut + pas, max(0, o.total_ecran - 1)))
-
-    def boucle(self):
-        rates = 0
-        while True:
-            self.dessiner()
-            try:
-                touche = self.ecran.get_wch()
-                rates = 0
-            except curses.error:
-                # entrée fermée (tuyau, pty sans clavier) : on sort au lieu de
-                # tourner à vide
-                rates += 1
-                if rates > 20:
-                    return
-                continue
-            except KeyboardInterrupt:
-                return
-            self.message = ""
-            if self.saisie:
-                if touche in ("\n", "\r", curses.KEY_ENTER):
-                    self.saisie = False
-                elif touche == "\x1b":
-                    self.saisie = False
-                    self.filtre = ""
-                elif touche in ("\x7f", "\b", curses.KEY_BACKSPACE, 263):
-                    self.filtre = self.filtre[:-1]
-                elif isinstance(touche, str) and touche.isprintable():
-                    self.filtre += touche
-                for o in self.onglets:
-                    o.haut = 0
-                continue
-            if touche in ("q", "Q"):
-                return
-            elif touche == "\x1b":
-                self.filtre = ""
-            elif touche == "/":
-                self.saisie = True
-                self.filtre = ""
-            elif touche in ("\t", curses.KEY_BTAB):
-                # Tab passe d'un volet à l'autre ; les onglets se changent aux flèches
-                # gauche/droite et aux chiffres.
-                o = self.onglets[self.actif]
-                if self.deux_volets(o):
-                    o.focus = "droite" if o.focus == "gauche" else "gauche"
-                else:
-                    self.actif = (self.actif + (1 if touche == "\t" else -1)) % len(self.onglets)
-            elif touche == curses.KEY_RIGHT:
-                self.actif = (self.actif + 1) % len(self.onglets)
-            elif touche == curses.KEY_LEFT:
-                self.actif = (self.actif - 1) % len(self.onglets)
-            elif touche == curses.KEY_MOUSE:
-                self.souris()
-            elif isinstance(touche, str) and touche in "123456":
-                n = int(touche) - 1
-                if n < len(self.onglets):
-                    self.actif = n
-            elif touche in (curses.KEY_DOWN, "j"):
-                self.deplacer(1)
-            elif touche in (curses.KEY_UP, "k"):
-                self.deplacer(-1)
-            elif touche in (curses.KEY_NPAGE, " ", "\x06"):      # Ctrl-f : page suivante
-                self.page(1)
-            elif touche in (curses.KEY_PPAGE, "\x02"):           # Ctrl-b : page précédente
-                self.page(-1)
-            elif touche == "\x04":                              # Ctrl-d : demi-page
-                self.page(1, 0.5)
-            elif touche == "\x15":                              # Ctrl-u : demi-page
-                self.page(-1, 0.5)
-            elif touche == "g":
-                self.bord(False)
-            elif touche == "G":
-                self.bord(True)
-            elif touche in ("r", "R"):
-                self.onglets[self.actif].recharger()
-                self.message = "onglet rechargé"
-            elif touche == curses.KEY_RESIZE:
-                continue
-
-
-def module_dotlib():
-    """Le socle commun d'interface à onglets de dotlib, s'il est utilisable.
-
-    On ne teste JAMAIS la présence du dossier ~/.dotlib : dotlib peut être posé et
-    complet sans porter ce module, qui est arrivé dans une version plus récente. On
-    teste donc le fichier et l'API, et rien d'autre. Inutilisable pour quelque raison
-    que ce soit → None, et notre propre interface prend le relais sans un mot.
-    """
-    dossier = os.path.join(os.environ.get("DOTLIB_DIR") or os.path.expanduser("~/.dotlib"), "lib")
-    if not os.path.isfile(os.path.join(dossier, "onglets.py")):
-        return None
-    try:
-        if dossier not in sys.path:
-            sys.path.insert(0, dossier)
-        import onglets
-        acceptees = getattr(onglets, "API_COMPATIBLES", None) or (getattr(onglets, "API", 0),)
-        if 1 not in tuple(acceptees):
-            return None
-        for necessaire in ("Onglet", "sortie", "lancer"):
-            if not hasattr(onglets, necessaire):
-                return None
-    except Exception:
-        return None
-    return onglets
-
-
-def demarrer(ecran):
-    curses.curs_set(0)
-    ecran.keypad(True)
-    # Molette et clic. Le terminal doit les transmettre (dans tmux : « set -g mouse on »).
-    # Sans souris, rien ne change : le clavier fait tout.
-    try:
-        curses.mousemask(curses.ALL_MOUSE_EVENTS | curses.REPORT_MOUSE_POSITION)
-        curses.mouseinterval(0)
-    except curses.error:
-        pass
-    interface = Interface(ecran)
-    interface.couleurs()
-    interface.boucle()
-
-
-def notre_interface():
-    """Le repli : l'interface portée par ce dépôt. Elle disparaîtra quand le socle
-    commun aura été éprouvé sur les machines du parc, et pas avant."""
-    if not sys.stdout.isatty():
-        print("vrc : pas de terminal — « vrc etat », « vrc raccourcis »…", file=sys.stderr)
-        return 4
-    try:
-        curses.wrapper(demarrer)
-    except curses.error as e:
-        print("vrc : terminal trop limité pour l'interface (%s)" % e, file=sys.stderr)
-        return 4
-    return 0
-
-
 def main():
     mod = module_dotlib()
-    if mod is not None:
-        return mod.lancer(construire(mod), "vrc")
-    return notre_interface()
+    if mod is None:
+        print("vrc : socle d'interface indisponible (dotlib absent, ou sans le module "
+              "des onglets)", file=sys.stderr)
+        return 4
+    return mod.lancer(construire(mod), "vrc")
 
 
 if __name__ == "__main__":

@@ -156,10 +156,10 @@ journaux, commandes.
 | `r` · `q` | recharger l'onglet · quitter |
 
 L'affichage est celui du **socle commun** de dotlib (`lib/onglets.py`), partagé avec
-la configuration bash pour que les deux interfaces soient identiques. Tant qu'il n'a
-pas été éprouvé sur toutes les machines, ce dépôt garde sa propre interface en repli :
-elle sert si dotlib est absent, si le module manque à sa version, ou si son API n'est
-pas celle attendue — et la bascule est silencieuse.
+la configuration bash pour que les deux interfaces soient identiques et corrigées au
+même endroit. Ce dépôt ne porte que ses producteurs de contenu : où trouver les
+données, et dans quel ordre les montrer. Si le socle est absent, trop ancien, ou d'une
+API inattendue, `vrc ui` affiche le même contenu **à la suite**, sans onglets.
 
 Les lignes trop longues se replient sur la largeur du terminal : rien n'est coupé.
 Les couleurs suivent le **thème du shell** (`brc theme`) en lisant les palettes

@@ -148,30 +148,6 @@ check "vrc ui est bien le synonyme de vrc interface" sh -c \
   "$VRC ui --pasuneoption 2>&1 | grep -q 'usage : vrc interface'"
 if command -v python3 >/dev/null 2>&1; then
   check "python valide"                   python3 -c "import ast; ast.parse(open('$ROOT/bin/vrc-interface').read())"
-  # le pliage des lignes longues : rien de perdu, rien qui dépasse
-  cat > "$TMP/pliage.py" <<'PYFIN'
-import sys
-sys.dont_write_bytecode = True
-import importlib.machinery, importlib.util
-chargeur = importlib.machinery.SourceFileLoader("interface", sys.argv[1])
-module = importlib.util.module_from_spec(importlib.util.spec_from_loader("interface", chargeur))
-chargeur.exec_module(module)
-essais = ["nouvel onglet en dernier (=t), fermer l’onglet (=w)", "Ctrl-h / Ctrl-j / Ctrl-k / Ctrl-l",
-          "court", "abcdefghijklmnopqrstuvwxyz0123456789", "mot " * 30]
-for texte in essais:
-    for largeur in (10, 12, 26, 34, 80):
-        morceaux = module.plier(texte, largeur)
-        if not morceaux:
-            sys.exit("pliage vide : %r" % texte)
-        if max(len(m) for m in morceaux) > largeur:
-            sys.exit("dépassement : %r à %d" % (texte, largeur))
-        if "".join(morceaux).replace(" ", "") != texte.replace(" ", ""):
-            sys.exit("caractères perdus : %r à %d" % (texte, largeur))
-if module.plier("x" * 20, 3) == []:
-    sys.exit("largeur dérisoire mal traitée")
-PYFIN
-  check "pliage : rien perdu, rien qui dépasse" sh -c \
-    "PYTHONDONTWRITEBYTECODE=1 python3 -B '$TMP/pliage.py' '$ROOT/bin/vrc-interface'"
   check "sans terminal : code 4"          sh -c "python3 '$ROOT/bin/vrc-interface' </dev/null >/dev/null 2>&1; [ \$? = 4 ]"
   check "sans terminal : le dit sur stderr" sh -c "python3 '$ROOT/bin/vrc-interface' </dev/null 2>&1 >/dev/null | grep -q '^vrc :'"
   # Le premier onglet mêle les raccourcis de vim et ceux du shell. On ne dépend
@@ -185,13 +161,29 @@ PYFIN
 # bin/vrc-interface n'a pas de suffixe .py : on le charge par un chargeur explicite.
 # Et surtout : PAS de cache — un __pycache__ dans le dépôt serait un reste, et un
 # .pyc contient le chemin absolu de son source (donc un chemin de home nommé).
+import os
+import subprocess
 import sys
 sys.dont_write_bytecode = True
 import importlib.machinery, importlib.util
+
+
+def sortie(commande, cwd=None, env=None, delai=60):
+    # l'affichage vit chez dotlib ; ce test n'éprouve que notre mélange des deux aides,
+    # il lui suffit donc d'une fonction de sortie minimale
+    e = dict(os.environ, NO_COLOR="1")
+    if env:
+        e.update(env)
+    try:
+        r = subprocess.run(commande, cwd=cwd, env=e, stdin=subprocess.DEVNULL,
+                           stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=delai)
+    except (OSError, subprocess.TimeoutExpired):
+        return []
+    return [l.rstrip() for l in r.stdout.decode("utf-8", "replace").splitlines()]
 chargeur = importlib.machinery.SourceFileLoader("interface", sys.argv[1])
 module = importlib.util.module_from_spec(importlib.util.spec_from_loader("interface", chargeur))
 chargeur.exec_module(module)
-entrees = module.raccourcis_tsv(module.sortie)
+entrees = module.raccourcis_tsv(sortie)
 attendu = ["bash", "historique", "Ctrl-x", "faire quelque chose", "mode insertion"]
 if not entrees or not all(len(e) == 5 for e in entrees):
     sys.exit(1)
@@ -230,12 +222,12 @@ PYFIN
     "DOTLIB_DIR='$TMP/dl1' VRC_REPO='$ROOT' PYTHONDONTWRITEBYTECODE=1 python3 -B '$ROOT/bin/vrc-interface' 2>/dev/null | grep -q 'FAUX-MODULE 6 onglets pour vrc'"
   check "socle d'API 1 : son code de retour est rendu" sh -c \
     "DOTLIB_DIR='$TMP/dl1' VRC_REPO='$ROOT' PYTHONDONTWRITEBYTECODE=1 python3 -B '$ROOT/bin/vrc-interface' >/dev/null 2>&1; [ \$? = 7 ]"
-  check "socle d'API 2 : écarté, repli local" sh -c \
-    "DOTLIB_DIR='$TMP/dl2' VRC_REPO='$ROOT' PYTHONDONTWRITEBYTECODE=1 python3 -B '$ROOT/bin/vrc-interface' 2>&1 | grep -q 'pas de terminal — '"
-  check "dotlib sans le module : repli local" sh -c \
-    "DOTLIB_DIR='$TMP/dl3' VRC_REPO='$ROOT' PYTHONDONTWRITEBYTECODE=1 python3 -B '$ROOT/bin/vrc-interface' 2>&1 | grep -q 'pas de terminal — '"
-  check "dotlib absent : repli local" sh -c \
-    "DOTLIB_DIR='$TMP/inexistant' VRC_REPO='$ROOT' PYTHONDONTWRITEBYTECODE=1 python3 -B '$ROOT/bin/vrc-interface' 2>&1 | grep -q 'pas de terminal — '"
+  check "socle d'API 2 : écarté, affichage à la suite" sh -c \
+    "DOTLIB_DIR='$TMP/dl2' VRC_REPO='$ROOT' PYTHONDONTWRITEBYTECODE=1 python3 -B '$ROOT/bin/vrc-interface' 2>&1 | grep -q \"socle d'interface indisponible\""
+  check "dotlib sans le module : affichage à la suite" sh -c \
+    "DOTLIB_DIR='$TMP/dl3' VRC_REPO='$ROOT' PYTHONDONTWRITEBYTECODE=1 python3 -B '$ROOT/bin/vrc-interface' 2>&1 | grep -q \"socle d'interface indisponible\""
+  check "dotlib absent : affichage à la suite" sh -c \
+    "DOTLIB_DIR='$TMP/inexistant' VRC_REPO='$ROOT' PYTHONDONTWRITEBYTECODE=1 python3 -B '$ROOT/bin/vrc-interface' 2>&1 | grep -q \"socle d'interface indisponible\""
   check "aucun __pycache__ chez le faux dotlib"  sh -c "! find '$TMP/dl1' -name __pycache__ | grep -q ."
   if command -v script >/dev/null 2>&1 && [ "${TEST_NO_PTY:-0}" != 1 ]; then
     check "dans un terminal : s'ouvre et se ferme sur q" sh -c \
