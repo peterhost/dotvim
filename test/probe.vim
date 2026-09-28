@@ -104,6 +104,8 @@ function! s:test_mappings()
   call s:ok('map.space_fold', maparg('<Space>', 'n') ==# 'za')
   call s:ok('map.ctrlp_not_on_ctrl_p', maparg('<C-p>', 'n') !~? 'ctrlp')
   call s:ok('map.f5_insert', maparg('<F5>', 'i') =~# 'toggle_background')
+  call s:ok('map.buffer_next', maparg(',n', 'n') =~# 'bnext')
+  call s:ok('map.buffer_prev', maparg(',p', 'n') =~# 'bprevious')
   call s:ok('map.session_last', maparg(',wl', 'n') =~# 'last_session')
   for l:k in ['be', 'bt', 'bs', 'bv']
     call s:ok('map.buffers_' . l:k, maparg(',' . l:k, 'n') !=# '', 'absent')
@@ -185,9 +187,10 @@ function! s:test_filetypes()
     if l:c[1] ==# 'markdown'
       call s:ok('ftplugin.markdown_spell.' . l:c[0], &l:spell && &l:textwidth == 72)
     elseif l:c[1] ==# 'python' && exists(':ALEFix') == 2
-      for l:k in ['d', 'n', 'r', 'R']
+      for l:k in ['d', 'N', 'r', 'R']
         call s:ok('ftplugin.python_map_' . l:k, maparg(',' . l:k, 'n') =~# 'ALE')
       endfor
+      call s:ok('ftplugin.python_keeps_buffer_next', maparg(',n', 'n') =~# 'bnext')
     elseif l:c[1] ==# 'make'
       call s:ok('ftplugin.make_tabs', !&l:expandtab)
     endif

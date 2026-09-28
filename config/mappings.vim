@@ -133,6 +133,10 @@ nnoremap <silent> <leader>x :call my#buffers#close()<CR>
 nnoremap <leader>X :bdelete<CR>
 nnoremap <leader><C-x> :close<CR>
 nnoremap <silent> <leader>bc :call my#buffers#clean_empty()<CR>
+" ,n / ,p : buffer suivant / précédent (équivalents de ]b et [b d'unimpaired,
+" atteignables en AZERTY par -b et 'b)
+nnoremap <silent> <leader>n :bnext<CR>
+nnoremap <silent> <leader>p :bprevious<CR>
 
 " --- Quickfix (résultats de :vimgrep, :make, :helpgrep…) --------------------------------------
 nnoremap <leader><Left> :cprevious<CR>

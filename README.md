@@ -209,7 +209,9 @@ Le leader est `,` et le localleader est `=`.
 | Raccourci | Action |
 |---|---|
 | `,ff` `,fb` `,fr` `,fg` | fichiers, buffers, récents, recherche (fzf, sinon ctrlp) |
+| `,n` / `,p` | buffer suivant / précédent (aussi `-b` / `'b`, d'unimpaired) |
 | `,be` `,bs` `,bv` | liste des buffers : ici, partage horizontal, partage vertical |
+| `,fb` | choisir un buffer dans une liste floue |
 | `,t` / `,T` | arborescence (NERDTree) / symboles (Tagbar) |
 | `,x` / `,X` | fermer le buffer en gardant la fenêtre / fermer les deux |
 | `Ctrl-h/j/k/l`, flèches | changer de fenêtre (et de panneau tmux) |
@@ -227,7 +229,7 @@ Le leader est `,` et le localleader est `=`.
 | `Ctrl-p` / `Ctrl-n` juste après un collage | remplacer par une copie plus ancienne / plus récente |
 | `Maj-Tab` | développer un snippet |
 | `aC` `iC` / `aM` `iM` (python) | objets de texte classe / méthode, aussi `ac` `ic` `af` `if` |
-| `,d` `,n` `,r` (python) | définition, usages, renommage (ALE) |
+| `,d` `,N` `,r` (python) | définition, usages, renommage (ALE) |
 
 **Git et erreurs**
 
