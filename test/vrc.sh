@@ -148,6 +148,30 @@ check "vrc ui est bien le synonyme de vrc interface" sh -c \
   "$VRC ui --pasuneoption 2>&1 | grep -q 'usage : vrc interface'"
 if command -v python3 >/dev/null 2>&1; then
   check "python valide"                   python3 -c "import ast; ast.parse(open('$ROOT/bin/vrc-interface').read())"
+  # le pliage des lignes longues : rien de perdu, rien qui dépasse
+  cat > "$TMP/pliage.py" <<'PYFIN'
+import sys
+sys.dont_write_bytecode = True
+import importlib.machinery, importlib.util
+chargeur = importlib.machinery.SourceFileLoader("interface", sys.argv[1])
+module = importlib.util.module_from_spec(importlib.util.spec_from_loader("interface", chargeur))
+chargeur.exec_module(module)
+essais = ["nouvel onglet en dernier (=t), fermer l’onglet (=w)", "Ctrl-h / Ctrl-j / Ctrl-k / Ctrl-l",
+          "court", "abcdefghijklmnopqrstuvwxyz0123456789", "mot " * 30]
+for texte in essais:
+    for largeur in (10, 12, 26, 34, 80):
+        morceaux = module.plier(texte, largeur)
+        if not morceaux:
+            sys.exit("pliage vide : %r" % texte)
+        if max(len(m) for m in morceaux) > largeur:
+            sys.exit("dépassement : %r à %d" % (texte, largeur))
+        if "".join(morceaux).replace(" ", "") != texte.replace(" ", ""):
+            sys.exit("caractères perdus : %r à %d" % (texte, largeur))
+if module.plier("x" * 20, 3) == []:
+    sys.exit("largeur dérisoire mal traitée")
+PYFIN
+  check "pliage : rien perdu, rien qui dépasse" sh -c \
+    "PYTHONDONTWRITEBYTECODE=1 python3 -B '$TMP/pliage.py' '$ROOT/bin/vrc-interface'"
   check "sans terminal : code 4"          sh -c "python3 '$ROOT/bin/vrc-interface' </dev/null >/dev/null 2>&1; [ \$? = 4 ]"
   check "sans terminal : le dit sur stderr" sh -c "python3 '$ROOT/bin/vrc-interface' </dev/null 2>&1 >/dev/null | grep -q '^vrc :'"
   # Le premier onglet mêle les raccourcis de vim et ceux du shell. On ne dépend

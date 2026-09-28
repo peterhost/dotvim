@@ -49,6 +49,29 @@ def sortie(commande, env=None):
     return [SGR.sub("", l).rstrip() for l in texte.splitlines()]
 
 
+def plier(texte, largeur):
+    """Coupe un texte à la largeur donnée, sur les espaces quand c'est possible.
+
+    Tronquer perdait la fin des descriptions longues ; on les replie donc sur autant
+    de lignes d'écran qu'il faut. Un mot plus long que la largeur est coupé net : mieux
+    vaut une coupure qu'une ligne qui déborde.
+    """
+    if largeur < 8:                       # place dérisoire : on ne plie pas, on coupe
+        return [texte[: max(1, largeur)]]
+    morceaux = []
+    reste = texte
+    while reste:
+        if len(reste) <= largeur:
+            morceaux.append(reste)
+            break
+        coupe = reste.rfind(" ", 0, largeur + 1)
+        if coupe <= 0:
+            coupe = largeur
+        morceaux.append(reste[:coupe].rstrip())
+        reste = reste[coupe:].lstrip()
+    return morceaux or [""]
+
+
 def raccourcis_tsv():
     """Les raccourcis de vim, et ceux du shell si sa propre aide est là."""
     lignes = []
@@ -76,7 +99,8 @@ class Onglet:
         self.liste = liste          # vrai : colonne de gauche + volet de droite
         self.contenu = None
         self.rang = 0               # sélection dans la colonne de gauche
-        self.haut = 0               # première ligne affichée du volet
+        self.haut = 0               # première ligne d'écran affichée du volet
+        self.total_ecran = 0        # lignes d'écran du volet (après pliage), pour le compteur
 
     def charger(self):
         if self.contenu is None:
@@ -173,6 +197,14 @@ class Interface:
     def pied(self):
         h, l = self.ecran.getmaxyx()
         self.ecrire(h - 2, 0, "─" * (l - 1), self.attr("portee"))
+        # Le compteur se pose SUR le filet, et après lui : écrit dans la zone de
+        # contenu, il effaçait la fin de la dernière ligne — d'autant plus depuis
+        # que les lignes se replient et remplissent la largeur.
+        total = getattr(self.onglets[self.actif], "total_ecran", 0)
+        vu = self.onglets[self.actif].haut
+        if total > h - 4:
+            marque = " %d/%d " % (min(vu + h - 4, total), total)
+            self.ecrire(h - 2, max(0, l - len(marque) - 3), marque, self.attr("portee"))
         if self.saisie:
             self.ecrire(h - 1, 0, "  filtre : " + self.filtre + "_", curses.A_BOLD)
         elif self.message:
@@ -217,26 +249,36 @@ class Interface:
         # colonne des sources : seulement quand il y en a plus d'une (vim et bash)
         sources = set(e[0] for e in lignes)
         largeur_src = 0 if sources <= {"vim"} else max(len(x) for x in sources) + 1
-        largeur_touches = min(34, max([8] + [len(e[2]) for e in lignes]) + 2)
-        o.haut = max(0, min(o.haut, max(0, len(lignes) - hauteur)))
-        for i, e in enumerate(lignes[o.haut:o.haut + hauteur]):
-            source, _, touches, description, portee = e
-            x = colonne + 2
-            if largeur_src:
-                self.ecrire(haut + i, x, source, self.attr("portee"))
-                x += largeur_src
-            # filet : une source qui enverrait le caractère espace au lieu de son
-            # nom laisserait la colonne vide à l'écran
-            self.ecrire(haut + i, x, (touches if touches.strip() else "Espace")[: largeur_touches - 1],
-                        self.attr("touche", True))
-            x += largeur_touches
-            texte = description
-            if portee and portee != "global":
-                texte += "  (%s)" % portee
-            self.ecrire(haut + i, x, texte)
-        if len(lignes) > hauteur:
-            self.ecrire(haut + hauteur - 1, largeur - 12, " %d/%d " % (o.haut + hauteur, len(lignes)),
-                        self.attr("portee"))
+        # jamais plus d'un tiers de la largeur : sur un terminal étroit, une liste de
+        # touches ne doit pas étouffer la description
+        largeur_touches = min(34, max(largeur // 3, 10), max([8] + [len(e[2]) for e in lignes]) + 2)
+        x_desc = colonne + 2 + largeur_src + largeur_touches
+        place = largeur - x_desc - 1
+        # Une entrée occupe autant de lignes d'écran que sa description en demande :
+        # on déroule donc tout l'onglet en lignes d'écran, et c'est sur elles que
+        # porte le défilement (sinon « une ligne » ne voudrait plus rien dire).
+        ecran = []
+        for e in lignes:
+            source, _, touches, description, portee = e[:5]
+            texte = description + ("  (%s)" % portee if portee and portee != "global" else "")
+            # les touches se replient aussi : une liste comme « Ctrl-h / Ctrl-j /
+            # Ctrl-k / Ctrl-l » perdait sa fin quand la colonne était bornée
+            t_lignes = plier(touches if touches.strip() else "Espace", largeur_touches - 1)
+            d_lignes = plier(texte, place)
+            for j in range(max(len(t_lignes), len(d_lignes))):
+                segments = []
+                if j == 0 and largeur_src:
+                    segments.append((colonne + 2, source, self.attr("portee")))
+                if j < len(t_lignes):
+                    segments.append((colonne + 2 + largeur_src, t_lignes[j], self.attr("touche", True)))
+                if j < len(d_lignes):
+                    segments.append((x_desc, d_lignes[j], 0))
+                ecran.append(segments)
+        o.total_ecran = len(ecran)
+        o.haut = max(0, min(o.haut, max(0, len(ecran) - hauteur)))
+        for i, segments in enumerate(ecran[o.haut:o.haut + hauteur]):
+            for x, t, a in segments:
+                self.ecrire(haut + i, x, t, a)
 
     def dessiner_texte(self, o, haut, hauteur, largeur):
         lignes = o.charger()
@@ -246,8 +288,10 @@ class Interface:
         if not lignes:
             self.ecrire(haut + 1, 2, "(rien à afficher)", self.attr("portee"))
             return
-        o.haut = max(0, min(o.haut, max(0, len(lignes) - hauteur)))
-        for i, l in enumerate(lignes[o.haut:o.haut + hauteur]):
+        # les lignes trop longues se replient, la suite décalée de trois colonnes pour
+        # qu'on voie qu'elle appartient à la ligne précédente
+        ecran = []
+        for l in lignes:
             attr = 0
             nu = l.strip()
             if nu.startswith("=="):
@@ -256,10 +300,14 @@ class Interface:
                 attr = self.attr("mauvais")
             elif nu.startswith("✓"):
                 attr = self.attr("onglet")
-            self.ecrire(haut + i, 1, l, attr)
-        if len(lignes) > hauteur:
-            self.ecrire(haut + hauteur - 1, largeur - 12, " %d/%d " % (o.haut + hauteur, len(lignes)),
-                        self.attr("portee"))
+            morceaux = plier(l, largeur - 2)
+            ecran.append((morceaux[0], attr))
+            for m in morceaux[1:]:
+                ecran.append(("   " + m, attr))
+        o.total_ecran = len(ecran)
+        o.haut = max(0, min(o.haut, max(0, len(ecran) - hauteur)))
+        for i, (texte, attr) in enumerate(ecran[o.haut:o.haut + hauteur]):
+            self.ecrire(haut + i, 1, texte, attr)
 
     def dessiner(self):
         self.ecran.erase()
