@@ -219,26 +219,37 @@ CALE='
 # --- Sorties -----------------------------------------------------------------------------
 themes_tries() { # les thèmes présents, dans l’ordre voulu
   presents=$(extraire | cut -f1 | sort -u)
-  for t in $ORDRE; do printf '%s\n' "$presents" | grep -qxF "$t" && echo "$t"; done
-  printf '%s\n' "$presents" | while IFS= read -r t; do
-    [ -n "$t" ] || continue
-    printf '%s\n' "$ORDRE" | tr -s ' \n' '\n' | grep -qxF "$t" || echo "$t"
+  connus=
+  for t in $ORDRE; do
+    printf '%s\n' "$presents" | grep -qxF "$t" && connus="$connus$t
+"
   done
+  # thèmes hors de l’ordre de référence : à la suite
+  autres=$(printf '%s\n' "$presents" | while IFS= read -r t; do
+    [ -n "$t" ] || continue
+    printf '%s\n' "$ORDRE" | tr -s ' \n' '\n' | grep -qxF "$t" || printf '%s\n' "$t"
+  done)
+  # Une seule écriture, et les plaintes d’écriture sont taries : un lecteur qui
+  # s’arrête tôt (« | head -3 », « grep -q ») n’est pas une erreur.
+  { printf '%s' "$connus"
+    [ -z "$autres" ] || printf '%s\n' "$autres"; } 2>/dev/null
 }
 
 sortie_terminal() { # sortie_terminal [thème]
   if [ -t 1 ]; then B=$(printf '\033[1m'); D=$(printf '\033[2m'); C=$(printf '\033[36m'); N=$(printf '\033[0m')
   else B=; D=; C=; N=; fi
+  # Les plaintes d’écriture sont taries sur les lignes d’AFFICHAGE : un lecteur
+  # qui s’arrête tôt (« | head », quitter « less » avant la fin) est normal.
   themes_tries | while IFS= read -r t; do
     [ -z "${1:-}" ] || [ "$1" = "$t" ] || continue
-    printf '\n%s%s%s%s\n' "$B" "$C" "$t" "$N"
+    printf '\n%s%s%s%s\n' "$B" "$C" "$t" "$N" 2>/dev/null
     extraire | awk -F'\t' -v t="$t" -v c="$C" -v d="$D" -v n="$N" "$CALE"'
       $1 == t {
         portee = ($4 == "global" ? "" : "  (" $4 ")")
         printf "  %s%s%s %s%s%s\n", c, cale($2, 26), n, $3, d portee, n
       }' | sort -u
   done
-  echo
+  echo 2>/dev/null
 }
 
 sortie_tsv() {

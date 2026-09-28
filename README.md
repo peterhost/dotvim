@@ -113,7 +113,7 @@ toute installation :
 
 ```sh
 vrc                     la liste des commandes
-vrc interface           tout à la fois, en onglets, dans le terminal
+vrc ui                  tout à la fois, en onglets, dans le terminal (= vrc interface)
 vrc raccourcis [THÈME]  l'aide des raccourcis, engendrée depuis le code
 vrc etat [--json]       vim, niveau, dépôt, greffons, thème, restes
 vrc greffons            installés, écartés sur cette machine, manquants
@@ -140,7 +140,7 @@ et ne lance aucun processus**. La configuration bash le charge d'elle-même ;
 [ -r ~/.vim/shell/vrc.bash ] && . ~/.vim/shell/vrc.bash
 ```
 
-**`vrc interface`** ouvre six onglets (`←→` ou `1`…`6`) : raccourcis par thème —
+**`vrc ui`** (ou `vrc interface`) ouvre six onglets (`←→` ou `1`…`6`) : raccourcis par thème —
 ceux de vim et ceux du shell quand son aide est disponible —, état, greffons,
 thèmes, journaux, commandes. `/` filtre, `r` recharge, `q` quitte. Sans
 `python3`, ou dans un terminal trop limité, le contenu s'affiche à la suite.

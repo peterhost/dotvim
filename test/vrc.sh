@@ -49,6 +49,18 @@ check "--tsv : cinq colonnes"             awk -F'\t' 'NF != 5 { exit 1 }' "$TMP/
 check "--tsv : source = vim"              awk -F'\t' '$1 != "vim" { exit 1 }' "$TMP/out"
 sortie raccourcis --pasuneoption
 check "option inconnue : code 2"          sh -c "[ \"$(code)\" = 2 ]"
+# Un lecteur qui s'arrête tôt (grep -q sur la liste des thèmes, « | head »,
+# « less » quitté avant la fin) ne doit rien faire écrire sur la sortie d'erreur.
+sortie raccourcis thèmes
+check "un thème nommé : rien sur stderr"  test ! -s "$TMP/err"
+for CMD in "raccourcis" "raccourcis git" "etat" "greffons" "themes" "journal"; do
+  check "lecture interrompue, rien sur stderr : vrc $CMD" sh -c \
+    "$VRC $CMD 2>'$TMP/e' | head -2 >/dev/null; test ! -s '$TMP/e'"
+done
+for OPT in "" "--tsv" "--themes" "--ordre" "--commandes" "--touches"; do
+  check "lecture interrompue, rien sur stderr : keys $OPT" sh -c \
+    "$SH '$ROOT/bin/keys' $OPT 2>'$TMP/e' | head -2 >/dev/null; test ! -s '$TMP/e'"
+done
 
 echo "== État"
 sortie etat --json
@@ -132,6 +144,8 @@ else
 fi
 
 echo "== Interface à onglets"
+check "vrc ui est bien le synonyme de vrc interface" sh -c \
+  "$VRC ui --pasuneoption 2>&1 | grep -q 'usage : vrc interface'"
 if command -v python3 >/dev/null 2>&1; then
   check "python valide"                   python3 -c "import ast; ast.parse(open('$ROOT/bin/vrc-interface').read())"
   check "sans terminal : code 4"          sh -c "python3 '$ROOT/bin/vrc-interface' </dev/null >/dev/null 2>&1; [ \$? = 4 ]"

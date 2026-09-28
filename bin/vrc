@@ -2,7 +2,7 @@
 # bin/vrc — la configuration vim en ligne de commande (pendant de « brc »)
 #
 #   vrc                       la liste des commandes
-#   vrc interface             tout à la fois, dans une interface à onglets
+#   vrc ui, vrc interface     tout à la fois, dans une interface à onglets
 #   vrc raccourcis [THÈME]    l'aide des raccourcis, engendrée depuis le code
 #   vrc etat [--json]         diagnostic : vim, niveau, dépôt, greffons, thème, restes
 #   vrc greffons              greffons installés, écartés ici, manquants
@@ -61,11 +61,15 @@ cmd_raccourcis() {
     '') sh "$REPO/bin/keys" ;;
     -*) erreur "option inconnue : $1 (vrc raccourcis [THÈME|--tsv|--regenerer])"; return 2 ;;
     *)
-      if sh "$REPO/bin/keys" --themes | grep -qxF "$1"; then
+      # la liste est recueillie AVANT d’être filtrée : un « | grep -q » fermerait
+      # le tuyau dès la première correspondance, et bin/keys se plaindrait d’écrire
+      # dans un tuyau fermé (bug vu sur « vrc raccourcis thèmes »)
+      themes=$(sh "$REPO/bin/keys" --themes)
+      if printf '%s\n' "$themes" | grep -qxF "$1"; then
         sh "$REPO/bin/keys" "$1"
       else
         erreur "thème inconnu : $1"
-        printf 'thèmes : %s\n' "$(sh "$REPO/bin/keys" --themes | tr '\n' ' ')" >&2
+        printf 'thèmes : %s\n' "$(printf '%s\n' "$themes" | tr '\n' ' ')" >&2
         return 2
       fi ;;
   esac
@@ -234,11 +238,11 @@ cmd_interface() {
 }
 
 aide() {
-  sed -n '3,20p' "$0" | sed 's/^# \{0,1\}//'
+  awk 'NR > 2 { if ($0 !~ /^#/) exit; sub(/^# ?/, ""); print }' "$0"
 }
 
 case ${1:-aide} in
-  interface|onglets) shift; cmd_interface "$@" ;;
+  ui|interface|onglets) shift; cmd_interface "$@" ;;
   raccourcis|touches) shift; cmd_raccourcis "$@" ;;
   etat|état|doctor) shift; cmd_etat "$@" ;;
   greffons|plugins) shift; cmd_greffons "$@" ;;

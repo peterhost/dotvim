@@ -48,7 +48,7 @@ _vrc_complete() {
   local cur prev cmds d
   cur=${COMP_WORDS[COMP_CWORD]}
   prev=${COMP_WORDS[COMP_CWORD-1]}
-  cmds="interface raccourcis etat greffons themes journal maj nettoyer verifier edit cd version aide"
+  cmds="ui interface raccourcis etat greffons themes journal maj nettoyer verifier edit cd version aide"
   d=$(_vrc_dir)
   if [ "$COMP_CWORD" -le 1 ]; then
     COMPREPLY=($(compgen -W "$cmds" -- "$cur"))

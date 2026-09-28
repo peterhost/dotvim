@@ -52,9 +52,12 @@ TUI_OK='✓' TUI_KO='✗' TUI_WARN='!' TUI_PTR='›'
 case ${LC_ALL:-${LC_CTYPE:-${LANG:-}}} in *[Uu][Tt][Ff]*8*) ;; *) TUI_OK='+' TUI_KO='x' TUI_PTR='>' ;; esac
 [ "${TERM:-}" = linux ] && TUI_OK='+' TUI_KO='x' TUI_PTR='>'
 
-tui_title() { printf '\n%s%s== %s ==%s\n' "$T_BOLD" "$T_CYAN" "$*" "$T_RESET"; }
-tui_info()  { printf '  %s\n' "$*"; }
-tui_ok()    { printf '  %s%s%s %s\n' "$T_GREEN" "$TUI_OK" "$T_RESET" "$*"; }
+# Les trois écritures vers la sortie standard tarissent leurs plaintes : un
+# lecteur qui s’arrête tôt (« | head », « less » quitté avant la fin) n’est pas
+# une erreur. Les trois suivantes écrivent sur la sortie d’erreur, elles restent.
+tui_title() { printf '\n%s%s== %s ==%s\n' "$T_BOLD" "$T_CYAN" "$*" "$T_RESET" 2>/dev/null; }
+tui_info()  { printf '  %s\n' "$*" 2>/dev/null; }
+tui_ok()    { printf '  %s%s%s %s\n' "$T_GREEN" "$TUI_OK" "$T_RESET" "$*" 2>/dev/null; }
 tui_warn()  { printf '  %s%s%s %s\n' "$T_YELLOW" "$TUI_WARN" "$T_RESET" "$*" >&2; }
 tui_err()   { printf '  %s%s%s %s\n' "$T_RED" "$TUI_KO" "$T_RESET" "$*" >&2; }
 tui_die()   { tui_err "$1"; exit "${2:-1}"; }
