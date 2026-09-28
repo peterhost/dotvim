@@ -12,11 +12,18 @@ Aucune dépendance : seulement la bibliothèque standard. Si le terminal ne
 permet pas curses, on sort avec le code 4 et bin/vrc affiche tout à la suite.
 """
 
+import sys
+
+# Aucun cache d'octets, et c'est posé AVANT tout import : le jour où ce fichier
+# importera le socle commun de dotlib (~/.dotlib/lib/onglets.py), python voudrait
+# écrire un __pycache__ chez lui — un reste dans SON dépôt, et une écriture hors
+# de ~/.vim. Vu en vrai ici même (commit ec0d242), donc verrouillé d'avance.
+sys.dont_write_bytecode = True
+
 import curses
 import os
 import re
 import subprocess
-import sys
 
 REPO = os.environ.get("VRC_REPO") or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SGR = re.compile(r"\033\[[0-9;]*m")

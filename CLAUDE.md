@@ -69,6 +69,12 @@ jeton gist, journaux, cache ctrlp), jamais dans `~/.cache` ni `~/.viminfo`.
 Un déploiement ne laisse **aucun reste** : `bin/install --clean` et
 `bin/install --check` (code 3) s'en assurent, et `test/install.sh` le vérifie.
 
+Cas particulier de python : tout script ou test qui **importe** un module pose
+`sys.dont_write_bytecode = True` (ou s'exécute avec `python3 -B`) avant l'import.
+Sans cela python écrit un `__pycache__` à côté du source — dans ce dépôt, ou dans
+celui du module importé — et un `.pyc` porte le chemin de son source, absolu selon
+l'invocation. C'est arrivé : un `.pyc` s'est retrouvé suivi et poussé.
+
 ## 5. Ce dépôt est public
 
 Aucun nom de machine, alias ssh, adresse IP ou de courriel, chemin de home
