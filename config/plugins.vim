@@ -102,6 +102,10 @@ call s:P('sainnhe/everforest', v:version >= 800)
 call s:P('sainnhe/edge', v:version >= 800)
 call s:P('catppuccin/vim', v:version >= 800, {'as': 'catppuccin'})
 call s:P('lifepillar/vim-solarized8', v:version >= 800)
+" palettes communes avec le shell (voir config/colors.vim) : gruvbox, nord, tokyonight
+call s:P('lifepillar/vim-gruvbox8', v:version >= 800)
+call s:P('arcticicestudio/nord-vim', v:version >= 800)
+call s:P('ghifarit53/tokyonight-vim', v:version >= 800)
 call s:P('preservim/vim-colors-pencil', 1)
 
 call plug#end()

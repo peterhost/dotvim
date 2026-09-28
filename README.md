@@ -143,11 +143,19 @@ Le thème par défaut est **everforest**, en sombre. Il s'adapte au terminal :
 | Commande | Effet |
 |---|---|
 | `:Theme <Tab>` | liste les thèmes affichables ici |
-| `:Theme edge light` | choisit un thème et un fond |
-| `<F5>` | bascule clair / sombre |
+| `:Theme edge light` | choisit un thème et un fond, durablement |
+| `<F5>` | bascule clair / sombre, **pour cette session seulement** |
+| `:Theme` (sans argument) | dit le thème courant et d'où vient la décision |
 | `,$n` / `,$p` | thème suivant / précédent |
 
-Le dernier choix est mémorisé pour chaque machine. Thèmes disponibles : everforest, edge, catppuccin, solarized8, lucius, PaperColor, pencil (écriture) et noctu (console). Sur vim 9, s'ajoutent retrobox, wildcharm et lunaperche.
+Le dernier choix fait avec `:Theme` est mémorisé pour chaque machine ; `<F5>` ne vaut que pour la session en cours. Thèmes disponibles : everforest, edge, catppuccin, solarized8, gruvbox8, nord, tokyonight, lucius, PaperColor, pencil (écriture) et noctu (console). Sur vim 9, s'ajoutent retrobox, wildcharm et lunaperche.
+
+### Accord avec le thème du shell
+
+Si les outils de shell partagent un réglage de thème (dépôt `dotlib`, lu dans `$DOTLIB_THEME_EFF` ou `~/.dotlib/local/theme.conf`), vim **suit le clair/sombre** pour ne pas être sombre dans un terminal clair. Ce réglage est seulement lu : la configuration reste utilisable seule, sans `dotlib`.
+
+- **La palette n'est pas suivie par défaut** (everforest reste le thème) ; pour qu'elle le soit : `let g:my_follow_palette = 1` dans `~/.vim/local/vimrc.local`. Les palettes reconnues sont catppuccin, gruvbox, nord, solarized et tokyonight ; une palette inconnue, ou un thème non affichable dans ce terminal, laisse le thème de vim inchangé.
+- **Priorités** : un réglage explicite dans `vimrc.local`, puis le dernier `:Theme`, puis le shell, puis le défaut. `<F5>` passe par-dessus, pour la session.
 
 Les fautes d'orthographe (`set spell`) restent visibles dans tous les cas :
 - **soulignement ondulé en couleur** sur les terminaux qui le gèrent (iTerm2, kitty, WezTerm…) ;

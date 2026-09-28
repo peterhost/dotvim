@@ -10,6 +10,9 @@ let s:themes = {
       \ 'edge':       [256, 800, 'both', 'edge', 'edge'],
       \ 'catppuccin': [256, 800, 'both', 'catppuccin_latte', 'catppuccin_mocha'],
       \ 'solarized8': [256, 800, 'both', 'solarized8', 'solarized8'],
+      \ 'gruvbox8':   [256, 800, 'both', 'gruvbox8', 'gruvbox8'],
+      \ 'nord':       [256, 800, 'dark', 'nord', 'nord'],
+      \ 'tokyonight': [256, 800, 'dark', 'tokyonight', 'tokyonight'],
       \ 'lucius':     [256, 700, 'both', 'lucius', 'lucius'],
       \ 'PaperColor': [8,   700, 'both', 'PaperColor', 'PaperColor'],
       \ 'pencil':     [256, 700, 'both', 'pencil', 'pencil'],
@@ -19,11 +22,57 @@ let s:themes = {
       \ 'noctu':      [8,   700, 'dark', 'noctu', 'noctu'],
       \ 'default':    [0,   0,   'both', 'default', 'default'],
       \ }
-let s:order = ['everforest', 'edge', 'catppuccin', 'solarized8', 'lucius',
+let s:order = ['everforest', 'edge', 'catppuccin', 'solarized8', 'gruvbox8',
+      \ 'nord', 'tokyonight', 'lucius',
       \ 'PaperColor', 'pencil', 'retrobox', 'wildcharm', 'lunaperche', 'noctu',
       \ 'default']
 
 let s:state_file = g:my_local . '/theme.vim'
+
+" --- Accord avec le shell (dotlib) -------------------------------------------------------
+" Réglage commun aux outils de Pierre (dépôt public dotlib, gouverné par la
+" session ssh). On le LIT s'il est là, on ne le suppose jamais : ~/.vim doit
+" rester utilisable seul, sans dotlib ni ~/.bash (cas des NAS).
+"   $DOTLIB_THEME_EFF   dark|light, « auto » déjà résolu par le shell
+"   $DOTLIB_PALETTE_EFF palette effective
+"   sinon ~/.dotlib/local/theme.conf : lignes CLÉ=valeur, # en commentaire
+" Par défaut, seul le fond clair/sombre est suivi : la palette ne remplace le
+" thème de vim que si on le demande (g:my_follow_palette dans vimrc.local).
+let s:palette_to_theme = {
+      \ 'catppuccin': 'catppuccin', 'gruvbox': 'gruvbox8', 'nord': 'nord',
+      \ 'solarized': 'solarized8', 'tokyonight': 'tokyonight',
+      \ 'xterm': '', 'actuel': '',
+      \ }
+
+function! s:dotlib_conf(key)
+  let l:file = expand('~/.dotlib/local/theme.conf')
+  if !filereadable(l:file)
+    return ''
+  endif
+  for l:line in readfile(l:file)
+    if l:line =~# '^\s*' . a:key . '\s*='
+      return substitute(matchstr(l:line, '=\zs.*'), '^\s*\|\s*$', '', 'g')
+    endif
+  endfor
+  return ''
+endfunction
+
+" Ce que dit le shell : ['dark'|'light'|'', 'nom de thème vim'|'']
+function! my#colors#from_shell()
+  let l:bg = !empty($DOTLIB_THEME_EFF) ? $DOTLIB_THEME_EFF : s:dotlib_conf('DOTLIB_THEME')
+  if l:bg !~# '^\(dark\|light\)$'
+    let l:bg = ''
+  endif
+  let l:theme = ''
+  if get(g:, 'my_follow_palette', 0)
+    let l:pal = !empty($DOTLIB_PALETTE_EFF) ? $DOTLIB_PALETTE_EFF : s:dotlib_conf('DOTLIB_PALETTE')
+    let l:theme = get(s:palette_to_theme, tolower(l:pal), '')
+    if !empty(l:theme) && !my#colors#available(l:theme)
+      let l:theme = ''
+    endif
+  endif
+  return [l:bg, l:theme]
+endfunction
 
 " --- Disponibilité ----------------------------------------------------------------
 function! s:file(name, bg)
@@ -117,8 +166,13 @@ function! my#colors#init()
     silent! execute 'source ' . fnameescape(s:state_file)
   endif
   let l:state = get(g:, 'my_state', {})
-  let l:name = get(g:, 'my_theme', get(l:state, 'theme', 'everforest'))
-  let l:bg = get(g:, 'my_background', get(l:state, 'background', 'dark'))
+  let [l:shell_bg, l:shell_theme] = my#colors#from_shell()
+  " Priorité : réglage explicite de vimrc.local, puis choix durable fait avec
+  " :Theme, puis le shell, puis le défaut. F5 ne compte pas ici : il ne vaut
+  " que pour la session en cours.
+  let l:name = get(g:, 'my_theme', get(l:state, 'theme', !empty(l:shell_theme) ? l:shell_theme : 'everforest'))
+  let l:bg = get(g:, 'my_background',
+        \ get(l:state, 'background', !empty(l:shell_bg) ? l:shell_bg : 'dark'))
   if g:my_tty
     let l:bg = 'dark'
   endif
@@ -126,10 +180,14 @@ function! my#colors#init()
 endfunction
 
 " --- Commandes et raccourcis ------------------------------------------------------------------
+" F5 : forçage du fond POUR CETTE SESSION seulement. Rien n'est mémorisé :
+" au prochain démarrage, vim reprend le fond décidé ailleurs (réglage
+" explicite, shell, ou défaut). Pour un choix durable : :Theme <nom> <fond>.
 function! my#colors#toggle_background()
-  call my#colors#apply(get(g:, 'my_current_theme', 'default'),
-        \ &background ==# 'dark' ? 'light' : 'dark', 1)
-  echo get(g:, 'my_current_theme', '') . ' (' . &background . ')'
+  let g:my_background_forced = &background ==# 'dark' ? 'light' : 'dark'
+  call my#colors#apply(get(g:, 'my_current_theme', 'default'), g:my_background_forced, 0)
+  echo get(g:, 'my_current_theme', '') . ' (' . &background . ', pour cette session ; '
+        \ . ':Theme <nom> <fond> pour un choix durable)'
 endfunction
 
 function! my#colors#cycle(step)
@@ -147,8 +205,17 @@ endfunction
 function! my#colors#command(args)
   let l:args = split(a:args)
   if empty(l:args)
+    let [l:shell_bg, l:shell_theme] = my#colors#from_shell()
     echo 'Thème : ' . get(g:, 'my_current_theme', '?') . ' (' . &background . ')'
-          \ . '   disponibles : ' . join(my#colors#list(), ', ')
+    if exists('g:my_background_forced')
+      echo '  fond forcé par F5 pour cette session'
+            \ . (!empty(l:shell_bg) ? ' ; le shell dit ' . l:shell_bg : '')
+    elseif exists('g:my_background')
+      echo '  fond fixé dans vimrc.local'
+    elseif !empty(l:shell_bg)
+      echo '  fond suivi du shell (' . l:shell_bg . ')'
+    endif
+    echo '  disponibles : ' . join(my#colors#list(), ', ')
     return
   endif
   let l:bg = len(l:args) > 1 ? l:args[1] : &background

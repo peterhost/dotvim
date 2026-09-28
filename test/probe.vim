@@ -232,6 +232,40 @@ function! s:test_themes()
             \ && exists('g:colors_name'), 'got=' . l:got . ' err=' . v:errmsg)
     endfor
   endfor
+  " Les palettes communes avec le shell ont leur thème vim — seulement là où
+  " elles peuvent s'afficher : en console 8-16 couleurs, c'est normal qu'elles
+  " soient écartées (voir le repli de my#colors#apply).
+  if g:my_colors >= 256 && v:version >= 800
+    for l:pal in ['catppuccin', 'gruvbox8', 'nord', 'tokyonight', 'solarized8']
+      call s:ok('theme.palette_' . l:pal, index(l:list, l:pal) >= 0, 'absent')
+    endfor
+  endif
+  " F5 : forçage pour la session seulement, rien n'est mémorisé
+  call delete(g:my_local . '/theme.vim')
+  call my#colors#toggle_background()
+  call s:ok('theme.f5_session_only', !filereadable(g:my_local . '/theme.vim')
+        \ && exists('g:my_background_forced'), 'un fichier d''état a été écrit')
+  " accord avec le shell : lu, jamais supposé
+  let $DOTLIB_THEME_EFF = 'light'
+  call s:ok('theme.shell_background', my#colors#from_shell()[0] ==# 'light', string(my#colors#from_shell()))
+  let $DOTLIB_PALETTE_EFF = 'nord'
+  call s:ok('theme.shell_palette_opt_in', my#colors#from_shell()[1] ==# '', 'palette suivie sans le demander')
+  let g:my_follow_palette = 1
+  " (en console 8-16 couleurs, nord n'est pas affichable : la palette est alors
+  " écartée, ce qui est le comportement voulu)
+  if g:my_colors >= 256 && v:version >= 800
+    call s:ok('theme.shell_palette_followed', my#colors#from_shell()[1] ==# 'nord',
+          \ string(my#colors#from_shell()))
+  else
+    call s:ok('theme.shell_palette_ignored_low_color', my#colors#from_shell()[1] ==# '',
+          \ string(my#colors#from_shell()))
+  endif
+  let $DOTLIB_PALETTE_EFF = 'palette-inconnue'
+  call s:ok('theme.shell_palette_unknown', my#colors#from_shell()[1] ==# '', 'une palette inconnue a été suivie')
+  unlet g:my_follow_palette
+  let $DOTLIB_THEME_EFF = ''
+  let $DOTLIB_PALETTE_EFF = ''
+  unlet! g:my_background_forced
   " thème inconnu : repli sans erreur
   let v:errmsg = ''
   silent Theme ne_existe_pas
