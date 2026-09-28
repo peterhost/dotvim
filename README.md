@@ -140,10 +140,27 @@ et ne lance aucun processus**. La configuration bash le charge d'elle-même ;
 [ -r ~/.vim/shell/vrc.bash ] && . ~/.vim/shell/vrc.bash
 ```
 
-**`vrc ui`** (ou `vrc interface`) ouvre six onglets (`←→` ou `1`…`6`) : raccourcis par thème —
-ceux de vim et ceux du shell quand son aide est disponible —, état, greffons,
-thèmes, journaux, commandes. `/` filtre, `r` recharge, `q` quitte. Sans
-`python3`, ou dans un terminal trop limité, le contenu s'affiche à la suite.
+**`vrc ui`** (ou `vrc interface`) ouvre six onglets : raccourcis par thème — ceux de
+vim et ceux du shell quand son aide est disponible —, état, greffons, thèmes,
+journaux, commandes.
+
+| Touche | Effet |
+|---|---|
+| `←` `→`, `1`…`6` | changer d'onglet |
+| `Tab` | passer de la liste des sections au contenu, et retour |
+| `↑` `↓`, `j` `k` | défiler le volet actif, ligne à ligne |
+| `Ctrl-d` `Ctrl-u` | demi-page · `Ctrl-f` `Ctrl-b`, `PgUp` `PgDn`, `Espace` : page |
+| `g` `G` | début · fin du volet actif |
+| molette, clic | défiler le volet sous le pointeur, ou choisir une section |
+| `/` puis Entrée | filtrer · `Échap` efface le filtre |
+| `r` · `q` | recharger l'onglet · quitter |
+
+Les lignes trop longues se replient sur la largeur du terminal : rien n'est coupé.
+Les couleurs suivent le **thème du shell** (`brc theme`) en lisant les palettes
+publiées par dotlib ; sans dotlib, ou sur un terminal à moins de 256 couleurs, les
+couleurs de base servent, et en monochrome l'affichage reste lisible. Dans tmux, la
+souris demande `set -g mouse on`. Sans `python3`, ou dans un terminal trop limité,
+le contenu s'affiche à la suite.
 
 L'apparence vient de `shell/affichage.sh`, qui reprend les noms de la couche
 d'affichage de dotlib (`tui_ok`, `C_R_KEY`…) sans en dépendre : dotlib demande
