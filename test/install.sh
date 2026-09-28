@@ -184,9 +184,9 @@ check "diagnostic : https indisponible signalé"       grep -q 'https indisponib
 netinst 0 1
 check "règle non dupliquée à la 2e installation"      test "$(git config --file "$H/.config/git/config" --get-all url.git@github.com:.insteadof | wc -l | tr -d ' ')" = 2
 
-new_home harold
+new_home sans-cle
 git -C "$H/.vim" remote add origin git@github.com:peterhost/dotvim.git
-check "harold (ssh KO, https OK) : installation réussie" netinst 1 0
+check "compte sans clé SSH (ssh KO, https OK) : installation réussie" netinst 1 0
 check "origin passé en https"                         test "$(git -C "$H/.vim" remote get-url origin)" = https://github.com/peterhost/dotvim.git
 check "pas de règle https->ssh ajoutée"               test ! -f "$H/.config/git/config"
 
@@ -404,7 +404,7 @@ check "JSON : removed true, données comptées"         sh -c "grep -q '\"remove
 check "rien à supprimer deux fois (code 4)"           sh -c "HOME='$PUR' sh '$SRC/bin/deploy-local' --dir '$PUR/.vim' --purge --yes --json </dev/null >/dev/null 2>&1; test \$? = 4"
 check "après purge, --check dit absent"               sh -c "HOME='$PUR' sh '$SRC/bin/deploy-local' --dir '$PUR/.vim' --check --json </dev/null 2>/dev/null | grep -q '\"status\":\"absent\"'"
 
-check "aucun nom de machine dans les outils"          sh -c "! grep -rniE 'nas1|nas2|bikini|192\.168|tomneale|pierrelhoste' '$SRC/bin' '$SRC/config' '$SRC/autoload' '$SRC/vimrc'"
+check "rien de personnel dans le dépôt (anti-fuite)"  sh -c "cd '$ROOT' && sh test/anti-fuite.sh >/dev/null 2>&1"
 
 if [ -n "${TEST_NETWORK:-}" ]; then
   echo "== Installation de zéro depuis GitHub (réseau)"
