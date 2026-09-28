@@ -262,6 +262,20 @@ function! s:test_themes()
   endif
   let $DOTLIB_PALETTE_EFF = 'palette-inconnue'
   call s:ok('theme.shell_palette_unknown', my#colors#from_shell()[1] ==# '', 'une palette inconnue a été suivie')
+  " xterm : palette historique du shell, sans équivalent vim -> thème inchangé
+  let $DOTLIB_PALETTE_EFF = 'xterm'
+  call s:ok('theme.shell_palette_xterm', my#colors#from_shell()[1] ==# '', 'xterm a changé le thème')
+  " les 10 palettes qui ont un équivalent le trouvent (quand il est affichable)
+  if g:my_colors >= 256 && v:version >= 800
+    for l:pair in [['everforest', 'everforest'], ['edge', 'edge'], ['lucius', 'lucius'],
+          \ ['papercolor', 'PaperColor'], ['pencil', 'pencil'], ['catppuccin', 'catppuccin'],
+          \ ['gruvbox', 'gruvbox8'], ['nord', 'nord'], ['solarized', 'solarized8'],
+          \ ['tokyonight', 'tokyonight']]
+      let $DOTLIB_PALETTE_EFF = l:pair[0]
+      call s:ok('theme.shell_palette_' . l:pair[0], my#colors#from_shell()[1] ==# l:pair[1],
+            \ l:pair[0] . ' -> ' . string(my#colors#from_shell()[1]))
+    endfor
+  endif
   unlet g:my_follow_palette
   let $DOTLIB_THEME_EFF = ''
   let $DOTLIB_PALETTE_EFF = ''

@@ -38,10 +38,23 @@ let s:state_file = g:my_local . '/theme.vim'
 "   sinon ~/.dotlib/local/theme.conf : lignes CLÉ=valeur, # en commentaire
 " Par défaut, seul le fond clair/sombre est suivi : la palette ne remplace le
 " thème de vim que si on le demande (g:my_follow_palette dans vimrc.local).
+" Palettes du réglage commun -> thèmes vim. Une palette absente de cette table,
+" ou dont le thème n'est pas affichable dans ce terminal, laisse le thème de vim
+" inchangé (jamais d'approximation). « xterm » est la palette historique du
+" shell : elle n'a pas d'équivalent vim, donc vim garde le sien.
 let s:palette_to_theme = {
-      \ 'catppuccin': 'catppuccin', 'gruvbox': 'gruvbox8', 'nord': 'nord',
-      \ 'solarized': 'solarized8', 'tokyonight': 'tokyonight',
-      \ 'xterm': '', 'actuel': '',
+      \ 'catppuccin': 'catppuccin',
+      \ 'gruvbox':    'gruvbox8',
+      \ 'nord':       'nord',
+      \ 'solarized':  'solarized8',
+      \ 'tokyonight': 'tokyonight',
+      \ 'everforest': 'everforest',
+      \ 'edge':       'edge',
+      \ 'lucius':     'lucius',
+      \ 'papercolor': 'PaperColor',
+      \ 'pencil':     'pencil',
+      \ 'xterm':      '',
+      \ 'actuel':     '',
       \ }
 
 function! s:dotlib_conf(key)

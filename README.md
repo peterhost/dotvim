@@ -154,7 +154,7 @@ Le dernier choix fait avec `:Theme` est mémorisé pour chaque machine ; `<F5>` 
 
 Si les outils de shell partagent un réglage de thème (dépôt `dotlib`, lu dans `$DOTLIB_THEME_EFF` ou `~/.dotlib/local/theme.conf`), vim **suit le clair/sombre** pour ne pas être sombre dans un terminal clair. Ce réglage est seulement lu : la configuration reste utilisable seule, sans `dotlib`.
 
-- **La palette n'est pas suivie par défaut** (everforest reste le thème) ; pour qu'elle le soit : `let g:my_follow_palette = 1` dans `~/.vim/local/vimrc.local`. Les palettes reconnues sont catppuccin, gruvbox, nord, solarized et tokyonight ; une palette inconnue, ou un thème non affichable dans ce terminal, laisse le thème de vim inchangé.
+- **La palette n'est pas suivie par défaut** (everforest reste le thème) ; pour qu'elle le soit : `let g:my_follow_palette = 1` dans `~/.vim/local/vimrc.local`. Les palettes reconnues sont catppuccin, gruvbox, nord, solarized, tokyonight, everforest, edge, lucius, papercolor et pencil ; `xterm` (la palette historique du shell) n'a pas d'équivalent vim, et une palette inconnue ou un thème non affichable dans ce terminal laissent le thème de vim inchangé.
 - **Priorités** : un réglage explicite dans `vimrc.local`, puis le dernier `:Theme`, puis le shell, puis le défaut. `<F5>` passe par-dessus, pour la session.
 
 Les fautes d'orthographe (`set spell`) restent visibles dans tous les cas :
