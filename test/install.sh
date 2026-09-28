@@ -404,6 +404,16 @@ check "JSON : removed true, données comptées"         sh -c "grep -q '\"remove
 check "rien à supprimer deux fois (code 4)"           sh -c "HOME='$PUR' sh '$SRC/bin/deploy-local' --dir '$PUR/.vim' --purge --yes --json </dev/null >/dev/null 2>&1; test \$? = 4"
 check "après purge, --check dit absent"               sh -c "HOME='$PUR' sh '$SRC/bin/deploy-local' --dir '$PUR/.vim' --check --json </dev/null 2>/dev/null | grep -q '\"status\":\"absent\"'"
 
+echo "== Cache python : un reste qui porterait un chemin de home"
+new_home pycache
+mkdir -p "$H/.vim/bin/__pycache__"
+: > "$H/.vim/bin/__pycache__/vrc-interface.cpython-314.pyc"
+: > "$H/.vim/bin/egare.pyc"
+check "installation réussie"             inst --yes --no-plugins
+check "__pycache__ supprimé"             test ! -e "$H/.vim/bin/__pycache__"
+check ".pyc égaré supprimé"              test ! -e "$H/.vim/bin/egare.pyc"
+check "le cache de plugged/ n'est pas touché" sh -c "mkdir -p '$H/.vim/plugged/x/__pycache__' && HOME='$H' MY_VIM_NO_AUTOUPDATE=1 sh '$H/.vim/bin/install' --clean </dev/null >/dev/null 2>&1 && test -d '$H/.vim/plugged/x/__pycache__'"
+
 check "rien de personnel dans le dépôt (anti-fuite)"  sh -c "cd '$ROOT' && sh test/anti-fuite.sh >/dev/null 2>&1"
 
 if [ -n "${TEST_NETWORK:-}" ]; then

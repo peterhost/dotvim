@@ -145,7 +145,11 @@ if command -v python3 >/dev/null 2>&1; then
   chmod +x "$TMP/faux/bindhelp"
   cat > "$TMP/melange.py" <<'PYFIN'
 # bin/vrc-interface n'a pas de suffixe .py : on le charge par un chargeur explicite.
-import importlib.machinery, importlib.util, sys
+# Et surtout : PAS de cache — un __pycache__ dans le dépôt serait un reste, et un
+# .pyc contient le chemin absolu de son source (donc un chemin de home nommé).
+import sys
+sys.dont_write_bytecode = True
+import importlib.machinery, importlib.util
 chargeur = importlib.machinery.SourceFileLoader("interface", sys.argv[1])
 module = importlib.util.module_from_spec(importlib.util.spec_from_loader("interface", chargeur))
 chargeur.exec_module(module)
@@ -159,12 +163,14 @@ sys.exit(0 if all(e[0] == "vim" for e in entrees) else 1)
 PYFIN
   CHEMIN=$PATH; PATH="$TMP/faux:$PATH"
   check "l'onglet mêle vim et le shell"  sh -c \
-    "VRC_REPO='$ROOT' python3 '$TMP/melange.py' '$ROOT/bin/vrc-interface' melange"
+    "VRC_REPO='$ROOT' PYTHONDONTWRITEBYTECODE=1 python3 -B '$TMP/melange.py' '$ROOT/bin/vrc-interface' melange"
   PATH=$CHEMIN
   # HOME déplacé : sinon, sur une machine qui a dotbash, ~/.bash/bin/bindhelp
   # répondrait et le cas « aide du shell absente » ne serait pas testable.
   check "shell absent : vim seul, sans erreur" sh -c \
-    "HOME='$TMP' VRC_REPO='$ROOT' python3 '$TMP/melange.py' '$ROOT/bin/vrc-interface' seul"
+    "HOME='$TMP' VRC_REPO='$ROOT' PYTHONDONTWRITEBYTECODE=1 python3 -B '$TMP/melange.py' '$ROOT/bin/vrc-interface' seul"
+  # ces tests importent un module du dépôt : ils ne doivent pas y laisser de cache
+  check "aucun __pycache__ laissé dans le dépôt" sh -c "! find '$ROOT' -name __pycache__ -type d | grep -q ." 
   if command -v script >/dev/null 2>&1 && [ "${TEST_NO_PTY:-0}" != 1 ]; then
     check "dans un terminal : s'ouvre et se ferme sur q" sh -c \
       "printf q | TERM=xterm script -q /dev/null python3 '$ROOT/bin/vrc-interface' >/dev/null 2>&1"

@@ -85,8 +85,12 @@ class Onglet:
 def onglets():
     def raccourcis():
         entrees = raccourcis_tsv()
-        themes = [t for t in sortie(["sh", os.path.join(REPO, "bin", "keys"), "--themes"]) if t]
-        for _, theme, _, _, _ in entrees:      # thèmes venus du shell, à la suite
+        # l'ordre de référence vient de bin/keys (--ordre), pour que les thèmes
+        # du shell se rangent au bon endroit et non à la fin
+        reference = sortie(["sh", os.path.join(REPO, "bin", "keys"), "--ordre"])
+        presents = [e[1] for e in entrees]
+        themes = [t for t in reference if t in presents]
+        for theme in presents:                 # thèmes hors référence, à la suite
             if theme not in themes:
                 themes.append(theme)
         return {"entrees": entrees, "themes": themes}
@@ -214,7 +218,8 @@ class Interface:
             if largeur_src:
                 self.ecrire(haut + i, x, source, self.attr("portee"))
                 x += largeur_src
-            # une touche qui EST l'espace arrive telle quelle dans le TSV du shell
+            # filet : une source qui enverrait le caractère espace au lieu de son
+            # nom laisserait la colonne vide à l'écran
             self.ecrire(haut + i, x, (touches if touches.strip() else "Espace")[: largeur_touches - 1],
                         self.attr("touche", True))
             x += largeur_touches

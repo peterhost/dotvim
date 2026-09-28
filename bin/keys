@@ -7,6 +7,8 @@
 #   sh bin/keys --readme    réécrit la section « Raccourcis » du README
 #   sh bin/keys --commandes les commandes maison (:Theme, :StripWhitespace…)
 #   sh bin/keys --themes    la liste des thèmes rencontrés
+#   sh bin/keys --ordre     l'ordre de référence des thèmes, présents ou non
+#                           (l'interface s'en sert pour ranger aussi ceux du shell)
 #   sh bin/keys --todo      les raccourcis SANS annotation (fichier:ligne)
 #   sh bin/keys --touches   les touches définies, une par ligne (test de couverture)
 #   sh bin/keys --help
@@ -40,9 +42,12 @@ cd "$REPO" || exit 1
 
 # Ordre d'affichage des thèmes : du plus utilisé au plus rare, le reste ensuite
 # par ordre alphabétique. Socle commun avec la configuration bash.
-ORDRE="fichiers buffers fenêtres onglets sessions navigation recherche édition
-       repliage saisie écriture langages git diff greffons thèmes aide
-       configuration système polices"
+# « historique » ne vient pas de vim : c'est un thème de la configuration bash,
+# placé ici pour que l'onglet des raccourcis le montre au bon rang (voisin de
+# « recherche »), quand les deux aides s'affichent ensemble.
+ORDRE="fichiers buffers fenêtres onglets sessions navigation recherche
+       historique édition repliage saisie écriture langages git diff greffons
+       thèmes aide configuration système polices"
 
 FICHIERS="vimrc gvimrc config/options.vim config/mappings.vim config/colors.vim
           config/highlights.vim config/plugins.vim"
@@ -337,6 +342,7 @@ case ${1:-} in
   --readme) sortie_readme ;;
   --commandes) sortie_commandes ;;
   --themes) themes_tries ;;
+  --ordre) printf '%s\n' "$ORDRE" | tr -s ' \n' '\n' | grep -v '^$' ;;
   --todo) sortie_todo ;;
   --touches) sortie_touches ;;
   -h|--help) sed -n '2,30p' "$0" | sed 's/^# \{0,1\}//' ;;

@@ -9,6 +9,11 @@
 /bundle/
 /vim-powerline-patched-fonts/
 
+# Cache python (engendré dès qu'un test importe bin/vrc-interface ; un .pyc
+# contient le chemin ABSOLU de son source, donc un chemin de home nommé)
+__pycache__/
+*.pyc
+
 # Divers
 /install.log
 .netrwhist

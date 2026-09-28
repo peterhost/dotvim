@@ -582,6 +582,17 @@ crumbs_list() {
     [ -f "$REPO/local/spell/$words" ] || continue
     echo "$f"
   done
+  # cache python : engendré dès qu'un outil importe bin/vrc-interface comme
+  # module. Un .pyc porte le chemin absolu de son source : il n'a rien à rester
+  # dans le dépôt, et surtout rien à y être suivi.
+  for f in $(find "$REPO" -name __pycache__ -type d -not -path "$REPO/plugged/*" 2>/dev/null); do
+    echo "$f"
+  done
+  for f in $(find "$REPO" -name '*.pyc' -not -path "$REPO/plugged/*" -not -path '*/__pycache__/*' 2>/dev/null); do
+    rel=${f#"$REPO"/}
+    tracked "$rel" && continue
+    echo "$f"
+  done
   # transitoires
   for f in "$REPO/local/update-report.txt" "$REPO/local/check.txt"; do
     [ -f "$f" ] && echo "$f"
