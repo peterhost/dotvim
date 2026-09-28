@@ -78,9 +78,15 @@ l'invocation. C'est arrivé : un `.pyc` s'est retrouvé suivi et poussé.
 ## 5. Ce dépôt est public
 
 Aucun nom de machine, alias ssh, adresse IP ou de courriel, chemin de home
-nommé — y compris dans un test, un exemple ou un commentaire. La liste des
-littéraux interdits est **hors du dépôt** (`~/.dotlib/local/mots-interdits`) :
+nommé, ni prénom — y compris dans un test, un exemple ou un commentaire. La
+liste des littéraux interdits est **hors du dépôt** (`local/mots-interdits`) :
 l'écrire ici publierait ce qu'elle protège. `test/anti-fuite.sh` vérifie.
+
+Cela vaut aussi pour **ce qui SORT du dépôt** : un fichier donné à un autre
+projet n'est plus protégé par notre crochet. Avant de le livrer :
+`sh test/anti-fuite.sh <fichier…>`. C'est arrivé : deux tests livrés avec le
+chemin du dépôt en valeur par défaut, donc le nom du compte, arrêtés par le
+crochet de l'autre projet et non par le nôtre.
 
 ## 6. Les outils ignorent le parc
 

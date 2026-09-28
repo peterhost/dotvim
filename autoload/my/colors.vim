@@ -30,7 +30,7 @@ let s:order = ['everforest', 'edge', 'catppuccin', 'solarized8', 'gruvbox8',
 let s:state_file = g:my_local . '/theme.vim'
 
 " --- Accord avec le shell (dotlib) -------------------------------------------------------
-" Réglage commun aux outils de Pierre (dépôt public dotlib, gouverné par la
+" Réglage commun aux outils du shell (dépôt public dotlib, gouverné par la
 " session ssh). On le LIT s'il est là, on ne le suppose jamais : ~/.vim doit
 " rester utilisable seul, sans dotlib ni ~/.bash (cas des NAS).
 "   $DOTLIB_THEME_EFF   dark|light, « auto » déjà résolu par le shell

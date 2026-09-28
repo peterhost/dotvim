@@ -22,12 +22,22 @@
 #
 # Lancé par « make check » (via test/), par le crochet pre-push, et à la main avant toute poussée.
 
+# Avec des ARGUMENTS, on vérifie ces fichiers-là au lieu des fichiers suivis. C'est le
+# mode à employer avant de donner un fichier à un autre projet : ce qui sort d'ici n'est
+# plus protégé par notre crochet, et un chemin de home nommé s'y glisse vite (déjà vu :
+# deux tests livrés avec le chemin du dépôt en valeur par défaut).
+#     sh test/anti-fuite.sh fichier…
 cd "$(git rev-parse --show-toplevel 2>/dev/null)" || { echo "anti-fuite : pas dans un dépôt git"; exit 2; }
 NB=0
 signaler() { NB=$((NB + 1)); printf '  ✗ %s\n' "$1"; }
-suivis() { git ls-files; }
-
-echo "anti-fuite : $(suivis | wc -l | tr -d ' ') fichier(s) suivi(s)"
+if [ $# -gt 0 ]; then
+  LISTE_ARGS=$*
+  suivis() { for f in $LISTE_ARGS; do [ -e "$f" ] && printf '%s\n' "$f"; done; }
+  echo "anti-fuite : $(suivis | wc -l | tr -d ' ') fichier(s) donné(s) en argument"
+else
+  suivis() { git ls-files; }
+  echo "anti-fuite : $(suivis | wc -l | tr -d ' ') fichier(s) suivi(s)"
+fi
 
 # ---------------------------------------------------------------- 1. motifs génériques
 # Adresses IPv4, sauf celles réservées à la documentation et aux exemples (RFC 5737, RFC 5735).
@@ -80,7 +90,8 @@ $trouve"
 # déjà publiques dans 356 commits : faire échouer le test à chaque exécution
 # n'y changerait rien et le rendrait inutile. ANTIFUITE_STRICT=1 le rend
 # bloquant, pour un dépôt qui démarre propre.
-trouve=$(git log --format='%ae%n%ce' | sort -u | grep -vE '@users\.noreply\.github\.com$')
+trouve=
+[ $# -gt 0 ] || trouve=$(git log --format='%ae%n%ce' | sort -u | grep -vE '@users\.noreply\.github\.com$')
 if [ -n "$trouve" ]; then
   if [ -n "${ANTIFUITE_STRICT:-}" ]; then
     signaler "adresse non-noreply dans l'historique (auteur ou validateur) :
