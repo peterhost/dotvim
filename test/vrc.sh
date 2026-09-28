@@ -136,6 +136,35 @@ if command -v python3 >/dev/null 2>&1; then
   check "python valide"                   python3 -c "import ast; ast.parse(open('$ROOT/bin/vrc-interface').read())"
   check "sans terminal : code 4"          sh -c "python3 '$ROOT/bin/vrc-interface' </dev/null >/dev/null 2>&1; [ \$? = 4 ]"
   check "sans terminal : le dit sur stderr" sh -c "python3 '$ROOT/bin/vrc-interface' </dev/null 2>&1 >/dev/null | grep -q '^vrc :'"
+  # Le premier onglet mêle les raccourcis de vim et ceux du shell. On ne dépend
+  # pas de la présence de dotbash : un faux « bindhelp » suffit à vérifier le
+  # mélange, le format à cinq colonnes et la tolérance à son absence.
+  mkdir -p "$TMP/faux"
+  printf '#!/bin/sh\nprintf "bash\\thistorique\\tCtrl-x\\tfaire quelque chose\\tmode insertion\\n"\n' \
+    > "$TMP/faux/bindhelp"
+  chmod +x "$TMP/faux/bindhelp"
+  cat > "$TMP/melange.py" <<'PYFIN'
+# bin/vrc-interface n'a pas de suffixe .py : on le charge par un chargeur explicite.
+import importlib.machinery, importlib.util, sys
+chargeur = importlib.machinery.SourceFileLoader("interface", sys.argv[1])
+module = importlib.util.module_from_spec(importlib.util.spec_from_loader("interface", chargeur))
+chargeur.exec_module(module)
+entrees = module.raccourcis_tsv()
+attendu = ["bash", "historique", "Ctrl-x", "faire quelque chose", "mode insertion"]
+if not entrees or not all(len(e) == 5 for e in entrees):
+    sys.exit(1)
+if sys.argv[2] == "melange":
+    sys.exit(0 if attendu in entrees and any(e[0] == "vim" for e in entrees) else 1)
+sys.exit(0 if all(e[0] == "vim" for e in entrees) else 1)
+PYFIN
+  CHEMIN=$PATH; PATH="$TMP/faux:$PATH"
+  check "l'onglet mêle vim et le shell"  sh -c \
+    "VRC_REPO='$ROOT' python3 '$TMP/melange.py' '$ROOT/bin/vrc-interface' melange"
+  PATH=$CHEMIN
+  # HOME déplacé : sinon, sur une machine qui a dotbash, ~/.bash/bin/bindhelp
+  # répondrait et le cas « aide du shell absente » ne serait pas testable.
+  check "shell absent : vim seul, sans erreur" sh -c \
+    "HOME='$TMP' VRC_REPO='$ROOT' python3 '$TMP/melange.py' '$ROOT/bin/vrc-interface' seul"
   if command -v script >/dev/null 2>&1 && [ "${TEST_NO_PTY:-0}" != 1 ]; then
     check "dans un terminal : s'ouvre et se ferme sur q" sh -c \
       "printf q | TERM=xterm script -q /dev/null python3 '$ROOT/bin/vrc-interface' >/dev/null 2>&1"

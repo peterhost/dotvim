@@ -203,17 +203,21 @@ class Interface:
         # volet des raccourcis du thème choisi
         choisi = themes[o.rang]
         lignes = [e for e in entrees if e[1] == choisi]
-        largeur_touches = min(30, max([8] + [len(e[2]) for e in lignes]) + 2)
+        # colonne des sources : seulement quand il y en a plus d'une (vim et bash)
+        sources = set(e[0] for e in lignes)
+        largeur_src = 0 if sources <= {"vim"} else max(len(x) for x in sources) + 1
+        largeur_touches = min(34, max([8] + [len(e[2]) for e in lignes]) + 2)
         o.haut = max(0, min(o.haut, max(0, len(lignes) - hauteur)))
         for i, e in enumerate(lignes[o.haut:o.haut + hauteur]):
             source, _, touches, description, portee = e
             x = colonne + 2
-            marque = "" if source == "vim" else source + " "
-            if marque:
-                self.ecrire(haut + i, x, marque, self.attr("portee"))
-                x += len(marque)
-            self.ecrire(haut + i, x, touches, self.attr("touche", True))
-            x += max(largeur_touches - len(marque), len(touches) + 1)
+            if largeur_src:
+                self.ecrire(haut + i, x, source, self.attr("portee"))
+                x += largeur_src
+            # une touche qui EST l'espace arrive telle quelle dans le TSV du shell
+            self.ecrire(haut + i, x, (touches if touches.strip() else "Espace")[: largeur_touches - 1],
+                        self.attr("touche", True))
+            x += largeur_touches
             texte = description
             if portee and portee != "global":
                 texte += "  (%s)" % portee
