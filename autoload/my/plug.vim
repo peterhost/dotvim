@@ -3,6 +3,7 @@
 " Un plugin dont la condition est fausse reste déclaré (PlugInstall l'installe,
 " PlugClean ne le supprime pas), mais vim-plug ne le charge jamais : c'est ce
 " qui permet de partager la même liste entre un vim 9 et un vieux vim 7.
+scriptencoding utf-8
 
 " my#plug#add(repo, condition [, options]) : déclare le plugin.
 function! my#plug#add(repo, cond, ...)
@@ -18,6 +19,24 @@ function! my#plug#add(repo, cond, ...)
     let l:opts.on = []
   endif
   call plug#(a:repo, l:opts)
+endfunction
+
+" my#plug#report() : une ligne « état|nom » par greffon déclaré, pour « vrc greffons ».
+" État : installé, manquant (déclaré et voulu, mais absent) ou écarté (condition
+" fausse sur cette machine : vim trop vieux, outil absent).
+function! my#plug#report()
+  let l:out = []
+  for l:nom in sort(keys(get(g:, 'plugs', {})))
+    if has_key(get(g:, 'my_plug_off', {}), l:nom)
+      let l:etat = 'écarté'
+    elseif isdirectory(g:plugs[l:nom].dir)
+      let l:etat = 'installé'
+    else
+      let l:etat = 'manquant'
+    endif
+    call add(l:out, l:etat . '|' . l:nom)
+  endfor
+  return l:out
 endfunction
 
 " my#plug#on(name) : vrai si le plugin est déclaré, autorisé et installé.

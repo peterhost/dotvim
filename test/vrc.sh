@@ -1,0 +1,148 @@
+#!/bin/sh
+# test/vrc.sh — tests de bin/vrc, shell/affichage.sh et shell/vrc.bash
+#
+# Rien n'est modifié : ces commandes sont en lecture seule (etat, greffons,
+# raccourcis…). Les commandes qui écrivent (maj, nettoyer, verifier) sont
+# couvertes par test/install.sh ; ici on vérifie leur refus d'arguments.
+# TEST_SH=dash : passer bin/vrc à un autre shell.
+
+set -u
+ROOT=$(cd "$(dirname "$0")/.." && pwd)
+TMP=$(mktemp -d "${TMPDIR:-/tmp}/vimtest-vrc.XXXXXX")
+trap 'rm -rf "$TMP"' EXIT INT TERM
+PASS=0; FAIL=0
+SH=${TEST_SH:-sh}
+VRC="$SH $ROOT/bin/vrc"
+
+check() { # check <libellé> <commande…>
+  label=$1; shift
+  if "$@" >/dev/null 2>&1; then PASS=$((PASS + 1)); printf '  ok   %s\n' "$label"
+  else FAIL=$((FAIL + 1)); printf '  ÉCHEC %s\n' "$label"; fi
+}
+sortie() { $VRC "$@" >"$TMP/out" 2>"$TMP/err"; printf '%s' $? > "$TMP/code"; }
+code() { cat "$TMP/code"; }
+
+echo "== Liste des commandes et commande inconnue"
+sortie
+check "sans argument : la liste, code 0"  sh -c "[ \"$(code)\" = 0 ]"
+check "la liste nomme les sous-commandes" grep -q 'vrc raccourcis' "$TMP/out"
+sortie inconnue
+check "commande inconnue : code 2"        sh -c "[ \"$(code)\" = 2 ]"
+check "erreur sur stderr, préfixée vrc :" grep -q '^vrc : commande inconnue' "$TMP/err"
+check "rien sur stdout"                   test ! -s "$TMP/out"
+sortie aide
+check "vrc aide : code 0"                 sh -c "[ \"$(code)\" = 0 ]"
+
+echo "== Raccourcis"
+sortie raccourcis
+check "aide des raccourcis non vide"      test -s "$TMP/out"
+check "un thème connu y figure"           grep -q 'buffers' "$TMP/out"
+sortie raccourcis git
+check "un seul thème : code 0"            sh -c "[ \"$(code)\" = 0 ]"
+check "le thème demandé est là"           grep -q 'GBrowse\|:Git' "$TMP/out"
+check "les autres thèmes sont absents"    sh -c "! grep -q 'NERDTree' '$TMP/out'"
+sortie raccourcis pasuntheme
+check "thème inconnu : code 2"            sh -c "[ \"$(code)\" = 2 ]"
+check "les thèmes possibles sont dits"    grep -q 'thèmes :' "$TMP/err"
+sortie raccourcis --tsv
+check "--tsv : cinq colonnes"             awk -F'\t' 'NF != 5 { exit 1 }' "$TMP/out"
+check "--tsv : source = vim"              awk -F'\t' '$1 != "vim" { exit 1 }' "$TMP/out"
+sortie raccourcis --pasuneoption
+check "option inconnue : code 2"          sh -c "[ \"$(code)\" = 2 ]"
+
+echo "== État"
+sortie etat --json
+check "--json : une seule ligne"          sh -c "[ \"$(grep -c . "$TMP/out")\" = 1 ]"
+check "--json : JSON valide"              sh -c "command -v python3 >/dev/null || exit 0; python3 -m json.tool < '$TMP/out' >/dev/null"
+check "--json : champ dotlib présent"     grep -q '"dotlib":' "$TMP/out"
+check "--json : champ theme_follows"      grep -q '"theme_follows":"fond"' "$TMP/out"
+sortie etat
+check "état lisible : le dépôt"           grep -q 'dépôt' "$TMP/out"
+check "état lisible : les greffons"       grep -q 'greffons' "$TMP/out"
+check "état lisible : le thème et dotlib" sh -c "grep -q 'thème' '$TMP/out' && grep -q 'dotlib' '$TMP/out'"
+sortie etat --pasuneoption
+check "argument de trop : code 2"         sh -c "[ \"$(code)\" = 2 ]"
+
+echo "== Greffons, thèmes, journal, version"
+sortie greffons
+check "greffons : au moins un installé"   grep -q 'installé' "$TMP/out"
+check "greffons : un compte final"        grep -q 'installé(s)' "$TMP/out"
+sortie themes
+check "thèmes : celui en cours"           grep -q 'en cours' "$TMP/out"
+check "thèmes : les disponibles"          grep -q 'disponibles' "$TMP/out"
+sortie journal 5
+check "journal : code 0"                  sh -c "[ \"$(code)\" = 0 ]"
+sortie journal pasunnombre
+check "journal : nombre attendu, code 2"  sh -c "[ \"$(code)\" = 2 ]"
+sortie journal --install 3
+check "journal --install : code 0"        sh -c "[ \"$(code)\" = 0 ]"
+sortie version
+check "version : parle de vim"            grep -q 'vim' "$TMP/out"
+sortie cd
+check "cd : imprime le dépôt"             sh -c "[ \"$(cat "$TMP/out")\" = \"$ROOT\" ]"
+
+echo "== Édition"
+sortie edit pasunfichier
+check "fichier inconnu : code 2"          sh -c "[ \"$(code)\" = 2 ]"
+check "les fichiers connus sont dits"     grep -q 'connus :' "$TMP/err"
+sortie --fichiers-edit
+check "liste pour la complétion"          grep -q '^mappings$' "$TMP/out"
+
+echo "== Commandes qui écrivent : refus d'arguments inutiles"
+sortie nettoyer trop
+check "nettoyer : code 2"                 sh -c "[ \"$(code)\" = 2 ]"
+sortie maj trop
+check "maj : code 2"                      sh -c "[ \"$(code)\" = 2 ]"
+sortie verifier trop
+check "verifier : code 2"                 sh -c "[ \"$(code)\" = 2 ]"
+
+echo "== Couche d'affichage (shell/affichage.sh)"
+check "sourçable telle quelle"            sh -c ". '$ROOT/shell/affichage.sh'"
+check "sans terminal : TUI_INTERACTIVE=0" sh -c ". '$ROOT/shell/affichage.sh'; [ \"\$TUI_INTERACTIVE\" = 0 ]"
+check "sans terminal : aucune couleur"    sh -c ". '$ROOT/shell/affichage.sh'; [ -z \"\$T_RESET\" ]"
+check "tui_ok écrit sur stdout"           sh -c ". '$ROOT/shell/affichage.sh'; [ -n \"\$(tui_ok essai 2>/dev/null)\" ]"
+check "tui_err écrit sur stderr"          sh -c ". '$ROOT/shell/affichage.sh'; [ -z \"\$(tui_err essai 2>/dev/null)\" ]"
+check "tui_confirm : défaut non, sans tty" sh -c ". '$ROOT/shell/affichage.sh'; ! tui_confirm 'Q ?' n"
+check "tui_confirm : défaut oui, sans tty" sh -c ". '$ROOT/shell/affichage.sh'; tui_confirm 'Q ?' o"
+check "tui_table aligne les colonnes"     sh -c ". '$ROOT/shell/affichage.sh'; printf 'a\tx\nbbbb\ty\n' | tui_table | awk 'NR==1{p=index(\$0,\"x\")} NR==2{exit index(\$0,\"y\") != p}'"
+# les accents comptent pour un caractère, pas pour deux octets : vérifié en
+# python quand il est là (awk, lui, compte tantôt l'un tantôt l'autre)
+check "tui_table compte les caractères"   sh -c "command -v python3 >/dev/null || exit 0
+  . '$ROOT/shell/affichage.sh'
+  printf 'aé\tx\nbbbb\ty\n' | tui_table | python3 -c \"
+import sys
+l = sys.stdin.read().splitlines()
+sys.exit(0 if l[0].index('x') == l[1].index('y') else 1)\""
+check "aucune séquence ANSI hors terminal" sh -c ". '$ROOT/shell/affichage.sh'; tui_title T | grep -q '\033' && exit 1; exit 0"
+
+echo "== Fonction bash (shell/vrc.bash)"
+if command -v bash >/dev/null 2>&1; then
+  B="bash --noprofile --norc -c"
+  check "syntaxe bash valide"             bash -n "$ROOT/shell/vrc.bash"
+  check "chargement silencieux"           sh -c "[ -z \"\$($B '. $ROOT/shell/vrc.bash' 2>&1)\" ]"
+  check "définit vrc, vivrc, _brc_cmd_vim" $B ". '$ROOT/shell/vrc.bash'; declare -F vrc >/dev/null && declare -F vivrc >/dev/null && declare -F _brc_cmd_vim >/dev/null"
+  check "définit la complétion"           $B ". '$ROOT/shell/vrc.bash'; complete -p vrc >/dev/null"
+  check "vrc cd change de dossier"        $B ". '$ROOT/shell/vrc.bash'; vrc cd && [ \"\$PWD\" = '$ROOT' ]"
+  check "vrc délègue à bin/vrc"           $B ". '$ROOT/shell/vrc.bash'; vrc version | grep -q vim"
+  check "brc vim : résumé sur une ligne"  $B ". '$ROOT/shell/vrc.bash'; [ \"\$(_brc_cmd_vim --summary | grep -c .)\" = 1 ]"
+  check "complétion : les sous-commandes" $B ". '$ROOT/shell/vrc.bash'; COMP_WORDS=(vrc r); COMP_CWORD=1; _vrc_complete; printf '%s\n' \"\${COMPREPLY[@]}\" | grep -q raccourcis"
+  check "complétion : les thèmes"         $B ". '$ROOT/shell/vrc.bash'; COMP_WORDS=(vrc raccourcis g); COMP_CWORD=2; _vrc_complete; printf '%s\n' \"\${COMPREPLY[@]}\" | grep -q git"
+else
+  echo "  (bash absent : tests de shell/vrc.bash sautés)"
+fi
+
+echo "== Interface à onglets"
+if command -v python3 >/dev/null 2>&1; then
+  check "python valide"                   python3 -c "import ast; ast.parse(open('$ROOT/bin/vrc-interface').read())"
+  check "sans terminal : code 4"          sh -c "python3 '$ROOT/bin/vrc-interface' </dev/null >/dev/null 2>&1; [ \$? = 4 ]"
+  check "sans terminal : le dit sur stderr" sh -c "python3 '$ROOT/bin/vrc-interface' </dev/null 2>&1 >/dev/null | grep -q '^vrc :'"
+  if command -v script >/dev/null 2>&1 && [ "${TEST_NO_PTY:-0}" != 1 ]; then
+    check "dans un terminal : s'ouvre et se ferme sur q" sh -c \
+      "printf q | TERM=xterm script -q /dev/null python3 '$ROOT/bin/vrc-interface' >/dev/null 2>&1"
+  fi
+else
+  echo "  (python3 absent : interface sautée, bin/vrc affiche à la suite)"
+fi
+
+printf '\nvrc : %d réussis, %d échoués\n' "$PASS" "$FAIL"
+[ "$FAIL" = 0 ]

@@ -1,0 +1,256 @@
+#!/bin/sh
+# bin/vrc — la configuration vim en ligne de commande (pendant de « brc »)
+#
+#   vrc                       la liste des commandes
+#   vrc interface             tout à la fois, dans une interface à onglets
+#   vrc raccourcis [THÈME]    l'aide des raccourcis, engendrée depuis le code
+#   vrc etat [--json]         diagnostic : vim, niveau, dépôt, greffons, thème, restes
+#   vrc greffons              greffons installés, écartés ici, manquants
+#   vrc themes                thèmes de couleurs disponibles, et celui en cours
+#   vrc journal [--install]   les dernières lignes du journal
+#   vrc maj                   mettre à jour le dépôt puis les greffons
+#   vrc nettoyer              supprimer les restes (les données locales sont intactes)
+#   vrc verifier [--rapide]   la batterie de tests
+#   vrc edit [NOM]            ouvrir un fichier de configuration dans vim
+#   vrc cd                    aller dans le dépôt (affiche son chemin hors de bash)
+#   vrc version               version, dépôt, vim
+#
+# Erreurs sur stderr, préfixées « vrc : ». Codes : 0 conforme, 1 erreur, 2 usage,
+# 3 dégradé. Aucune question n'est posée sans terminal.
+#
+# sh POSIX : ce script tourne aussi sous le sh des NAS Synology.
+
+set -u
+
+# emplacement réel du dépôt, même appelé à travers un lien symbolique
+cible=$0
+while [ -L "$cible" ]; do
+  lien=$(readlink "$cible")
+  case $lien in /*) cible=$lien ;; *) cible=$(dirname "$cible")/$lien ;; esac
+done
+REPO=$(cd "$(dirname "$cible")/.." && pwd -P)
+. "$REPO/shell/affichage.sh"
+VIM=${VRC_VIM:-vim}
+TMPD=
+
+nettoie() { [ -z "$TMPD" ] || rm -rf "$TMPD"; }
+trap nettoie EXIT INT TERM HUP
+tmpdir() { [ -n "$TMPD" ] || TMPD=$(mktemp -d "${TMPDIR:-/tmp}/vrc.XXXXXX"); printf '%s' "$TMPD"; }
+erreur() { printf 'vrc : %s\n' "$*" >&2; }
+a_vim() { command -v "$VIM" >/dev/null 2>&1; }
+court() { printf '%s' "$1" | sed "s|^$HOME|~|"; }
+
+# vim_dit <commande vim…> : les lignes écrites par « silent echo », en mode -es
+# (où echo ne sort pas sur stdout : il faut passer par redir).
+vim_dit() {
+  a_vim || { erreur "vim introuvable dans le PATH"; return 1; }
+  d=$(tmpdir); out=$d/dit
+  set -- "$@" -c 'redir END' -c 'qa!'
+  MY_VIM_NO_AUTOUPDATE=1 "$VIM" -N -u "$REPO/vimrc" -i NONE -es \
+    -c "redir! > $out" "$@" </dev/null >/dev/null 2>&1
+  tr -d '\r' < "$out" 2>/dev/null | grep -v '^$'
+  rm -f "$out"
+}
+
+# --- raccourcis ----------------------------------------------------------------------------
+cmd_raccourcis() {
+  case ${1:-} in
+    --regenerer) sh "$REPO/bin/keys" --vim && sh "$REPO/bin/keys" --readme ;;
+    --tsv) sh "$REPO/bin/keys" --tsv ;;
+    --themes) sh "$REPO/bin/keys" --themes ;;
+    '') sh "$REPO/bin/keys" ;;
+    -*) erreur "option inconnue : $1 (vrc raccourcis [THÈME|--tsv|--regenerer])"; return 2 ;;
+    *)
+      if sh "$REPO/bin/keys" --themes | grep -qxF "$1"; then
+        sh "$REPO/bin/keys" "$1"
+      else
+        erreur "thème inconnu : $1"
+        printf 'thèmes : %s\n' "$(sh "$REPO/bin/keys" --themes | tr '\n' ' ')" >&2
+        return 2
+      fi ;;
+  esac
+}
+
+# --- état ------------------------------------------------------------------------------------
+# On s'appuie sur le contrat déjà en place : bin/install --check --json. Une seule
+# source de vérité pour l'état d'une machine, ici comme pour l'appelant tiers.
+champ() { # champ <clé> : sa valeur dans $ETAT (JSON plat, sur une ligne)
+  printf '%s' "$ETAT" | awk -v k="\"$1\":" '
+    { n = index($0, k); if (!n) exit
+      s = substr($0, n + length(k))
+      if (substr(s, 1, 1) == "\"") { s = substr(s, 2); print substr(s, 1, index(s, "\"") - 1) }
+      else { sub(/[,}].*/, "", s); print s } }'
+}
+
+cmd_etat() {
+  if [ "${1:-}" = --json ]; then sh "$REPO/bin/install" --check --json; return $?; fi
+  [ $# = 0 ] || { erreur "usage : vrc etat [--json]"; return 2; }
+  ETAT=$(sh "$REPO/bin/install" --check --json 2>/dev/null); code=$?
+  [ -n "$ETAT" ] || { erreur "état illisible (bin/install --check --json)"; return 1; }
+  th=$(vim_dit -c 'silent echo get(g:, "my_current_theme", "?") . " " . &background' 2>/dev/null | head -1)
+  gr="$(champ plugins_installed)/$(champ plugins_declared) installés"
+  [ "$(champ plugins_missing)" = 0 ] || gr="$gr, ${C_R_BAD}$(champ plugins_missing) manquant(s)${T_RESET}"
+  [ "$(champ plugins_skipped)" = 0 ] || gr="$gr, $(champ plugins_skipped) écarté(s) ici"
+  if [ "$(champ dotlib)" = true ]; then
+    dl="dotlib $(champ dotlib_source)"
+    [ -z "$(champ dotlib_theme)" ] || dl="$dl, thème $(champ dotlib_theme)"
+    dl="$dl ${C_R_TEXT}(vim n’en suit que le clair/sombre)${T_RESET}"
+  else
+    dl="${C_R_TEXT}dotlib absent : vim garde son thème${T_RESET}"
+  fi
+  case $(champ last_update) in
+    unknown|'') maj="aucune trace" ;;
+    *) maj=$(champ last_update) ;;
+  esac
+  tui_title "Configuration vim"
+  { etiq() { printf '  %s%s%s\t%s\n' "$C_R_KEY" "$1" "$T_RESET" "$2"; }
+    etiq dépôt       "$(court "$(champ dir)")   ${C_R_TEXT}branche $(champ branch), commit $(champ commit)${T_RESET}"
+    etiq vim         "$(champ vim) ($(champ vim_build)), niveau $(champ tier)   ${C_R_TEXT}$(court "$(champ vim_path)")${T_RESET}"
+    etiq machine     "$(champ os)   ${C_R_TEXT}git $(champ git)${T_RESET}"
+    etiq greffons    "$gr"
+    etiq thème       "${C_R_MATCH}${th:-?}${T_RESET}   $dl"
+    etiq "mise à jour" "$maj"
+  } | tui_table
+  if [ "$(champ crumbs)" = 0 ]; then
+    tui_ok "aucun reste"
+  else
+    tui_warn "$(champ crumbs) reste(s) — « vrc nettoyer »"
+  fi
+  outils=$(champ tools_missing)
+  [ -z "$outils" ] || tui_info "${C_R_TEXT}outils absents : $outils${T_RESET}"
+  opkg=$(champ opkg_missing)
+  [ -z "$opkg" ] || tui_warn "paquets Entware à installer : sudo opkg install $opkg"
+  return $code
+}
+
+# --- greffons ---------------------------------------------------------------------------------
+cmd_greffons() {
+  [ $# = 0 ] || { erreur "usage : vrc greffons"; return 2; }
+  liste=$(vim_dit -c 'silent echo join(my#plug#report(), "\n")') || return 1
+  [ -n "$liste" ] || { erreur "aucun greffon déclaré (vim sans +eval ?)"; return 1; }
+  tui_title "Greffons"
+  printf '%s\n' "$liste" | awk -F'|' -v b="$C_R_BAD" -v d="$C_R_TEXT" -v r="$T_RESET" '
+    { c = ($1 == "manquant" ? b : ($1 == "écarté" ? d : ""))
+      printf "  %s%s%s\t%s%s%s\n", c, $2, r, c, $1, r }' | tui_table
+  printf '%s\n' "$liste" | awk -F'|' '{ n[$1]++ } END {
+    printf "  %d installé(s)", n["installé"]
+    if (n["écarté"]) printf ", %d écarté(s) sur cette machine (vim ou outil manquant)", n["écarté"]
+    if (n["manquant"]) printf ", %d MANQUANT(S) — « vrc maj »", n["manquant"]
+    printf "\n" }'
+}
+
+# --- thèmes ------------------------------------------------------------------------------------
+cmd_themes() {
+  [ $# = 0 ] || { erreur "usage : vrc themes"; return 2; }
+  info=$(vim_dit -c 'silent echo join(my#colors#list(), " ")' \
+                 -c 'silent echo get(g:, "my_current_theme", "?") . " " . &background') || return 1
+  tui_title "Thèmes de couleurs"
+  tui_info "disponibles : $(printf '%s\n' "$info" | sed -n 1p)"
+  tui_info "en cours    : ${C_R_MATCH}$(printf '%s\n' "$info" | sed -n 2p)${T_RESET}"
+  tui_info "${C_R_TEXT}dans vim : :Theme <nom> <fond> (durable), F5 bascule clair/sombre pour la session${T_RESET}"
+}
+
+# --- journal, mise à jour, nettoyage, tests -----------------------------------------------------
+cmd_journal() {
+  f=$REPO/local/update.log; quoi="mises à jour des greffons"
+  case ${1:-} in
+    --install) f=$REPO/local/install.log; quoi="installations"; shift ;;
+    -*) erreur "usage : vrc journal [--install] [LIGNES]"; return 2 ;;
+  esac
+  n=${1:-25}
+  case $n in ''|*[!0-9]*) erreur "nombre de lignes attendu : $n"; return 2 ;; esac
+  [ -f "$f" ] || { tui_info "aucun journal des $quoi ($(court "$f"))"; return 0; }
+  tui_title "Journal des $quoi"
+  tail -n "$n" "$f"
+}
+
+cmd_maj() {
+  [ $# = 0 ] || { erreur "usage : vrc maj"; return 2; }
+  tui_title "Mise à jour"
+  if command -v git >/dev/null 2>&1 && [ -d "$REPO/.git" ]; then
+    git -C "$REPO" pull --ff-only || tui_warn "dépôt non mis à jour (modifications locales ? réseau ?)"
+  else
+    tui_warn "git absent : seuls les greffons sont mis à jour"
+  fi
+  sh "$REPO/bin/update-plugins"
+}
+
+cmd_nettoyer() {
+  [ $# = 0 ] || { erreur "usage : vrc nettoyer"; return 2; }
+  sh "$REPO/bin/install" --clean
+}
+
+cmd_verifier() {
+  rapide=0
+  [ "${1:-}" = --rapide ] && { rapide=1; shift; }
+  [ $# = 0 ] || { erreur "usage : vrc verifier [--rapide]"; return 2; }
+  if [ "$rapide" = 1 ]; then
+    QUICK=1 sh "$REPO/test/run.sh"
+    return $?
+  fi
+  code=0
+  for t in run install keys vrc anti-fuite; do
+    sh "$REPO/test/$t.sh" || code=1
+  done
+  return $code
+}
+
+# --- édition, emplacement, version --------------------------------------------------------------
+fichiers_edit() {
+  for f in "$REPO"/vimrc "$REPO"/gvimrc "$REPO"/config/*.vim "$REPO"/config/plugins/*.vim \
+           "$REPO"/after/ftplugin/*.vim "$REPO"/local/vimrc.local; do
+    [ -f "$f" ] && printf '%s\n' "$(basename "$f" .vim)"
+  done | sort -u
+}
+
+cmd_edit() {
+  a_vim || { erreur "vim introuvable dans le PATH"; return 1; }
+  if [ $# = 0 ]; then "$VIM" "$REPO/vimrc"; return $?; fi
+  nom=$1
+  for f in "$REPO/$nom" "$REPO/$nom.vim" "$REPO/config/$nom.vim" \
+           "$REPO/config/plugins/$nom.vim" "$REPO/after/ftplugin/$nom.vim" \
+           "$REPO/local/$nom" "$REPO/local/$nom.local"; do
+    [ -f "$f" ] && { "$VIM" "$f"; return $?; }
+  done
+  erreur "fichier inconnu : $nom"
+  printf 'connus : %s\n' "$(fichiers_edit | tr '\n' ' ')" >&2
+  return 2
+}
+
+cmd_version() {
+  v=$(a_vim && "$VIM" --version 2>/dev/null | sed -n '1s/^VIM - Vi IMproved \([0-9.]*\).*/\1/p')
+  c=$(git -C "$REPO" log -1 --format='%h %ad' --date=short 2>/dev/null)
+  printf 'vim %s · %s · %s\n' "${v:-?}" "$(court "$REPO")" "${c:-hors dépôt git}"
+}
+
+cmd_interface() {
+  [ $# = 0 ] || { erreur "usage : vrc interface"; return 2; }
+  if command -v python3 >/dev/null 2>&1 && [ -f "$REPO/bin/vrc-interface" ]; then
+    VRC_REPO=$REPO python3 "$REPO/bin/vrc-interface"
+    return $?
+  fi
+  tui_warn "python3 absent : affichage à la suite, sans onglets"
+  cmd_raccourcis; cmd_etat; cmd_greffons; cmd_themes
+}
+
+aide() {
+  sed -n '3,20p' "$0" | sed 's/^# \{0,1\}//'
+}
+
+case ${1:-aide} in
+  interface|onglets) shift; cmd_interface "$@" ;;
+  raccourcis|touches) shift; cmd_raccourcis "$@" ;;
+  etat|état|doctor) shift; cmd_etat "$@" ;;
+  greffons|plugins) shift; cmd_greffons "$@" ;;
+  themes|thèmes) shift; cmd_themes "$@" ;;
+  journal|log) shift; cmd_journal "$@" ;;
+  maj|update) shift; cmd_maj "$@" ;;
+  nettoyer|clean) shift; cmd_nettoyer "$@" ;;
+  verifier|vérifier|check) shift; cmd_verifier "$@" ;;
+  edit|editer|éditer) shift; cmd_edit "$@" ;;
+  cd) printf '%s\n' "$REPO" ;;
+  version) cmd_version ;;
+  aide|help|-h|--help) aide ;;
+  --fichiers-edit) fichiers_edit ;;   # pour la complétion de shell/vrc.bash
+  *) erreur "commande inconnue : $1"; aide >&2; exit 2 ;;
+esac

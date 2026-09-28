@@ -1,0 +1,374 @@
+#!/usr/bin/env python3
+"""bin/vrc-interface — vrc en onglets, dans le terminal (curses).
+
+Lancé par « vrc interface ». Six onglets : les raccourcis (vim, et ceux du
+shell s'ils sont disponibles), l'état de la machine, les greffons, les thèmes,
+les journaux, les commandes maison.
+
+Rien n'est calculé au lancement : chaque onglet charge son contenu quand on
+l'ouvre, et le garde. « r » recharge l'onglet courant.
+
+Aucune dépendance : seulement la bibliothèque standard. Si le terminal ne
+permet pas curses, on sort avec le code 4 et bin/vrc affiche tout à la suite.
+"""
+
+import curses
+import os
+import re
+import subprocess
+import sys
+
+REPO = os.environ.get("VRC_REPO") or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SGR = re.compile(r"\033\[[0-9;]*m")
+
+AIDE = "  ←→/Tab onglet · ↑↓ déplacer · PgUp/PgDn page · / filtrer · r recharger · q quitter"
+
+
+def sortie(commande, env=None):
+    """La sortie d'une commande, sans couleurs, ou son erreur — jamais d'exception."""
+    # NO_COLOR suffit à obtenir du texte nu ; on garde le vrai TERM, sinon vim
+    # annoncerait le thème d'un terminal sans couleurs.
+    e = dict(os.environ, NO_COLOR="1")
+    if env:
+        e.update(env)
+    try:
+        r = subprocess.run(commande, cwd=REPO, env=e, stdout=subprocess.PIPE,
+                           stderr=subprocess.STDOUT, timeout=120)
+        texte = r.stdout.decode("utf-8", "replace")
+    except FileNotFoundError:
+        return ["(commande absente : %s)" % commande[0]]
+    except subprocess.TimeoutExpired:
+        return ["(trop long : %s)" % " ".join(commande)]
+    return [SGR.sub("", l).rstrip() for l in texte.splitlines()]
+
+
+def raccourcis_tsv():
+    """Les raccourcis de vim, et ceux du shell si sa propre aide est là."""
+    lignes = []
+    for l in sortie(["sh", os.path.join(REPO, "bin", "keys"), "--tsv"]):
+        champs = l.split("\t")
+        if len(champs) >= 5:
+            lignes.append(champs[:5])
+    for outil in ("bindhelp", os.path.expanduser("~/.bash/bin/bindhelp")):
+        essai = sortie([outil, "--tsv"])
+        if essai and "\t" in "".join(essai):
+            for l in essai:
+                champs = l.split("\t")
+                if len(champs) >= 5:
+                    lignes.append(champs[:5])
+            break
+    return lignes
+
+
+class Onglet:
+    """Un onglet : un titre, de quoi produire son contenu, et où il en est."""
+
+    def __init__(self, titre, produire, liste=False):
+        self.titre = titre
+        self.produire = produire
+        self.liste = liste          # vrai : colonne de gauche + volet de droite
+        self.contenu = None
+        self.rang = 0               # sélection dans la colonne de gauche
+        self.haut = 0               # première ligne affichée du volet
+
+    def charger(self):
+        if self.contenu is None:
+            self.contenu = self.produire()
+        return self.contenu
+
+    def recharger(self):
+        self.contenu = None
+        self.haut = 0
+        self.charger()
+
+
+def onglets():
+    def raccourcis():
+        entrees = raccourcis_tsv()
+        themes = [t for t in sortie(["sh", os.path.join(REPO, "bin", "keys"), "--themes"]) if t]
+        for _, theme, _, _, _ in entrees:      # thèmes venus du shell, à la suite
+            if theme not in themes:
+                themes.append(theme)
+        return {"entrees": entrees, "themes": themes}
+
+    return [
+        Onglet("Raccourcis", raccourcis, liste=True),
+        Onglet("État", lambda: sortie(["sh", os.path.join(REPO, "bin", "vrc"), "etat"])),
+        Onglet("Greffons", lambda: sortie(["sh", os.path.join(REPO, "bin", "vrc"), "greffons"])),
+        Onglet("Thèmes", lambda: sortie(["sh", os.path.join(REPO, "bin", "vrc"), "themes"])),
+        Onglet("Journaux", lambda: sortie(["sh", os.path.join(REPO, "bin", "vrc"), "journal", "60"])),
+        Onglet("Commandes", lambda: sortie(["sh", os.path.join(REPO, "bin", "keys"), "--commandes"])),
+    ]
+
+
+class Interface:
+    def __init__(self, ecran):
+        self.ecran = ecran
+        self.onglets = onglets()
+        self.actif = 0
+        self.filtre = ""
+        self.saisie = False
+        self.message = ""
+
+    # --- couleurs ---------------------------------------------------------------------
+    def couleurs(self):
+        self.paires = {"titre": 0, "touche": 0, "portee": 0, "mauvais": 0, "onglet": 0}
+        if not curses.has_colors():
+            return
+        curses.start_color()
+        try:
+            curses.use_default_colors()
+            fond = -1
+        except curses.error:
+            fond = curses.COLOR_BLACK
+        for i, (nom, couleur) in enumerate((("titre", curses.COLOR_YELLOW),
+                                            ("touche", curses.COLOR_CYAN),
+                                            ("portee", curses.COLOR_BLUE),
+                                            ("mauvais", curses.COLOR_RED),
+                                            ("onglet", curses.COLOR_GREEN)), start=1):
+            try:
+                curses.init_pair(i, couleur, fond)
+                self.paires[nom] = curses.color_pair(i)
+            except curses.error:
+                pass
+
+    def attr(self, nom, gras=False):
+        a = self.paires.get(nom, 0)
+        return a | curses.A_BOLD if gras else a
+
+    # --- dessin -----------------------------------------------------------------------
+    def ecrire(self, y, x, texte, attr=0):
+        h, l = self.ecran.getmaxyx()
+        if y < 0 or y >= h or x >= l:
+            return
+        texte = texte[: max(0, l - x - 1)]
+        try:
+            self.ecran.addstr(y, x, texte, attr)
+        except curses.error:
+            pass
+
+    def barre(self):
+        h, l = self.ecran.getmaxyx()
+        x = 1
+        for i, o in enumerate(self.onglets):
+            etiquette = " %d %s " % (i + 1, o.titre)
+            attr = curses.A_REVERSE | curses.A_BOLD if i == self.actif else self.attr("onglet")
+            self.ecrire(0, x, etiquette, attr)
+            x += len(etiquette) + 1
+        droite = "vrc · %s" % os.path.basename(REPO)
+        self.ecrire(0, max(x + 1, l - len(droite) - 2), droite, self.attr("portee"))
+        self.ecrire(1, 0, "─" * (l - 1), self.attr("portee"))
+
+    def pied(self):
+        h, l = self.ecran.getmaxyx()
+        self.ecrire(h - 2, 0, "─" * (l - 1), self.attr("portee"))
+        if self.saisie:
+            self.ecrire(h - 1, 0, "  filtre : " + self.filtre + "_", curses.A_BOLD)
+        elif self.message:
+            self.ecrire(h - 1, 0, "  " + self.message, self.attr("titre", True))
+        else:
+            aide = AIDE
+            if self.filtre:
+                aide = "  filtre « %s » (Échap pour l'effacer) ·%s" % (self.filtre, AIDE[1:])
+            self.ecrire(h - 1, 0, aide, self.attr("portee"))
+
+    def garde(self, o, entrees):
+        """Les entrées retenues par le filtre."""
+        if not self.filtre:
+            return entrees
+        f = self.filtre.lower()
+        return [e for e in entrees if f in " ".join(e).lower()]
+
+    def dessiner_raccourcis(self, o, haut, hauteur, largeur):
+        d = o.charger()
+        themes = d["themes"]
+        entrees = self.garde(o, d["entrees"])
+        if self.filtre:      # ne garder que les thèmes qui ont encore quelque chose
+            themes = [t for t in themes if any(e[1] == t for e in entrees)]
+        if not themes:
+            self.ecrire(haut + 1, 2, "rien ne correspond à « %s »" % self.filtre, self.attr("mauvais"))
+            return
+        o.rang = max(0, min(o.rang, len(themes) - 1))
+        colonne = min(26, max(14, max(len(t) for t in themes) + 6))
+        # colonne des thèmes
+        debut = max(0, min(o.rang - hauteur + 2, len(themes) - hauteur))
+        for i, t in enumerate(themes[debut:debut + hauteur]):
+            rang = debut + i
+            n = sum(1 for e in entrees if e[1] == t)
+            attr = curses.A_REVERSE if rang == o.rang else self.attr("titre", True)
+            self.ecrire(haut + i, 1, t[: colonne - 6].ljust(colonne - 5), attr)
+            self.ecrire(haut + i, colonne - 4, "%3d" % n, self.attr("portee"))
+        for y in range(hauteur):
+            self.ecrire(haut + y, colonne, "│", self.attr("portee"))
+        # volet des raccourcis du thème choisi
+        choisi = themes[o.rang]
+        lignes = [e for e in entrees if e[1] == choisi]
+        largeur_touches = min(30, max([8] + [len(e[2]) for e in lignes]) + 2)
+        o.haut = max(0, min(o.haut, max(0, len(lignes) - hauteur)))
+        for i, e in enumerate(lignes[o.haut:o.haut + hauteur]):
+            source, _, touches, description, portee = e
+            x = colonne + 2
+            marque = "" if source == "vim" else source + " "
+            if marque:
+                self.ecrire(haut + i, x, marque, self.attr("portee"))
+                x += len(marque)
+            self.ecrire(haut + i, x, touches, self.attr("touche", True))
+            x += max(largeur_touches - len(marque), len(touches) + 1)
+            texte = description
+            if portee and portee != "global":
+                texte += "  (%s)" % portee
+            self.ecrire(haut + i, x, texte)
+        if len(lignes) > hauteur:
+            self.ecrire(haut + hauteur - 1, largeur - 12, " %d/%d " % (o.haut + hauteur, len(lignes)),
+                        self.attr("portee"))
+
+    def dessiner_texte(self, o, haut, hauteur, largeur):
+        lignes = o.charger()
+        if self.filtre:
+            f = self.filtre.lower()
+            lignes = [l for l in lignes if f in l.lower()]
+        if not lignes:
+            self.ecrire(haut + 1, 2, "(rien à afficher)", self.attr("portee"))
+            return
+        o.haut = max(0, min(o.haut, max(0, len(lignes) - hauteur)))
+        for i, l in enumerate(lignes[o.haut:o.haut + hauteur]):
+            attr = 0
+            nu = l.strip()
+            if nu.startswith("=="):
+                attr = self.attr("titre", True)
+            elif nu.startswith("✗") or "MANQUANT" in l or nu.startswith("!"):
+                attr = self.attr("mauvais")
+            elif nu.startswith("✓"):
+                attr = self.attr("onglet")
+            self.ecrire(haut + i, 1, l, attr)
+        if len(lignes) > hauteur:
+            self.ecrire(haut + hauteur - 1, largeur - 12, " %d/%d " % (o.haut + hauteur, len(lignes)),
+                        self.attr("portee"))
+
+    def dessiner(self):
+        self.ecran.erase()
+        h, l = self.ecran.getmaxyx()
+        self.barre()
+        haut, hauteur = 2, max(1, h - 4)
+        o = self.onglets[self.actif]
+        if o.contenu is None:
+            self.ecrire(haut + 1, 2, "chargement…", self.attr("portee"))
+            self.pied()
+            self.ecran.refresh()
+            o.charger()
+            self.ecran.erase()
+            self.barre()
+        try:
+            if o.liste:
+                self.dessiner_raccourcis(o, haut, hauteur, l)
+            else:
+                self.dessiner_texte(o, haut, hauteur, l)
+        except Exception as e:                       # un onglet cassé ne ferme pas tout
+            self.ecrire(haut + 1, 2, "onglet illisible : %s" % e, self.attr("mauvais"))
+        self.pied()
+        self.ecran.refresh()
+
+    # --- boucle ------------------------------------------------------------------------
+    def deplacer(self, pas):
+        o = self.onglets[self.actif]
+        if o.liste:
+            o.rang += pas
+            o.haut = 0
+        else:
+            o.haut = max(0, o.haut + pas)
+
+    def page(self, sens):
+        h, _ = self.ecran.getmaxyx()
+        o = self.onglets[self.actif]
+        o.haut = max(0, o.haut + sens * max(1, h - 6))
+
+    def boucle(self):
+        rates = 0
+        while True:
+            self.dessiner()
+            try:
+                touche = self.ecran.get_wch()
+                rates = 0
+            except curses.error:
+                # entrée fermée (tuyau, pty sans clavier) : on sort au lieu de
+                # tourner à vide
+                rates += 1
+                if rates > 20:
+                    return
+                continue
+            except KeyboardInterrupt:
+                return
+            self.message = ""
+            if self.saisie:
+                if touche in ("\n", "\r", curses.KEY_ENTER):
+                    self.saisie = False
+                elif touche == "\x1b":
+                    self.saisie = False
+                    self.filtre = ""
+                elif touche in ("\x7f", "\b", curses.KEY_BACKSPACE, 263):
+                    self.filtre = self.filtre[:-1]
+                elif isinstance(touche, str) and touche.isprintable():
+                    self.filtre += touche
+                for o in self.onglets:
+                    o.haut = 0
+                continue
+            if touche in ("q", "Q"):
+                return
+            elif touche == "\x1b":
+                self.filtre = ""
+            elif touche == "/":
+                self.saisie = True
+                self.filtre = ""
+            elif touche == "\t" or touche == curses.KEY_RIGHT:
+                self.actif = (self.actif + 1) % len(self.onglets)
+            elif touche == curses.KEY_BTAB or touche == curses.KEY_LEFT:
+                self.actif = (self.actif - 1) % len(self.onglets)
+            elif isinstance(touche, str) and touche in "123456":
+                n = int(touche) - 1
+                if n < len(self.onglets):
+                    self.actif = n
+            elif touche in (curses.KEY_DOWN, "j"):
+                self.deplacer(1)
+            elif touche in (curses.KEY_UP, "k"):
+                self.deplacer(-1)
+            elif touche in (curses.KEY_NPAGE, " "):
+                self.page(1)
+            elif touche == curses.KEY_PPAGE:
+                self.page(-1)
+            elif touche == "g":
+                o = self.onglets[self.actif]
+                o.haut = 0
+                o.rang = 0
+            elif touche == "G":
+                o = self.onglets[self.actif]
+                o.haut = 10 ** 6
+                o.rang = 10 ** 6
+            elif touche in ("r", "R"):
+                self.onglets[self.actif].recharger()
+                self.message = "onglet rechargé"
+            elif touche == curses.KEY_RESIZE:
+                continue
+
+
+def demarrer(ecran):
+    curses.curs_set(0)
+    ecran.keypad(True)
+    interface = Interface(ecran)
+    interface.couleurs()
+    interface.boucle()
+
+
+def main():
+    if not sys.stdout.isatty():
+        print("vrc : pas de terminal — « vrc etat », « vrc raccourcis »…", file=sys.stderr)
+        return 4
+    try:
+        curses.wrapper(demarrer)
+    except curses.error as e:
+        print("vrc : terminal trop limité pour l'interface (%s)" % e, file=sys.stderr)
+        return 4
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

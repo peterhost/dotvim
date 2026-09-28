@@ -86,6 +86,8 @@ ssh <hôte> 'sh -s -- --dry-run --json' < ~/.vim/bin/deploy-local
 
 `bin/deploy-local --check` est le point d'entrée unique pour l'état : il répond **même sur une machine où la configuration est absente** (`"installed": false`, `"status": "absent"`), et imbrique l'état complet de `bin/install --check --json` dans le champ `state`. Le champ `active` distingue le dossier **présent** de la configuration **lue par vim** : un dépôt cloné ailleurs et non branché donne `"active": false`, et, à l'inverse, un ancien lien `~/.vimrc` qui mène à ce dossier suffit à la rendre active (`active_reason` le dit). Avec `--remote`, il interroge le dépôt (seul cas où le réseau sert) et renseigne `remote_commit` et `up_to_date`. `--https` force l'adresse GitHub en https, pour un compte sans clé SSH.
 
+L'état dit aussi ce que la machine sait de **dotlib** (la bibliothèque commune au shell) : `dotlib` (booléen), `dotlib_source` (`environnement`, `fichier`, `installé` ou `aucun`), `dotlib_theme`, `dotlib_palette`, et `theme_follows` — `fond`, parce que vim ne suit que le clair/sombre du shell, jamais sa palette. dotlib absent, vim garde son thème : ce n'est pas une dépendance, seulement un accord.
+
 Deux comptes distincts pour les greffons : `plugins_missing` (+ `plugins_missing_names`) désigne ce qui **devrait** être là et manque — c'est réparable, et vim s'en charge seul ; `plugins_skipped` (+ `plugins_skipped_names`) désigne ce qui est **écarté sur cette machine** (vim trop ancien, outil absent) et n'a donc pas à y être. Seul le premier rend l'état « dégradé ».
 
 **Codes de sortie**, communs à ces commandes :
@@ -102,6 +104,51 @@ Deux comptes distincts pour les greffons : `plugins_missing` (+ `plugins_missing
 `bin/install --uninstall` **désactive** (il restaure la configuration précédente) mais ne supprime rien : le dossier, les greffons et `local/` restent. Il prévient d'ailleurs quand la configuration reste active malgré tout — par exemple si le fichier restauré est un ancien lien `~/.vimrc` qui pointe vers ce même dossier. Pour tout effacer, c'est `bin/deploy-local --purge --yes`.
 
 En mode `--json`, la sortie standard ne contient **que** le JSON, sur une seule ligne ; les étapes sont écrites au fil de l'eau sur la **sortie d'erreur**, ce qui permet de suivre un déploiement en direct.
+
+## `vrc` : la configuration vim en ligne de commande
+
+`vrc` est à la configuration vim ce que `brc` est à la configuration bash.
+Elle vit dans le dépôt (`bin/vrc`, sh POSIX) et marche partout, même avant
+toute installation :
+
+```sh
+vrc                     la liste des commandes
+vrc interface           tout à la fois, en onglets, dans le terminal
+vrc raccourcis [THÈME]  l'aide des raccourcis, engendrée depuis le code
+vrc etat [--json]       vim, niveau, dépôt, greffons, thème, restes
+vrc greffons            installés, écartés sur cette machine, manquants
+vrc themes              thèmes disponibles, et celui en cours
+vrc journal [--install] les dernières lignes du journal
+vrc maj                 mettre à jour le dépôt puis les greffons
+vrc nettoyer            supprimer les restes (les données locales sont intactes)
+vrc verifier [--rapide] la batterie de tests
+vrc edit [NOM]          ouvrir un fichier de configuration dans vim
+vrc cd · vrc version
+```
+
+Les erreurs vont sur la sortie d'erreur, préfixées `vrc :`, et les codes de
+sortie sont ceux des autres outils du dépôt (`0` conforme, `1` erreur,
+`2` usage, `3` dégradé). Aucune question n'est posée hors d'un terminal.
+
+**Dans bash** : `shell/vrc.bash` ajoute la fonction `vrc` (pour que `vrc cd`
+change vraiment de dossier), `vivrc`, la complétion des sous-commandes, des
+thèmes et des fichiers, et le pont `brc vim …`. Le chargement est **silencieux
+et ne lance aucun processus**. La configuration bash le charge d'elle-même ;
+à la main :
+
+```sh
+[ -r ~/.vim/shell/vrc.bash ] && . ~/.vim/shell/vrc.bash
+```
+
+**`vrc interface`** ouvre six onglets (`←→` ou `1`…`6`) : raccourcis par thème —
+ceux de vim et ceux du shell quand son aide est disponible —, état, greffons,
+thèmes, journaux, commandes. `/` filtre, `r` recharge, `q` quitte. Sans
+`python3`, ou dans un terminal trop limité, le contenu s'affiche à la suite.
+
+L'apparence vient de `shell/affichage.sh`, qui reprend les noms de la couche
+d'affichage de dotlib (`tui_ok`, `C_R_KEY`…) sans en dépendre : dotlib demande
+bash, alors que `vrc` doit tourner sous le `sh` des NAS. Le clair/sombre, lui,
+suit bien dotlib quand il est présent.
 
 ## Essayer une autre branche sans rien casser
 
@@ -202,7 +249,14 @@ after/ftplugin/*.vim   réglages par type de fichier
 ftdetect/              types de fichiers (.txt → markdown, mql4…)
 colors/                thèmes de secours (PaperColor, lucius, noctu)
 bin/install            installeur guidé
+bin/deploy-local       déployer ou mettre à jour, sur la machine courante
 bin/update-plugins     mise à jour des plugins (manuelle ou en arrière-plan)
+bin/keys               engendre l'aide des raccourcis (annotations « "= »)
+bin/vrc                la configuration en ligne de commande (vrc)
+bin/vrc-interface      les onglets de « vrc interface » (python3 curses)
+shell/vrc.bash         la fonction vrc, la complétion, le pont brc vim …
+shell/affichage.sh     couleurs et tableaux (noms de dotlib, sans en dépendre)
+doc/raccourcis.txt     aide vim ENGENDRÉE (:help raccourcis) — ne pas l'éditer
 test/                  batterie de tests (make check)
 local/                 données et réglages propres à la machine (non versionné)
 plugged/               plugins installés (non versionné)

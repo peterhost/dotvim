@@ -5,7 +5,8 @@
 #   make try         essai à côté de la config actuelle, sans rien activer
 #   make update      git pull + mise à jour des plugins
 #   make uninstall   retirer la config, restaurer la sauvegarde
-#   make check       batterie de tests : config, installeur, anti-fuite
+#   make check       batterie de tests : config, installeur, raccourcis, vrc,
+#                    anti-fuite
 #                    (VIMS="vim /autre/vim" pour tester plusieurs vim)
 #   make quick       tests rapides
 #   make themes      ouvrir le fichier d'essai des thèmes (:Theme <Tab>, <F5>)
@@ -37,6 +38,7 @@ check:
 	@sh test/run.sh $(VIMS)
 	@sh test/install.sh
 	@sh test/keys.sh
+	@sh test/vrc.sh
 	@sh test/anti-fuite.sh
 
 keys:

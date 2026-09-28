@@ -64,10 +64,12 @@ $trouve"
 # réservés à la documentation (RFC 2606) : ce sont justement les noms à employer dans un exemple.
 # ADAPTÉ : ici « .local » est surtout un suffixe de fichier de configuration
 # (vimrc.local, gvimrc.local, theme.local…), pas un nom d'hôte. Ces formes sont
-# écartées ; un vrai nom de machine reste attrapé par la liste privée.
+# écartées ; un vrai nom de machine reste attrapé par la liste privée. Une VARIABLE suivie de
+# « .local » (« $nom.local », construction de chemin) n'est pas davantage un nom d'hôte.
 trouve=$(suivis | xargs grep -nE '\b[a-z0-9-]+\.(local|lan|home|internal|invalid)\b' 2>/dev/null \
   | grep -vE '\b(example|exemple|test|hote|host|machine)\.(local|lan|home|internal|invalid)\b' \
-  | grep -vE '\b(g?vimrc|rc|conf|theme|config)\.local\b')
+  | grep -vE '\b(g?vimrc|rc|conf|theme|config)\.local\b' \
+  | grep -vE '\$\{?[A-Za-z_][A-Za-z0-9_]*\}?\.local\b')
 [ -n "$trouve" ] && signaler "nom d'hôte local :
 $trouve"
 

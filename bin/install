@@ -275,6 +275,26 @@ entware_check() {
   return 0
 }
 
+# dotlib : la bibliothèque commune au shell (dépôt public, installée en
+# ~/.dotlib). Seule sa LECTURE nous intéresse : accorder le clair/sombre de vim
+# à celui du shell. Absente, vim garde son thème — ce n'est pas une dépendance.
+# Ordre de lecture, identique à celui de vim (autoload/my/colors.vim) :
+# variables exportées par le shell, puis local/theme.conf, puis rien.
+dotlib_state() {
+  DOTLIB_PLACE=${DOTLIB_DIR:-$HOME/.dotlib}
+  DOTLIB_OK=0; DOTLIB_SRC=aucun; DOTLIB_TH=; DOTLIB_PAL=
+  if [ -n "${DOTLIB_THEME_EFF:-}" ] || [ -n "${DOTLIB_PALETTE_EFF:-}" ]; then
+    DOTLIB_OK=1; DOTLIB_SRC=environnement
+    DOTLIB_TH=${DOTLIB_THEME_EFF:-}; DOTLIB_PAL=${DOTLIB_PALETTE_EFF:-}
+  elif [ -r "$DOTLIB_PLACE/local/theme.conf" ]; then
+    DOTLIB_OK=1; DOTLIB_SRC=fichier
+    DOTLIB_TH=$(sed -n 's/^[ 	]*DOTLIB_THEME=//p' "$DOTLIB_PLACE/local/theme.conf" | tail -1)
+    DOTLIB_PAL=$(sed -n 's/^[ 	]*DOTLIB_PALETTE=//p' "$DOTLIB_PLACE/local/theme.conf" | tail -1)
+  elif [ -d "$DOTLIB_PLACE" ]; then
+    DOTLIB_OK=1; DOTLIB_SRC=installé
+  fi
+}
+
 diagnose() {
   title "Diagnostic"
   detect_os; detect_vim
@@ -315,6 +335,12 @@ diagnose() {
   printf '\n'
   if has ctags && ! ctags --version 2>/dev/null | grep -qi universal; then
     warn "ctags n'est pas universal-ctags : Tagbar ne fonctionnera pas ($(suggest ctags))"
+  fi
+  dotlib_state
+  if [ "$DOTLIB_OK" = 1 ]; then
+    info "dotlib       : $(vim_path "$DOTLIB_PLACE") ($DOTLIB_SRC${DOTLIB_TH:+, thème $DOTLIB_TH}${DOTLIB_PAL:+, palette $DOTLIB_PAL}) — vim n'en suit que le clair/sombre"
+  else
+    info "dotlib       : absent — vim garde son propre thème (aucune dépendance)"
   fi
   entware_check
 }
@@ -820,6 +846,12 @@ print_json() {
   printf '"crumbs":%s,' "${crumbs:-0}"
   printf '"opkg_missing":%s,' "$(json_str "$(printf '%s' "${OPKG_NEEDED:-}" | sed 's/^ //')")"
   printf '"tools_missing":%s,' "$(json_str "$(printf '%s' "$MISSING" | sed 's/^ //')")"
+  dotlib_state
+  printf '"dotlib":%s,' "$([ "$DOTLIB_OK" = 1 ] && echo true || echo false)"
+  printf '"dotlib_source":%s,' "$(json_str "$DOTLIB_SRC")"
+  printf '"dotlib_theme":%s,' "$(json_str "$DOTLIB_TH")"
+  printf '"dotlib_palette":%s,' "$(json_str "$DOTLIB_PAL")"
+  printf '"theme_follows":%s,' "$(json_str "fond")"
   printf '"status":%s'  "$(json_str "$([ "$rc" = 0 ] && echo ok || echo degraded)")"
   printf '}\n'
   return $rc
