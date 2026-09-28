@@ -132,6 +132,7 @@ augroup my_update
     autocmd VimEnter * call my#update#notify()
   endif
 augroup END
+"= greffons | ouvrir le journal des mises à jour de greffons
 command! PluginsUpdateLog execute 'split ' . fnameescape(g:my_local . '/update.log')
 
 unlet s:full s:node

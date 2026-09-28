@@ -19,18 +19,29 @@ let s:use_fzf = my#plug#on('fzf.vim') && (executable('fzf') || executable(s:fzf_
 
 if s:use_fzf
   let g:fzf_action = {'ctrl-l': 'tab split', 'ctrl-j': 'split', 'ctrl-k': 'vsplit'}
+"= fichiers | ouvrir un fichier (recherche floue)
   nnoremap <leader>ff :Files<CR>
+"= buffers | choisir un buffer
   nnoremap <leader>fb :Buffers<CR>
+"= fichiers | ouvrir un fichier du dossier du fichier courant
   nnoremap <leader>fd :Files <C-r>=expand('%:p:h')<CR><CR>
+"= navigation | sauter à une étiquette (tags)
   nnoremap <leader>ft :Tags<CR>
+"= aide | chercher une rubrique d’aide
   nnoremap <leader>fh :Helptags<CR>
+"= navigation | revenir à un saut précédent (jumps)
   nnoremap <leader>fj :Jumps<CR>
+"= navigation | aller à une modification (changes)
   nnoremap <leader>fc :Changes<CR>
+"= fichiers | rouvrir un fichier récent
   nnoremap <leader>fr :History<CR>
+"= navigation | chercher une ligne du fichier courant
   nnoremap <leader>fl :BLines<CR>
+"= buffers | choisir un buffer (raccourcis historiques)
   nnoremap <leader>ll :Buffers<CR>
   nnoremap <leader>aa :Buffers<CR>
   nnoremap <leader>az :Buffers<CR>
+"= recherche | chercher dans les fichiers (ripgrep s’il est là, sinon :vimgrep)
   if executable('rg')
     nnoremap <leader>fg :Rg<Space>
   else
@@ -49,18 +60,29 @@ elseif my#plug#on('ctrlp.vim')
     let g:ctrlp_user_command = 'rg %s --files --color=never'
     let g:ctrlp_use_caching = 0
   endif
+"= fichiers | ouvrir un fichier (recherche floue)
   nnoremap <leader>ff :CtrlP<CR>
+"= buffers | choisir un buffer
   nnoremap <leader>fb :CtrlPBuffer<CR>
+"= fichiers | ouvrir un fichier du dossier du fichier courant
   nnoremap <leader>fd :CtrlP <C-r>=expand('%:p:h')<CR><CR>
+"= navigation | sauter à une étiquette (tags)
   nnoremap <leader>ft :CtrlPTag<CR>
+"= fichiers | rouvrir un fichier récent
   nnoremap <leader>fr :CtrlPMRUFiles<CR>
+"= navigation | chercher une ligne du fichier courant
   nnoremap <leader>fl :CtrlPLine<CR>
+"= buffers | choisir un buffer (raccourcis historiques)
   nnoremap <leader>ll :CtrlPBuffer<CR>
   nnoremap <leader>aa :CtrlPBuffer<CR>
   nnoremap <leader>az :CtrlPBuffer<CR>
+"= aide | chercher une rubrique d’aide
   nnoremap <leader>fh :help<Space>
+"= navigation | revenir à un saut précédent (jumps)
   nnoremap <leader>fj :jumps<CR>
+"= navigation | aller à une modification (changes)
   nnoremap <leader>fc :changes<CR>
+"= recherche | chercher dans les fichiers (ripgrep s’il est là, sinon :vimgrep)
   nnoremap <leader>fg :vimgrep // **/*<Left><Left><Left><Left><Left><Left>
 endif
 

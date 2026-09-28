@@ -5,9 +5,9 @@
 set guioptions-=T   " pas de barre d'outils
 
 " --- Police ------------------------------------------------------------------------
-" ,1 … ,9 : polices préférées ; ,= / ,- : taille +1 / -1
 if has('gui_macvim')
   silent! set guifont=SourceCodePro-ExtraLight:h13
+"= polices | ,1 … ,9 | choisir une des polices préférées
   nnoremap <silent> <leader>1 :silent! set guifont=Century\ Schoolbook\ Monospace\ BT:h14<CR>
   nnoremap <silent> <leader>2 :silent! set guifont=DejaVu\ Sans\ Mono:h11<CR>
   nnoremap <silent> <leader>3 :silent! set guifont=Menlo\ Regular:h11<CR>
@@ -19,6 +19,7 @@ elseif has('gui_win32')
   silent! set guifont=Consolas:h11
 else
   silent! set guifont=Meslo\ LG\ M\ DZ\ 10
+"= polices | ,1 … ,9 | choisir une des polices préférées
   nnoremap <silent> <leader>1 :silent! set guifont=Century\ Schoolbook\ Monospace\ BT\ 14<CR>
   nnoremap <silent> <leader>2 :silent! set guifont=DejaVu\ Sans\ Mono\ 11<CR>
   nnoremap <silent> <leader>3 :silent! set guifont=Meslo\ LG\ M\ DZ\ 10<CR>
@@ -28,6 +29,7 @@ else
 endif
 
 " Taille : le nombre après :h (Mac/Windows) ou en fin de nom (GTK)
+"= polices | agrandir (,=) ou réduire (,-) la police d’un point
 nnoremap <silent> <leader>= :silent! let &guifont = substitute(&guifont, '\(:h\<Bar>\s\)\zs\d\+', '\=submatch(0)+1', '')<CR>
 nnoremap <silent> <leader>- :silent! let &guifont = substitute(&guifont, '\(:h\<Bar>\s\)\zs\d\+', '\=submatch(0)-1', '')<CR>
 

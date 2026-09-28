@@ -31,7 +31,8 @@ let g:ale_fixers = {
       \ 'sh':         ['shfmt'],
       \ }
 
-" Erreurs : ,E ouvre la liste, ]d / [d passe à la suivante / précédente
+"= langages | ouvrir la liste des erreurs (ALE)
 nnoremap <leader>E :lopen<CR>
+"= langages | erreur suivante (]d) ou précédente ([d)
 nmap <silent> ]d <Plug>(ale_next_wrap)
 nmap <silent> [d <Plug>(ale_previous_wrap)

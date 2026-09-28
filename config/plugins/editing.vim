@@ -5,6 +5,7 @@
 " développe un snippet ou saute au champ suivant.
 if my#plug#on('vim-vsnip')
   let g:vsnip_snippet_dir = g:my_dir . '/snippets'
+"= saisie | développer un snippet ou sauter au champ suivant
   imap <expr> <S-Tab> vsnip#available(1) ? '<Plug>(vsnip-expand-or-jump)' : '<S-Tab>'
   smap <expr> <S-Tab> vsnip#available(1) ? '<Plug>(vsnip-expand-or-jump)' : '<S-Tab>'
 endif
@@ -17,11 +18,13 @@ endif
 
 " Arbre d'annulation (remplace Gundo)
 if my#plug#on('undotree')
+"= greffons | arbre des annulations (undotree)
   nnoremap <leader>u :UndotreeToggle<CR>
   let g:undotree_SetFocusWhenToggle = 1
 endif
 
 " Registres : vim-peekaboo les affiche en tapant " ou @ ; ,y les liste.
+"= édition | lister les registres (vim-peekaboo les montre aussi en tapant " ou @)
 nnoremap <leader>y :registers<CR>
 
 " Historique des copies (vim-yoink, remplace YankRing) : juste après un
@@ -30,40 +33,49 @@ nnoremap <leader>y :registers<CR>
 if my#plug#on('vim-yoink')
   let g:yoinkIncludeDeleteOperations = 1
   let g:yoinkMaxItems = 20
+"= édition | coller, en gardant l’historique des copies sous la main
   nmap p <Plug>(YoinkPaste_p)
   nmap P <Plug>(YoinkPaste_P)
   nmap gp <Plug>(YoinkPaste_gp)
   nmap gP <Plug>(YoinkPaste_gP)
   nnoremap <Plug>(my-ctrl-p) <C-p>
   nnoremap <Plug>(my-ctrl-n) <C-n>
+"= édition | juste après un collage : copie plus ancienne (Ctrl-p) ou plus récente (Ctrl-n)
   nmap <expr> <C-p> yoink#canSwap() ? '<Plug>(YoinkPostPasteSwapBack)' : '<Plug>(my-ctrl-p)'
   nmap <expr> <C-n> yoink#canSwap() ? '<Plug>(YoinkPostPasteSwapForward)' : '<Plug>(my-ctrl-n)'
 endif
 
 if my#plug#on('tabular')
+"= édition | aligner sur un motif (:Tabularize)
   nnoremap <leader><C-t> :Tabularize /
 endif
 
 if my#plug#on('vim-windowswap')
   let g:windowswap_map_keys = 0
+"= fenêtres | échanger deux fenêtres : ,sm marque la première, ,sw y place la seconde
   nnoremap <silent> <leader>sw :call WindowSwap#EasyWindowSwap()<CR>
   nnoremap <silent> <leader>sm :call WindowSwap#MarkWindowSwap()<CR>
 endif
 
 if my#plug#on('golden-ratio')
   let g:golden_ratio_autocommand = 0
+"= fenêtres | basculer le redimensionnement automatique (golden ratio)
   nnoremap <S-F5> :GoldenRatioToggle<CR>
 endif
 
 " Sessions (vim-obsession, remplace vim-session) : les sessions sont dans
 " local/sessions/. ,ws commence à suivre une session, ,wo en ouvre une,
 " ,wl ouvre la plus récente, ,wx met en pause le suivi, ,wv affiche son état.
+"= sessions | rouvrir la session la plus récente
 nnoremap <silent> <leader>wl :call my#buffers#last_session()<CR>
 if my#plug#on('vim-obsession')
+"= sessions | suivre une nouvelle session (,ws), en ouvrir une (,wo, ,ww)
   execute 'nnoremap <leader>ws :Obsession ' . fnameescape(g:my_local . '/sessions') . '/'
   execute 'nnoremap <leader>wo :source ' . fnameescape(g:my_local . '/sessions') . '/'
   execute 'nnoremap <leader>ww :source ' . fnameescape(g:my_local . '/sessions') . '/'
+"= sessions | mettre le suivi de session en pause
   nnoremap <leader>wx :Obsession<CR>
+"= sessions | afficher la session suivie
   nnoremap <leader>wv :echo ObsessionStatus('Session suivie : ' . v:this_session, 'Aucune session suivie')<CR>
 endif
 

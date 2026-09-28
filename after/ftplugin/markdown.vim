@@ -4,7 +4,7 @@ setlocal textwidth=72
 setlocal spell
 setlocal spelllang=fr
 
-" ,P : aperçu (markdown-preview, sinon l'appli Marked sous macOS)
+"= écriture | aperçu du document (markdown-preview, sinon Marked 2 sous macOS)
 if exists(':MarkdownPreviewToggle') == 2
   nnoremap <buffer> <leader>P :MarkdownPreviewToggle<CR>
 elseif g:my_is_mac && isdirectory('/Applications/Marked 2.app')

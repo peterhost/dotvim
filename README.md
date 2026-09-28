@@ -208,49 +208,240 @@ local/                 données et réglages propres à la machine (non versionn
 plugged/               plugins installés (non versionné)
 ```
 
-## Principaux raccourcis
+## Raccourcis
 
 Le leader est `,` et le localleader est `=`.
 
-**Navigation et fichiers**
+Cette liste est **engendrée depuis le code** par `bin/keys` : chaque raccourci
+porte sa description juste au-dessus de lui dans les fichiers de configuration,
+et `make check` échoue si l'un d'eux n'est pas documenté. Pour la consulter :
+
+```sh
+sh bin/keys              # dans un terminal, tous les thèmes
+sh bin/keys édition      # un seul thème
+```
+
+Dans vim : `,?` ou `:Keys`, `:Keys git` pour un thème, `:help raccourcis`.
+
+<!-- raccourcis -->
+
+**fichiers**
 
 | Raccourci | Action |
 |---|---|
-| `,ff` `,fb` `,fr` `,fg` | fichiers, buffers, récents, recherche (fzf, sinon ctrlp) |
-| `,n` / `,p` | buffer suivant / précédent (aussi `-b` / `'b`, d'unimpaired) |
-| `,be` `,bs` `,bv` | liste des buffers : ici, partage horizontal, partage vertical |
-| `,fb` | choisir un buffer dans une liste floue |
-| `,t` / `,T` | arborescence (NERDTree) / symboles (Tagbar) |
-| `,x` / `,X` | fermer le buffer en gardant la fenêtre / fermer les deux |
-| `Ctrl-h/j/k/l`, flèches | changer de fenêtre (et de panneau tmux) |
-| `=t` `=h` `=l` | nouvel onglet, onglet précédent / suivant |
+| `,fd` | ouvrir un fichier du dossier du fichier courant |
+| `,ff` | ouvrir un fichier (recherche floue) |
+| `,fr` | rouvrir un fichier récent |
+| `,t` | explorateur de fichiers (NERDTree) |
 
-**Édition**
+**buffers**
 
 | Raccourci | Action |
 |---|---|
-| `jf` / `fj` | quitter le mode insertion |
-| `Espace` / `Retour arrière` | déplier / replier |
-| `,Espace` / `Maj-F7` | supprimer les espaces en fin de ligne (ligne / fichier ; en markdown, les doubles espaces sont conservés) |
-| `F8` | réindenter, ou corriger avec ALE (python, js, json…) |
-| `,u` / `,y` | historique d'annulation / registres |
-| `Ctrl-p` / `Ctrl-n` juste après un collage | remplacer par une copie plus ancienne / plus récente |
-| `Maj-Tab` | développer un snippet |
-| `aC` `iC` / `aM` `iM` (python) | objets de texte classe / méthode, aussi `ac` `ic` `af` `if` |
-| `,d` `,N` `,r` (python) | définition, usages, renommage (ALE) |
+| `,bc` | fermer les buffers vides |
+| `,be / ,bt / ,bs / ,bv` | liste des buffers : ici (,be), bascule (,bt), partage horizontal (,bs) ou vertical (,bv) |
+| `,fb` | choisir un buffer |
+| `,ll / ,aa / ,az` | choisir un buffer (raccourcis historiques) |
+| `,n / ,p` | buffer suivant / précédent (aussi -b et 'b, d'unimpaired) |
+| `,x / ,X / ,Ctrl-x` | fermer le buffer en gardant la fenêtre (,x), buffer et fenêtre (,X), la fenêtre seule (,Ctrl-x) |
 
-**Git et erreurs**
+**fenêtres**
 
 | Raccourci | Action |
 |---|---|
-| `,gs` `,gc` `,gl` `,gb` | git : état, commit, historique, ouvrir sur GitHub |
-| `,E` `]d` `[d` | erreurs : liste, suivante, précédente |
+| `↑ / ↓ / ← / →` | changer de fenêtre aux flèches |
+| `,< / ,>` | élargir / rétrécir la fenêtre de 4 colonnes |
+| `,sw / ,sm` | échanger deux fenêtres : ,sm marque la première, ,sw y place la seconde |
+| `Ctrl-h / Ctrl-j / Ctrl-k / Ctrl-l` | changer de fenêtre (et de panneau tmux, si tmux-navigator est chargé) |
+| `gf` | ouvrir le fichier sous le curseur dans un partage vertical |
+| `Maj-F5` | basculer le redimensionnement automatique (golden ratio) |
 
-**Markdown et écriture**
+**onglets**
 
 | Raccourci | Action |
 |---|---|
-| `,P` | aperçu markdown |
-| `:Goyo` | mode écriture |
+| `=h / =l` | onglet précédent (=h) / suivant (=l) |
+| `=j / =k` | premier (=j) / dernier (=k) onglet |
+| `=t / =w` | nouvel onglet en dernier (=t), fermer l’onglet (=w) |
+| `Alt-↑ / Alt-↓ / Alt-← / Alt-→` | premier, dernier, précédent, suivant onglet aux flèches Alt (interface graphique) |
+| `Alt-k / Alt-j / Alt-h / Alt-l` | premier, dernier, précédent, suivant onglet à Alt-kjhl (interface graphique) |
 
-**AZERTY :** `'` `-` `§` `à` `ù` donnent `[` `]` `{` `}` `%`.
+**sessions**
+
+| Raccourci | Action |
+|---|---|
+| `,wl` | rouvrir la session la plus récente |
+| `,ws / ,wo / ,ww` | suivre une nouvelle session (,ws), en ouvrir une (,wo, ,ww) |
+| `,wv` | afficher la session suivie |
+| `,wx` | mettre le suivi de session en pause |
+
+**navigation**
+
+| Raccourci | Action |
+|---|---|
+| `,← / ,→ / ,↑ / ,↓` | quickfix : résultat précédent / suivant, fichier précédent / suivant |
+| `,fc` | aller à une modification (changes) |
+| `,fj` | revenir à un saut précédent (jumps) |
+| `,fl` | chercher une ligne du fichier courant |
+| `,ft` | sauter à une étiquette (tags) |
+| `,T` | liste des symboles du fichier (Tagbar) |
+| `' / - / § / à` | accès direct à [ ] { } sans AltGr (clavier AZERTY) |
+| `ù` | le % étendu de matchit : sauter à la parenthèse, la balise ou le mot-clé apparié |
+
+**recherche**
+
+| Raccourci | Action |
+|---|---|
+| `,/ / ,;` | éteindre la surbrillance des résultats |
+| `,fg` | chercher dans les fichiers (ripgrep s’il est là, sinon :vimgrep) |
+| `,g` | amorcer un :vimgrep dans l’arborescence |
+| `* / #` | chercher la sélection, en avant (*) ou en arrière (#) *(mode visuel)* |
+| `gv` | chercher la sélection dans les fichiers (:vimgrep) *(mode visuel)* |
+
+**édition**
+
+| Raccourci | Action |
+|---|---|
+| `,Ctrl-t` | aligner sur un motif (:Tabularize) |
+| `,y` | lister les registres (vim-peekaboo les montre aussi en tapant " ou @) |
+| `; / `;` | ; répète la dernière modification, `; retourne au dernier point modifié |
+| `:LongLinesToggle` | signaler ou non les lignes trop longues |
+| `:StripWhitespace` | supprimer les espaces en fin de ligne (tout le fichier, ou une plage) |
+| `< / >` | indenter / désindenter sans perdre la sélection *(mode visuel)* |
+| `~` | la sélection en minuscules, puis Capitalisées, puis MAJUSCULES *(mode visuel)* |
+| `Cmd-k / Cmd-j` | déplacer la ligne vers le haut / le bas (MacVim) |
+| `Ctrl-p / Ctrl-n` | juste après un collage : copie plus ancienne (Ctrl-p) ou plus récente (Ctrl-n) |
+| `F8` | réindenter tout le fichier (ALEFix le remplace là où il est actif) |
+| `gV` | resélectionner le dernier texte modifié ou collé |
+| `K / J / Cmd-k / Cmd-j` | déplacer la sélection vers le haut (K, Cmd-k) ou le bas (J, Cmd-j) *(mode visuel)* |
+| `Maj-Entrée` | insérer une ligne au-dessus sans passer en insertion |
+| `Maj-F7 / ,Maj-Espace / ,Espace` | supprimer les espaces en fin de ligne : le fichier, la ligne ou la sélection (,Espace) |
+| `p / P / gp / gP` | coller, en gardant l’historique des copies sous la main |
+| `Q` | reformater le paragraphe ou la sélection |
+
+**repliage**
+
+| Raccourci | Action |
+|---|---|
+| `,Ctrl-Espace` | replier la balise HTML courante |
+| `Espace / Retour arrière` | ouvrir ou fermer le pli sous le curseur (Espace), avec ses plis imbriqués (Retour arrière) |
+| `Maj-Retour arrière / Ctrl-Retour arrière / Ctrl-Maj-Retour arrière` | ouvrir (Maj-) ou fermer (Ctrl-) d’un niveau partout, basculer le repliage (Ctrl-Maj-) |
+
+**saisie**
+
+| Raccourci | Action |
+|---|---|
+| `Ctrl-h / Ctrl-j / Ctrl-k / Ctrl-l` | déplacer le curseur en insertion *(mode insertion)* |
+| `Ctrl-h / Ctrl-j / Ctrl-k / Ctrl-l` | déplacer le curseur en ligne de commande *(ligne de commande)* |
+| `Espace` | quitter le mode visuel *(mode visuel)* |
+| `jf / fj` | quitter la ligne de commande *(ligne de commande)* |
+| `jf / fj` | quitter le mode insertion *(mode insertion)* |
+| `Maj-Tab` | développer un snippet ou sauter au champ suivant *(mode insertion)* |
+
+**écriture**
+
+| Raccourci | Action |
+|---|---|
+| `,P` | aperçu du document (markdown-preview, sinon Marked 2 sous macOS) *(fichiers markdown)* |
+| `|` | aligner le tableau markdown au fil de la frappe (tabular) *(mode insertion)* |
+
+**langages**
+
+| Raccourci | Action |
+|---|---|
+| `,d` | aller à la définition (raccourci de jedi-vim, conservé) *(fichiers python)* |
+| `,E` | ouvrir la liste des erreurs (ALE) |
+| `,h` | doc perl du mot ou du module sous le curseur *(fichiers perl)* |
+| `,jsl / ,jsf` | vérifier (,jsl) ou corriger (,jsf) le fichier *(fichiers javascript)* |
+| `,N` | usages du symbole (,N, car ,n va au buffer suivant) *(fichiers python)* |
+| `,r / ,R` | renommer le symbole *(fichiers python)* |
+| `]d / [d` | erreur suivante (]d) ou précédente ([d) |
+| `=d` | commentaire JSDoc pour la fonction courante *(fichiers javascript)* |
+| `=D` | documentation du projet avec l’outil jsdoc *(fichiers javascript)* |
+| `aC / iC / aM / iM` | objets de texte : classe (aC, iC), fonction ou méthode (aM, iM) *(fichiers python)* |
+| `F8` | corriger le fichier (eslint, prettier) *(fichiers javascript)* |
+| `F8` | corriger le fichier (ruff) *(fichiers python)* |
+| `F8` | reformater le fichier (jq) *(fichiers json)* |
+| `gd` | aller à la définition *(fichiers javascript)* |
+| `gd` | aller à la définition *(fichiers python)* |
+| `K` | documentation du symbole sous le curseur *(fichiers python)* |
+
+**git**
+
+| Raccourci | Action |
+|---|---|
+| `,eq / ,Gq / ,sq / ,Gs` | gist QUIX (bookmarklets) : publier (,eq, ,Gq) ou éditer (,sq, ,Gs) |
+| `,ga` | ajouter le fichier courant à l’index |
+| `,gb` | ouvrir le fichier sur GitHub (:GBrowse) |
+| `,gc` | valider les fichiers de l’index |
+| `,gdc / ,gdh / ,gdo` | diff de l’index (,gdc), avec HEAD (,gdh), avec ORIG_HEAD (,gdo) |
+| `,gg` | chercher dans les fichiers suivis (:Ggrep) |
+| `,gl` | journal du dépôt (:Gclog) |
+| `,gs` | état du dépôt (:Git) |
+
+**diff**
+
+| Raccourci | Action |
+|---|---|
+| `Dp / Dg` | reporter (Dp) ou récupérer (Dg) le bloc sous le curseur |
+| `Du / Dt / Do` | rafraîchir (Du), comparer ce buffer (Dt), quitter le diff (Do) |
+
+**greffons**
+
+| Raccourci | Action |
+|---|---|
+| `,at` | afficher ou masquer la barre d’état (airline) |
+| `,u` | arbre des annulations (undotree) |
+| `:PluginsUpdateLog` | ouvrir le journal des mises à jour de greffons |
+
+**thèmes**
+
+| Raccourci | Action |
+|---|---|
+| `,$ / Alt-Espace` | choisir un thème (,$ liste, Alt-Espace amorce :Theme) |
+| `,$n / ,$p` | thème suivant / précédent |
+| `,sc` | afficher tous les groupes de couleurs |
+| `:Theme` | choisir le thème et le fond (:Theme everforest light) |
+| `F5` | basculer clair / sombre, pour cette session seulement |
+
+**aide**
+
+| Raccourci | Action |
+|---|---|
+| `,?` | l’aide des raccourcis (,? puis un thème avec :Keys) |
+| `,fh` | chercher une rubrique d’aide |
+| `,h / ,H` | aide sur le mot sous le curseur (,h), recherche dans toute l’aide (,H) |
+| `,h` | aide sur le MOT complet sous le curseur *(dans l’aide)* |
+| `:Keys` | l’aide des raccourcis, engendrée depuis le code (:Keys git pour un thème) |
+| `Entrée / Retour arrière` | suivre un lien (Entrée), revenir en arrière (Retour arrière) *(dans l’aide)* |
+| `o / O` | option suivante (o) ou précédente (O) *(dans l’aide)* |
+| `s / S` | sujet suivant (s) ou précédent (S) *(dans l’aide)* |
+
+**configuration**
+
+| Raccourci | Action |
+|---|---|
+| `,eb` | éditer ~/.bashrc |
+| `,el` | éditer les réglages propres à cette machine |
+| `,ev / ,sv` | éditer le vimrc (,ev) puis le recharger (,sv) |
+
+**système**
+
+| Raccourci | Action |
+|---|---|
+| `,Ctrl-e` | rouvrir le fichier dans un autre encodage |
+| `,q` | terminal intégré dans un onglet (ou :shell si vim n’a pas +terminal) |
+| `,rr` | redessiner l’écran |
+| `:WatchForChanges` | recharger le fichier courant quand il change sur le disque (! : sans confirmation) |
+| `:WatchForChangesAllFile` | même surveillance, pour tous les fichiers ouverts |
+| `:WatchForChangesWhileInThisBuffer` | même surveillance, tant qu’on reste dans ce buffer |
+| `F3` | basculer les numéros de ligne relatifs |
+| `w!!` | enregistrer avec sudo un fichier ouvert sans les droits *(ligne de commande)* |
+
+**polices**
+
+| Raccourci | Action |
+|---|---|
+| `,= / ,-` | agrandir (,=) ou réduire (,-) la police d’un point *(interface graphique)* |
+| `,1 … ,9` | choisir une des polices préférées *(interface graphique)* |
+<!-- /raccourcis -->

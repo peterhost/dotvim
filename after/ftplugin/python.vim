@@ -7,13 +7,17 @@ else
 endif
 
 if exists(':ALEFix') == 2
+"= langages | corriger le fichier (ruff)
   nnoremap <buffer> <F8> :ALEFix<CR>
+"= langages | aller à la définition
   nnoremap <buffer> gd :ALEGoToDefinition<CR>
+"= langages | documentation du symbole sous le curseur
   nnoremap <buffer> K :ALEHover<CR>
-  " raccourcis de jedi-vim, conservés : définition, usages, renommage
+"= langages | aller à la définition (raccourci de jedi-vim, conservé)
   nnoremap <buffer> <leader>d :ALEGoToDefinition<CR>
-  " ,N : usages (et non ,n, réservé au buffer suivant)
+"= langages | usages du symbole (,N, car ,n va au buffer suivant)
   nnoremap <buffer> <leader>N :ALEFindReferences<CR>
+"= langages | renommer le symbole
   nnoremap <buffer> <leader>r :ALERename<CR>
   nnoremap <buffer> <leader>R :ALERename<CR>
   setlocal omnifunc=ale#completion#OmniFunc
@@ -25,6 +29,7 @@ endif
 if exists('g:loaded_pythonsense') || exists('*pythonsense#select_named_block')
       \ || my#plug#on('vim-pythonsense')
   for s:m in ['o', 'x']
+"= langages | objets de texte : classe (aC, iC), fonction ou méthode (aM, iM)
     execute s:m . 'map <buffer> aC <Plug>(PythonsenseOuterClassTextObject)'
     execute s:m . 'map <buffer> iC <Plug>(PythonsenseInnerClassTextObject)'
     execute s:m . 'map <buffer> aM <Plug>(PythonsenseOuterFunctionTextObject)'

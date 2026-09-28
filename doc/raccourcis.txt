@@ -1,0 +1,232 @@
+*raccourcis.txt*	Les raccourcis de cette configuration vim
+
+ENGENDRÉ PAR bin/keys — NE PAS MODIFIER À LA MAIN.
+La description de chaque raccourci vit à côté de lui, dans les fichiers de
+config ; « make keys » régénère ce fichier.
+
+Leader : ,   Localleader : =
+
+SOMMAIRE					*raccourcis*
+
+  fichiers                     |raccourcis-fichiers|
+  buffers                      |raccourcis-buffers|
+  fenêtres                     |raccourcis-fenêtres|
+  onglets                      |raccourcis-onglets|
+  sessions                     |raccourcis-sessions|
+  navigation                   |raccourcis-navigation|
+  recherche                    |raccourcis-recherche|
+  édition                      |raccourcis-édition|
+  repliage                     |raccourcis-repliage|
+  saisie                       |raccourcis-saisie|
+  écriture                     |raccourcis-écriture|
+  langages                     |raccourcis-langages|
+  git                          |raccourcis-git|
+  diff                         |raccourcis-diff|
+  greffons                     |raccourcis-greffons|
+  thèmes                       |raccourcis-thèmes|
+  aide                         |raccourcis-aide|
+  configuration                |raccourcis-configuration|
+  système                      |raccourcis-système|
+  polices                      |raccourcis-polices|
+
+==============================================================================
+FICHIERS				*raccourcis-fichiers*
+
+  ,fd                        ouvrir un fichier du dossier du fichier courant
+  ,ff                        ouvrir un fichier (recherche floue)
+  ,fr                        rouvrir un fichier récent
+  ,t                         explorateur de fichiers (NERDTree)
+
+==============================================================================
+BUFFERS				*raccourcis-buffers*
+
+  ,bc                        fermer les buffers vides
+  ,be / ,bt / ,bs / ,bv      liste des buffers : ici (,be), bascule (,bt), partage horizontal (,bs) ou vertical (,bv)
+  ,fb                        choisir un buffer
+  ,ll / ,aa / ,az            choisir un buffer (raccourcis historiques)
+  ,n / ,p                    buffer suivant / précédent (aussi -b et 'b, d'unimpaired)
+  ,x / ,X / ,Ctrl-x          fermer le buffer en gardant la fenêtre (,x), buffer et fenêtre (,X), la fenêtre seule (,Ctrl-x)
+
+==============================================================================
+FENÊTRES				*raccourcis-fenêtres*
+
+  ↑ / ↓ / ← / →              changer de fenêtre aux flèches
+  ,< / ,>                    élargir / rétrécir la fenêtre de 4 colonnes
+  ,sw / ,sm                  échanger deux fenêtres : ,sm marque la première, ,sw y place la seconde
+  Ctrl-h / Ctrl-j / Ctrl-k / Ctrl-l changer de fenêtre (et de panneau tmux, si tmux-navigator est chargé)
+  gf                         ouvrir le fichier sous le curseur dans un partage vertical
+  Maj-F5                     basculer le redimensionnement automatique (golden ratio)
+
+==============================================================================
+ONGLETS				*raccourcis-onglets*
+
+  =h / =l                    onglet précédent (=h) / suivant (=l)
+  =j / =k                    premier (=j) / dernier (=k) onglet
+  =t / =w                    nouvel onglet en dernier (=t), fermer l’onglet (=w)
+  Alt-↑ / Alt-↓ / Alt-← / Alt-→ premier, dernier, précédent, suivant onglet aux flèches Alt (interface graphique)
+  Alt-k / Alt-j / Alt-h / Alt-l premier, dernier, précédent, suivant onglet à Alt-kjhl (interface graphique)
+
+==============================================================================
+SESSIONS				*raccourcis-sessions*
+
+  ,wl                        rouvrir la session la plus récente
+  ,ws / ,wo / ,ww            suivre une nouvelle session (,ws), en ouvrir une (,wo, ,ww)
+  ,wv                        afficher la session suivie
+  ,wx                        mettre le suivi de session en pause
+
+==============================================================================
+NAVIGATION				*raccourcis-navigation*
+
+  ,← / ,→ / ,↑ / ,↓          quickfix : résultat précédent / suivant, fichier précédent / suivant
+  ,fc                        aller à une modification (changes)
+  ,fj                        revenir à un saut précédent (jumps)
+  ,fl                        chercher une ligne du fichier courant
+  ,ft                        sauter à une étiquette (tags)
+  ,T                         liste des symboles du fichier (Tagbar)
+  ' / - / § / à              accès direct à [ ] { } sans AltGr (clavier AZERTY)
+  ù                          le % étendu de matchit : sauter à la parenthèse, la balise ou le mot-clé apparié
+
+==============================================================================
+RECHERCHE				*raccourcis-recherche*
+
+  ,/ / ,;                    éteindre la surbrillance des résultats
+  ,fg                        chercher dans les fichiers (ripgrep s’il est là, sinon :vimgrep)
+  ,g                         amorcer un :vimgrep dans l’arborescence
+  * / #                      chercher la sélection, en avant (*) ou en arrière (#)  (mode visuel)
+  gv                         chercher la sélection dans les fichiers (:vimgrep)  (mode visuel)
+
+==============================================================================
+ÉDITION				*raccourcis-édition*
+
+  ,Ctrl-t                    aligner sur un motif (:Tabularize)
+  ,y                         lister les registres (vim-peekaboo les montre aussi en tapant " ou @)
+  ; / `;                     ; répète la dernière modification, `; retourne au dernier point modifié
+  :LongLinesToggle           signaler ou non les lignes trop longues
+  :StripWhitespace           supprimer les espaces en fin de ligne (tout le fichier, ou une plage)
+  < / >                      indenter / désindenter sans perdre la sélection  (mode visuel)
+  ~                          la sélection en minuscules, puis Capitalisées, puis MAJUSCULES  (mode visuel)
+  Cmd-k / Cmd-j              déplacer la ligne vers le haut / le bas (MacVim)
+  Ctrl-p / Ctrl-n            juste après un collage : copie plus ancienne (Ctrl-p) ou plus récente (Ctrl-n)
+  F8                         réindenter tout le fichier (ALEFix le remplace là où il est actif)
+  gV                         resélectionner le dernier texte modifié ou collé
+  K / J / Cmd-k / Cmd-j      déplacer la sélection vers le haut (K, Cmd-k) ou le bas (J, Cmd-j)  (mode visuel)
+  Maj-Entrée                 insérer une ligne au-dessus sans passer en insertion
+  Maj-F7 / ,Maj-Espace / ,Espace supprimer les espaces en fin de ligne : le fichier, la ligne ou la sélection (,Espace)
+  p / P / gp / gP            coller, en gardant l’historique des copies sous la main
+  Q                          reformater le paragraphe ou la sélection
+
+==============================================================================
+REPLIAGE				*raccourcis-repliage*
+
+  ,Ctrl-Espace               replier la balise HTML courante
+  Espace / Retour arrière    ouvrir ou fermer le pli sous le curseur (Espace), avec ses plis imbriqués (Retour arrière)
+  Maj-Retour arrière / Ctrl-Retour arrière / Ctrl-Maj-Retour arrière ouvrir (Maj-) ou fermer (Ctrl-) d’un niveau partout, basculer le repliage (Ctrl-Maj-)
+
+==============================================================================
+SAISIE				*raccourcis-saisie*
+
+  Ctrl-h / Ctrl-j / Ctrl-k / Ctrl-l déplacer le curseur en insertion  (mode insertion)
+  Ctrl-h / Ctrl-j / Ctrl-k / Ctrl-l déplacer le curseur en ligne de commande  (ligne de commande)
+  Espace                     quitter le mode visuel  (mode visuel)
+  jf / fj                    quitter la ligne de commande  (ligne de commande)
+  jf / fj                    quitter le mode insertion  (mode insertion)
+  Maj-Tab                    développer un snippet ou sauter au champ suivant  (mode insertion)
+
+==============================================================================
+ÉCRITURE				*raccourcis-écriture*
+
+  ,P                         aperçu du document (markdown-preview, sinon Marked 2 sous macOS)  (fichiers markdown)
+  |                          aligner le tableau markdown au fil de la frappe (tabular)  (mode insertion)
+
+==============================================================================
+LANGAGES				*raccourcis-langages*
+
+  ,d                         aller à la définition (raccourci de jedi-vim, conservé)  (fichiers python)
+  ,E                         ouvrir la liste des erreurs (ALE)
+  ,h                         doc perl du mot ou du module sous le curseur  (fichiers perl)
+  ,jsl / ,jsf                vérifier (,jsl) ou corriger (,jsf) le fichier  (fichiers javascript)
+  ,N                         usages du symbole (,N, car ,n va au buffer suivant)  (fichiers python)
+  ,r / ,R                    renommer le symbole  (fichiers python)
+  ]d / [d                    erreur suivante (]d) ou précédente ([d)
+  =d                         commentaire JSDoc pour la fonction courante  (fichiers javascript)
+  =D                         documentation du projet avec l’outil jsdoc  (fichiers javascript)
+  aC / iC / aM / iM          objets de texte : classe (aC, iC), fonction ou méthode (aM, iM)  (fichiers python)
+  F8                         corriger le fichier (eslint, prettier)  (fichiers javascript)
+  F8                         corriger le fichier (ruff)  (fichiers python)
+  F8                         reformater le fichier (jq)  (fichiers json)
+  gd                         aller à la définition  (fichiers javascript)
+  gd                         aller à la définition  (fichiers python)
+  K                          documentation du symbole sous le curseur  (fichiers python)
+
+==============================================================================
+GIT				*raccourcis-git*
+
+  ,eq / ,Gq / ,sq / ,Gs      gist QUIX (bookmarklets) : publier (,eq, ,Gq) ou éditer (,sq, ,Gs)
+  ,ga                        ajouter le fichier courant à l’index
+  ,gb                        ouvrir le fichier sur GitHub (:GBrowse)
+  ,gc                        valider les fichiers de l’index
+  ,gdc / ,gdh / ,gdo         diff de l’index (,gdc), avec HEAD (,gdh), avec ORIG_HEAD (,gdo)
+  ,gg                        chercher dans les fichiers suivis (:Ggrep)
+  ,gl                        journal du dépôt (:Gclog)
+  ,gs                        état du dépôt (:Git)
+
+==============================================================================
+DIFF				*raccourcis-diff*
+
+  Dp / Dg                    reporter (Dp) ou récupérer (Dg) le bloc sous le curseur
+  Du / Dt / Do               rafraîchir (Du), comparer ce buffer (Dt), quitter le diff (Do)
+
+==============================================================================
+GREFFONS				*raccourcis-greffons*
+
+  ,at                        afficher ou masquer la barre d’état (airline)
+  ,u                         arbre des annulations (undotree)
+  :PluginsUpdateLog          ouvrir le journal des mises à jour de greffons
+
+==============================================================================
+THÈMES				*raccourcis-thèmes*
+
+  ,$ / Alt-Espace            choisir un thème (,$ liste, Alt-Espace amorce :Theme)
+  ,$n / ,$p                  thème suivant / précédent
+  ,sc                        afficher tous les groupes de couleurs
+  :Theme                     choisir le thème et le fond (:Theme everforest light)
+  F5                         basculer clair / sombre, pour cette session seulement
+
+==============================================================================
+AIDE				*raccourcis-aide*
+
+  ,?                         l’aide des raccourcis (,? puis un thème avec :Keys)
+  ,fh                        chercher une rubrique d’aide
+  ,h                         aide sur le MOT complet sous le curseur  (dans l’aide)
+  ,h / ,H                    aide sur le mot sous le curseur (,h), recherche dans toute l’aide (,H)
+  :Keys                      l’aide des raccourcis, engendrée depuis le code (:Keys git pour un thème)
+  Entrée / Retour arrière    suivre un lien (Entrée), revenir en arrière (Retour arrière)  (dans l’aide)
+  o / O                      option suivante (o) ou précédente (O)  (dans l’aide)
+  s / S                      sujet suivant (s) ou précédent (S)  (dans l’aide)
+
+==============================================================================
+CONFIGURATION				*raccourcis-configuration*
+
+  ,eb                        éditer ~/.bashrc
+  ,el                        éditer les réglages propres à cette machine
+  ,ev / ,sv                  éditer le vimrc (,ev) puis le recharger (,sv)
+
+==============================================================================
+SYSTÈME				*raccourcis-système*
+
+  ,Ctrl-e                    rouvrir le fichier dans un autre encodage
+  ,q                         terminal intégré dans un onglet (ou :shell si vim n’a pas +terminal)
+  ,rr                        redessiner l’écran
+  :WatchForChanges           recharger le fichier courant quand il change sur le disque (! : sans confirmation)
+  :WatchForChangesAllFile    même surveillance, pour tous les fichiers ouverts
+  :WatchForChangesWhileInThisBuffer même surveillance, tant qu’on reste dans ce buffer
+  F3                         basculer les numéros de ligne relatifs
+  w!!                        enregistrer avec sudo un fichier ouvert sans les droits  (ligne de commande)
+
+==============================================================================
+POLICES				*raccourcis-polices*
+
+  ,= / ,-                    agrandir (,=) ou réduire (,-) la police d’un point  (interface graphique)
+  ,1 … ,9                    choisir une des polices préférées  (interface graphique)
+
+ vim:tw=78:ts=8:ft=help:norl:

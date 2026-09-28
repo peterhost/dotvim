@@ -21,6 +21,7 @@ augroup my_colors
   autocmd ColorScheme * call my#colors#fixup()
 augroup END
 
+"= thèmes | choisir le thème et le fond (:Theme everforest light)
 command! -nargs=* -complete=customlist,my#colors#complete Theme call my#colors#command(<q-args>)
 
 call my#colors#init()

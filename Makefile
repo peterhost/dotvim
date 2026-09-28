@@ -9,11 +9,12 @@
 #                    (VIMS="vim /autre/vim" pour tester plusieurs vim)
 #   make quick       tests rapides
 #   make themes      ouvrir le fichier d'essai des thèmes (:Theme <Tab>, <F5>)
+#   make keys        régénérer l'aide des raccourcis (doc/raccourcis.txt, README)
 
 SHELL = /bin/sh
 VIMS ?= vim
 
-.PHONY: all install try update uninstall check quick themes
+.PHONY: all install try update uninstall check quick themes keys
 
 all:
 	@sh bin/install
@@ -35,7 +36,12 @@ uninstall:
 check:
 	@sh test/run.sh $(VIMS)
 	@sh test/install.sh
+	@sh test/keys.sh
 	@sh test/anti-fuite.sh
+
+keys:
+	@sh bin/keys --vim
+	@sh bin/keys --readme
 
 quick:
 	@QUICK=1 sh test/run.sh $(VIMS)

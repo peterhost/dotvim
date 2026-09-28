@@ -587,6 +587,15 @@ prune_crumbs() {
   [ "${n:-0}" -gt 0 ] || ok "Aucun reste : rien à nettoyer"
 }
 
+helptags_doc() { # balises de l’aide maison (:help raccourcis) ; doc/tags n’est pas versionné
+  [ -f "$1/doc/raccourcis.txt" ] && [ -n "$VIM_BIN" ] || return 0
+  if "$VIM_BIN" -es -u NONE -c "helptags $1/doc" -c 'qa!' </dev/null >/dev/null 2>&1; then
+    ok "Aide des raccourcis indexée (:help raccourcis, :Keys)"
+  else
+    warn "Balises de l’aide non engendrées : :help raccourcis indisponible"
+  fi
+}
+
 cleanup_legacy() {
   set --
   [ -d "$REPO/bundle" ] && set -- "$@" "$REPO/bundle"
@@ -650,6 +659,7 @@ do_install() {
   migrate_local "$HOME/.vimrc.local" vimrc.local
   migrate_local "$HOME/.gvimrc.local" gvimrc.local
   [ "$PLUGINS" = no ] || install_plugins "$REPO"
+  helptags_doc "$REPO"
   cleanup_legacy
   prune_crumbs
   check_config "$REPO"

@@ -30,4 +30,5 @@ let g:airline#extensions#tabline#show_tabs = 1
 let g:airline#extensions#tabline#tab_nr_type = 2
 let g:airline_inactive_collapse = 1
 
+"= greffons | afficher ou masquer la barre d’état (airline)
 nnoremap <leader>at :AirlineToggle<CR>

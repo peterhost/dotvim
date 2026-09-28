@@ -1,0 +1,346 @@
+#!/bin/sh
+# bin/keys — l'aide des raccourcis, engendrée depuis le code lui-même
+#
+#   sh bin/keys [thème]     aide lisible (terminal), éventuellement un seul thème
+#   sh bin/keys --tsv       format d'échange à 5 colonnes (voir plus bas)
+#   sh bin/keys --vim       écrit doc/raccourcis.txt (aide vim, avec ses balises)
+#   sh bin/keys --readme    réécrit la section « Raccourcis » du README
+#   sh bin/keys --commandes les commandes maison (:Theme, :StripWhitespace…)
+#   sh bin/keys --themes    la liste des thèmes rencontrés
+#   sh bin/keys --todo      les raccourcis SANS annotation (fichier:ligne)
+#   sh bin/keys --touches   les touches définies, une par ligne (test de couverture)
+#   sh bin/keys --help
+#
+# LA SOURCE EST LE CODE. Chaque raccourci porte son annotation juste au-dessus :
+#
+#     "= buffers | buffer suivant
+#     nnoremap <silent> <leader>n :bnext<CR>
+#
+# L'annotation vaut pour les lignes de mapping qui la suivent immédiatement :
+# un même geste décliné en plusieurs modes, ou en deux branches d'un « if »,
+# n'est donc décrit qu'une fois (les touches sont alors jointes par « / »).
+#
+# Quand la liste mécanique des touches serait illisible, un troisième champ la
+# remplace À L'AFFICHAGE seulement (le test de couverture continue de voir les
+# vraies touches) :
+#
+#     "= polices | ,1 … ,9 | choisir une des polices préférées
+#
+# Un raccourci sans annotation fait ÉCHOUER test/keys.sh, donc « make check » :
+# l'aide ne peut pas dériver du code, c'est tout l'intérêt.
+#
+# Format d'échange (--tsv), convenu avec la configuration bash pour que les deux
+# aides s'affichent ensemble : source<TAB>thème<TAB>touches<TAB>description<TAB>portée
+# source = vim ; touches lisibles (,n et non <leader>n) ; portée = « global » ou
+# une précision (« fichiers python », « mode insertion »).
+
+set -u
+REPO=$(cd "$(dirname "$0")/.." && pwd)
+cd "$REPO" || exit 1
+
+# Ordre d'affichage des thèmes : du plus utilisé au plus rare, le reste ensuite
+# par ordre alphabétique. Socle commun avec la configuration bash.
+ORDRE="fichiers buffers fenêtres onglets sessions navigation recherche édition
+       repliage saisie écriture langages git diff greffons thèmes aide
+       configuration système polices"
+
+FICHIERS="vimrc gvimrc config/options.vim config/mappings.vim config/colors.vim
+          config/highlights.vim config/plugins.vim"
+
+fichiers() {
+  for f in $FICHIERS; do [ -f "$f" ] && echo "$f"; done
+  for f in config/plugins/*.vim after/ftplugin/*.vim; do [ -f "$f" ] && echo "$f"; done
+}
+
+# --- Extraction ---------------------------------------------------------------------------
+# Une ligne par entrée : thème \t touches \t description \t portée \t genre
+#                         \t fichier:ligne \t touches réelles
+# genre : « raccourci » ou « commande ».
+extraire_brut() {
+  fichiers | while IFS= read -r f; do
+    awk -v fichier="$f" '
+      function portee_fichier(f) {
+        if (f ~ /^after\/ftplugin\//) {
+          t = f; sub(/^after\/ftplugin\//, "", t); sub(/\.vim$/, "", t)
+          if (t == "help") return "dans l’aide"
+          return "fichiers " t
+        }
+        if (f == "gvimrc") return "interface graphique"
+        return ""
+      }
+      function portee_mode(cmd,   m) {
+        m = substr(cmd, 1, 1)
+        if (cmd ~ /^(map|noremap)!/) return "insertion et ligne de commande"
+        if (m == "i") return "mode insertion"
+        if (m == "c") return "ligne de commande"
+        if (m == "x" || m == "v") return "mode visuel"
+        if (m == "s") return "mode sélection"
+        if (m == "o") return "en attente d’opérateur"
+        if (m == "t") return "terminal"
+        return ""
+      }
+      # « < » et « > » sont tantôt des chevrons de nom de touche (<F5>), tantôt la
+      # touche elle-même (,< et ,>). On met les seconds de côté le temps du décodage.
+      function proteger(k,   i, c, r) {
+        r = ""
+        for (i = 1; i <= length(k); i++) {
+          c = substr(k, i, 1)
+          if (c == "<" && substr(k, i + 1, 1) !~ /[A-Za-z]/) r = r "@@LT@@"
+          else if (c == ">" && substr(k, i - 1, 1) !~ /[A-Za-z0-9]/) r = r "@@GT@@"
+          else r = r c
+        }
+        return r
+      }
+      function lisible(k) {
+        k = proteger(k)
+        gsub(/<[Ll]eader>/, ",", k); gsub(/<[Ll]ocal[Ll]eader>/, "=", k)
+        k = proteger(k)
+        # les modificateurs d’abord, pour que <C-Space> donne « Ctrl-Espace » et
+        # <S-C-BS> « Maj-Ctrl-Retour arrière » : après eux, le « < » a disparu.
+        gsub(/<?[Ss]-/, "Maj-", k); gsub(/<?[Cc]-/, "Ctrl-", k)
+        gsub(/<?[Aa]-/, "Alt-", k); gsub(/<?[Mm]-/, "Alt-", k); gsub(/<?[Dd]-/, "Cmd-", k)
+        gsub(/<?[Ss]pace>/, "Espace", k)
+        gsub(/<?[Cc][Rr]>/, "Entrée", k); gsub(/<?[Ee]nter>/, "Entrée", k)
+        gsub(/<?[Bb][Ss]>/, "Retour arrière", k)
+        gsub(/<?[Tt]ab>/, "Tab", k); gsub(/<?[Bb]ar>/, "|", k)
+        gsub(/<?[Ee]sc>/, "Échap", k); gsub(/<?[Dd]el>/, "Suppr", k)
+        gsub(/<?[Uu]p>/, "↑", k); gsub(/<?[Dd]own>/, "↓", k)
+        gsub(/<?[Ll]eft>/, "←", k); gsub(/<?[Rr]ight>/, "→", k)
+        gsub(/[<>]/, "", k)
+        gsub(/@@LT@@/, "<", k); gsub(/@@GT@@/, ">", k)
+        return k
+      }
+      function nom_commande(l,   mots, i) {
+        sub(/^[ \t]*command!?[ \t]+/, "", l)
+        split(l, mots, /[ \t]+/); i = 1
+        while (mots[i] ~ /^-/) i++
+        return mots[i]
+      }
+      function vider() {
+        if (theme != "" && touches != "") {
+          printf "%s\t%s\t%s\t%s\t%s\t%s:%d\t%s\n", theme,
+            (forcees == "" ? touches : forcees), description, portee, genre,
+            fichier, ligne_annotation, touches
+        }
+        theme = ""; description = ""; touches = ""; portee = ""; genre = ""; forcees = ""
+      }
+      # annotation : "= thème | description
+      /^[ \t]*"=[ \t]*/ {
+        vider()
+        a = $0
+        sub(/^[ \t]*"=[ \t]*/, "", a)
+        n = index(a, "|")
+        if (n == 0) { print "ANNOTATION MAL FORMÉE " fichier ":" NR > "/dev/stderr"; next }
+        theme = substr(a, 1, n - 1); description = substr(a, n + 1)
+        # forme à trois champs : thème | touches affichées | description
+        n = index(description, "|")
+        if (n > 0) {
+          forcees = substr(description, 1, n - 1); description = substr(description, n + 1)
+          gsub(/^[ \t]+|[ \t]+$/, "", forcees)
+        }
+        gsub(/^[ \t]+|[ \t]+$/, "", theme); gsub(/^[ \t]+|[ \t]+$/, "", description)
+        ligne_annotation = NR
+        next
+      }
+      # ligne de mapping, y compris construite par « execute '…map…' »
+      /^[ \t]*(execute[ \t][^'\''"]*['\''"])?(nn|xn|vn|in|cn|sn|on|tn|n|x|v|i|c|s|o|t)?(nore)?map[!]?[ \t]/ {
+        if (theme == "") next                      # non annoté : test/keys.sh s’en charge
+        genre = "raccourci"
+        ligne = $0; sub(/^[ \t]+/, "", ligne); sub(/^[ \t]*execute[ \t][^'\''"]*['\''"]/, "", ligne)
+        split(ligne, mots, /[ \t]+/)
+        cmd = mots[1]; i = 2
+        while (mots[i] ~ /^<(silent|buffer|expr|unique|nowait|special|script)>$/) i++
+        k = lisible(mots[i])
+        if (k ~ /^<Plug>/ || k ~ /^Plug/) next     # plomberie interne, pas un raccourci
+        if (touches == "") touches = k
+        else if (index(" " touches " ", " " k " ") == 0) touches = touches " / " k
+        p = portee_fichier(fichier); pm = portee_mode(cmd)
+        if (p == "") p = pm
+        else if (pm != "") p = p ", " pm
+        if (portee == "") portee = (p == "" ? "global" : p)
+        next
+      }
+      # commande maison
+      /^[ \t]*command!?[ \t]/ {
+        if (theme == "") next
+        genre = "commande"
+        k = nom_commande($0)
+        if (k != "") {
+          if (touches == "") touches = ":" k
+          else if (index(touches, k) == 0) touches = touches " / :" k
+        }
+        p = portee_fichier(fichier)
+        if (portee == "") portee = (p == "" ? "global" : p)
+        next
+      }
+      /^[ \t]*\\/ { next }   # suite d’une ligne coupée : le groupe reste ouvert
+      # if / else / endif restent transparents : un même geste écrit en deux
+      # branches (selon une capacité de vim) n’est décrit qu’une fois.
+      /^[ \t]*(if|else|elseif|endif|en|el)([ \t!(]|$)/ { next }
+      # toute autre ligne ferme le groupe ; une annotation qui n’a rien décrit
+      # est une annotation orpheline (raccourci supprimé, annotation oubliée)
+      {
+        if (theme != "" && touches == "" && $0 !~ /^[ \t]*("|$)/) {
+          printf "ORPHELINE\t%s:%d\t%s\n", fichier, ligne_annotation, theme > "/dev/stderr"
+        }
+        vider()
+      }
+      END { vider() }
+    ' "$f"
+  done
+}
+
+# Les sorties parcourent les entrées plusieurs fois (une passe par thème) :
+# on n’extrait donc qu’une fois, dans un fichier temporaire effacé en sortant.
+CACHE=$(mktemp "${TMPDIR:-/tmp}/keys.XXXXXX") || exit 1
+trap 'rm -f "$CACHE"' EXIT INT TERM HUP
+extraire_brut > "$CACHE"
+extraire() { cat "$CACHE"; }
+
+# Fonctions awk partagées par les sorties alignées.
+CALE='
+      # awk compte parfois en octets : on aligne sur le nombre de caractères,
+      # sinon les flèches et les accents décalent la colonne de droite.
+      function nchars(s,   n, t) {
+        if (length("é") == 1) return length(s)   # awk qui compte les caractères
+        n = length(s); t = s                     # sinon : octets, à corriger
+        n -= 2 * gsub(/[↑↓←→…’‘«»]/, "x", t)     # 3 octets pour un caractère
+        n -= gsub(/[éèêàçùôûîïÉÈÀÙÇ§°]/, "x", t) # 2 octets pour un caractère
+        return n
+      }
+      function cale(s, l,   r) { r = s; while (nchars(r) < l) r = r " "; return r }
+'
+
+# --- Sorties -----------------------------------------------------------------------------
+themes_tries() { # les thèmes présents, dans l’ordre voulu
+  presents=$(extraire | cut -f1 | sort -u)
+  for t in $ORDRE; do printf '%s\n' "$presents" | grep -qxF "$t" && echo "$t"; done
+  printf '%s\n' "$presents" | while IFS= read -r t; do
+    [ -n "$t" ] || continue
+    printf '%s\n' "$ORDRE" | tr -s ' \n' '\n' | grep -qxF "$t" || echo "$t"
+  done
+}
+
+sortie_terminal() { # sortie_terminal [thème]
+  if [ -t 1 ]; then B=$(printf '\033[1m'); D=$(printf '\033[2m'); C=$(printf '\033[36m'); N=$(printf '\033[0m')
+  else B=; D=; C=; N=; fi
+  themes_tries | while IFS= read -r t; do
+    [ -z "${1:-}" ] || [ "$1" = "$t" ] || continue
+    printf '\n%s%s%s%s\n' "$B" "$C" "$t" "$N"
+    extraire | awk -F'\t' -v t="$t" -v c="$C" -v d="$D" -v n="$N" "$CALE"'
+      $1 == t {
+        portee = ($4 == "global" ? "" : "  (" $4 ")")
+        printf "  %s%s%s %s%s%s\n", c, cale($2, 26), n, $3, d portee, n
+      }' | sort -u
+  done
+  echo
+}
+
+sortie_tsv() {
+  extraire | awk -F'\t' '$5 == "raccourci" { printf "vim\t%s\t%s\t%s\t%s\n", $1, $2, $3, $4 }' | sort -u
+}
+
+sortie_commandes() {
+  extraire | awk -F'\t' "$CALE"'
+    $5 == "commande" { printf "%s %s\n", cale($2, 24), $3 }' | sort -u
+}
+
+sortie_readme() { # remplace la section du README entre ses deux repères
+  out=README.md
+  deb='<!-- raccourcis -->'; fin='<!-- /raccourcis -->'
+  grep -qF "$deb" "$out" || { echo "keys : repère « $deb » absent de $out" >&2; return 1; }
+  tmp="${CACHE}.readme"
+  awk -v d="$deb" '{ print } $0 == d { exit }' "$out" > "$tmp"
+  tableaux >> "$tmp"
+  awk -v f="$fin" 'vu { print } $0 == f { vu = 1; print }' "$out" >> "$tmp"
+  cat "$tmp" > "$out"; rm -f "$tmp"
+  echo "écrit : $out (section « raccourcis »)"
+}
+
+tableaux() {
+  themes_tries | while IFS= read -r t; do
+    printf '\n**%s**\n\n| Raccourci | Action |\n|---|---|\n' "$t"
+    extraire | awk -F'\t' -v t="$t" '$1 == t {
+      portee = ($4 == "global" ? "" : " *(" $4 ")*")
+      printf "| `%s` | %s%s |\n", $2, $3, portee }' | sort -u
+  done
+}
+
+sortie_vim() { # fichier d’aide vim, avec ses balises
+  out=doc/raccourcis.txt
+  mkdir -p doc
+  {
+    printf '*raccourcis.txt*\tLes raccourcis de cette configuration vim\n\n'
+    printf 'ENGENDRÉ PAR bin/keys — NE PAS MODIFIER À LA MAIN.\n'
+    printf 'La description de chaque raccourci vit à côté de lui, dans les fichiers de\n'
+    printf 'config ; « make keys » régénère ce fichier.\n\n'
+    printf 'Leader : ,   Localleader : =\n\n'
+    printf 'SOMMAIRE\t\t\t\t\t*raccourcis*\n\n'
+    themes_tries | while IFS= read -r t; do
+      awk -v t="$t" -v g="$(printf '%s' "$t" | tr ' ' '-')" "$CALE"'
+        BEGIN { printf "  %s |raccourcis-%s|\n", cale(t, 28), g }' </dev/null
+    done
+    printf '\n'
+    themes_tries | while IFS= read -r t; do
+      printf '==============================================================================\n'
+      printf '%s\t\t\t\t*raccourcis-%s*\n\n' "$(printf '%s' "$t" | tr '[:lower:]' '[:upper:]')" \
+        "$(printf '%s' "$t" | tr ' ' '-')"
+      extraire | awk -F'\t' -v t="$t" "$CALE"'
+        $1 == t {
+          portee = ($4 == "global" ? "" : "  (" $4 ")")
+          printf "  %s %s%s\n", cale($2, 26), $3, portee }' | sort -u
+      printf '\n'
+    done
+    printf ' vim:tw=78:ts=8:ft=help:norl:\n'
+  } > "$out"
+  echo "écrit : $out ($(grep -c . "$out") lignes)"
+  command -v vim >/dev/null 2>&1 && vim -es -u NONE -c "helptags $REPO/doc" -c 'qa!' </dev/null >/dev/null 2>&1
+}
+
+sortie_touches() { # les touches réellement définies, une par ligne (couverture)
+  extraire | awk -F'\t' '$5 == "raccourci" { n = split($7, k, / \/ /); for (i = 1; i <= n; i++) print k[i] }' | sort -u
+}
+
+sortie_todo() { # raccourcis sans annotation : fichier:ligne et touches
+  fichiers | while IFS= read -r f; do
+    awk -v fichier="$f" '
+      /^[ \t]*"=[ \t]*/ { annote = 1; next }
+      /^[ \t]*(execute[ \t][^'\''"]*['\''"])?(nn|xn|vn|in|cn|sn|on|tn|n|x|v|i|c|s|o|t)?(nore)?map[!]?[ \t]/ {
+        if (annote) next
+        ligne = $0; sub(/^[ \t]+/, "", ligne); sub(/^[ \t]*execute[ \t][^'\''"]*['\''"]/, "", ligne)
+        split(ligne, mots, /[ \t]+/); i = 2
+        while (mots[i] ~ /^<(silent|buffer|expr|unique|nowait|special|script)>$/) i++
+        if (mots[i] ~ /^<Plug>/) next
+        printf "%s:%d\t%s\t%s\n", fichier, NR, mots[1], mots[i]
+        next
+      }
+      /^[ \t]*command!?[ \t]/ {
+        if (annote) next
+        l = $0; sub(/^[ \t]*command!?[ \t]+/, "", l)
+        split(l, mots, /[ \t]+/); i = 1
+        while (mots[i] ~ /^-/) i++
+        printf "%s:%d\tcommande\t%s\n", fichier, NR, mots[i]
+        next
+      }
+      # lignes coupées et if / else : elles ne rompent pas le lien entre une
+      # annotation et les raccourcis qu’elle décrit
+      /^[ \t]*(\\|if|else|elseif|endif|en|el)([ \t!(]|$)/ { next }
+      /^[ \t]*$/ { annote = 0; next }
+      { annote = 0 }
+    ' "$f"
+  done
+}
+
+case ${1:-} in
+  --tsv) sortie_tsv ;;
+  --vim) sortie_vim ;;
+  --readme) sortie_readme ;;
+  --commandes) sortie_commandes ;;
+  --themes) themes_tries ;;
+  --todo) sortie_todo ;;
+  --touches) sortie_touches ;;
+  -h|--help) sed -n '2,30p' "$0" | sed 's/^# \{0,1\}//' ;;
+  --*) echo "keys : option inconnue : $1 (voir --help)" >&2; exit 2 ;;
+  '') sortie_terminal ;;
+  *) sortie_terminal "$1" ;;
+esac

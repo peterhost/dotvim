@@ -13,4 +13,5 @@ augroup my_highlights
   autocmd InsertLeave * call my#highlights#apply(0)
 augroup END
 
+"= édition | signaler ou non les lignes trop longues
 command! LongLinesToggle call my#highlights#toggle_longlines()
