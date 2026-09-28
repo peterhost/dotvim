@@ -31,21 +31,25 @@ SGR = re.compile(r"\033\[[0-9;]*m")
 AIDE = "  ←→ onglet · Tab volet · ↑↓ jk défiler · Ctrl-d/u · g/G · / filtrer · r · q"
 
 
-def sortie(commande, env=None):
-    """La sortie d'une commande, sans couleurs, ou son erreur — jamais d'exception."""
+def sortie(commande, cwd=None, env=None, delai=120):
+    """La sortie d'une commande, sans couleurs, ou son erreur — jamais d'exception.
+
+    Même signature que onglets.sortie() de dotlib : les producteurs d'onglets sont
+    ainsi les mêmes, qu'ils tournent sur le socle commun ou sur notre repli.
+    """
     # NO_COLOR suffit à obtenir du texte nu ; on garde le vrai TERM, sinon vim
     # annoncerait le thème d'un terminal sans couleurs.
     e = dict(os.environ, NO_COLOR="1")
     if env:
         e.update(env)
     try:
-        r = subprocess.run(commande, cwd=REPO, env=e, stdout=subprocess.PIPE,
-                           stderr=subprocess.STDOUT, timeout=120)
+        r = subprocess.run(commande, cwd=cwd or REPO, env=e, stdin=subprocess.DEVNULL,
+                           stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=delai)
         texte = r.stdout.decode("utf-8", "replace")
     except FileNotFoundError:
         return ["(commande absente : %s)" % commande[0]]
     except subprocess.TimeoutExpired:
-        return ["(trop long : %s)" % " ".join(commande)]
+        return ["(trop long, abandonné après %d s : %s)" % (delai, " ".join(commande))]
     return [SGR.sub("", l).rstrip() for l in texte.splitlines()]
 
 
@@ -113,15 +117,15 @@ def plier(texte, largeur):
     return morceaux or [""]
 
 
-def raccourcis_tsv():
+def raccourcis_tsv(sortie):
     """Les raccourcis de vim, et ceux du shell si sa propre aide est là."""
     lignes = []
-    for l in sortie(["sh", os.path.join(REPO, "bin", "keys"), "--tsv"]):
+    for l in sortie(["sh", os.path.join(REPO, "bin", "keys"), "--tsv"], cwd=REPO):
         champs = l.split("\t")
         if len(champs) >= 5:
             lignes.append(champs[:5])
     for outil in ("bindhelp", os.path.expanduser("~/.bash/bin/bindhelp")):
-        essai = sortie([outil, "--tsv"])
+        essai = sortie([outil, "--tsv"], cwd=REPO)
         if essai and "\t" in "".join(essai):
             for l in essai:
                 champs = l.split("\t")
@@ -134,10 +138,11 @@ def raccourcis_tsv():
 class Onglet:
     """Un onglet : un titre, de quoi produire son contenu, et où il en est."""
 
-    def __init__(self, titre, produire, liste=False):
+    def __init__(self, titre, produire, genre="texte", action=None):
         self.titre = titre
         self.produire = produire
-        self.liste = liste          # vrai : colonne de gauche + volet de droite
+        self.genre = genre
+        self.liste = genre == "raccourcis"   # colonne de gauche + volet de droite
         self.contenu = None
         self.rang = 0               # sélection dans la colonne de gauche
         self.haut = 0               # première ligne d'écran affichée du volet
@@ -158,33 +163,40 @@ class Onglet:
         self.charger()
 
 
-def onglets():
+def construire(mod):
+    """Les six onglets, bâtis avec le module qui les affichera : le socle commun de
+    dotlib, ou nous-mêmes. Les deux exposent Onglet() et sortie() de la même façon,
+    donc ces producteurs ne connaissent pas celui qui les emploie."""
+    K = os.path.join(REPO, "bin", "keys")
+    V = os.path.join(REPO, "bin", "vrc")
+
     def raccourcis():
-        entrees = raccourcis_tsv()
-        # l'ordre de référence vient de bin/keys (--ordre), pour que les thèmes
-        # du shell se rangent au bon endroit et non à la fin
-        reference = sortie(["sh", os.path.join(REPO, "bin", "keys"), "--ordre"])
+        entrees = raccourcis_tsv(mod.sortie)
+        reference = mod.sortie(["sh", K, "--ordre"], cwd=REPO)
         presents = [e[1] for e in entrees]
         themes = [t for t in reference if t in presents]
-        for theme in presents:                 # thèmes hors référence, à la suite
+        for theme in presents:
             if theme not in themes:
                 themes.append(theme)
         return {"entrees": entrees, "themes": themes}
 
+    def texte(*commande):
+        return lambda: mod.sortie(list(commande), cwd=REPO, delai=120)
+
     return [
-        Onglet("Raccourcis", raccourcis, liste=True),
-        Onglet("État", lambda: sortie(["sh", os.path.join(REPO, "bin", "vrc"), "etat"])),
-        Onglet("Greffons", lambda: sortie(["sh", os.path.join(REPO, "bin", "vrc"), "greffons"])),
-        Onglet("Thèmes", lambda: sortie(["sh", os.path.join(REPO, "bin", "vrc"), "themes"])),
-        Onglet("Journaux", lambda: sortie(["sh", os.path.join(REPO, "bin", "vrc"), "journal", "60"])),
-        Onglet("Commandes", lambda: sortie(["sh", os.path.join(REPO, "bin", "keys"), "--commandes"])),
+        mod.Onglet("Raccourcis", raccourcis, genre="raccourcis"),
+        mod.Onglet("État", texte("sh", V, "etat")),
+        mod.Onglet("Greffons", texte("sh", V, "greffons")),
+        mod.Onglet("Thèmes", texte("sh", V, "themes")),
+        mod.Onglet("Journaux", texte("sh", V, "journal", "60")),
+        mod.Onglet("Commandes", texte("sh", K, "--commandes")),
     ]
 
 
 class Interface:
-    def __init__(self, ecran):
+    def __init__(self, ecran, liste=None):
         self.ecran = ecran
-        self.onglets = onglets()
+        self.onglets = liste if liste is not None else construire(sys.modules[__name__])
         self.actif = 0
         self.filtre = ""
         self.saisie = False
@@ -548,6 +560,32 @@ class Interface:
                 continue
 
 
+def module_dotlib():
+    """Le socle commun d'interface à onglets de dotlib, s'il est utilisable.
+
+    On ne teste JAMAIS la présence du dossier ~/.dotlib : dotlib peut être posé et
+    complet sans porter ce module, qui est arrivé dans une version plus récente. On
+    teste donc le fichier et l'API, et rien d'autre. Inutilisable pour quelque raison
+    que ce soit → None, et notre propre interface prend le relais sans un mot.
+    """
+    dossier = os.path.join(os.environ.get("DOTLIB_DIR") or os.path.expanduser("~/.dotlib"), "lib")
+    if not os.path.isfile(os.path.join(dossier, "onglets.py")):
+        return None
+    try:
+        if dossier not in sys.path:
+            sys.path.insert(0, dossier)
+        import onglets
+        acceptees = getattr(onglets, "API_COMPATIBLES", None) or (getattr(onglets, "API", 0),)
+        if 1 not in tuple(acceptees):
+            return None
+        for necessaire in ("Onglet", "sortie", "lancer"):
+            if not hasattr(onglets, necessaire):
+                return None
+    except Exception:
+        return None
+    return onglets
+
+
 def demarrer(ecran):
     curses.curs_set(0)
     ecran.keypad(True)
@@ -563,7 +601,9 @@ def demarrer(ecran):
     interface.boucle()
 
 
-def main():
+def notre_interface():
+    """Le repli : l'interface portée par ce dépôt. Elle disparaîtra quand le socle
+    commun aura été éprouvé sur les machines du parc, et pas avant."""
     if not sys.stdout.isatty():
         print("vrc : pas de terminal — « vrc etat », « vrc raccourcis »…", file=sys.stderr)
         return 4
@@ -573,6 +613,13 @@ def main():
         print("vrc : terminal trop limité pour l'interface (%s)" % e, file=sys.stderr)
         return 4
     return 0
+
+
+def main():
+    mod = module_dotlib()
+    if mod is not None:
+        return mod.lancer(construire(mod), "vrc")
+    return notre_interface()
 
 
 if __name__ == "__main__":

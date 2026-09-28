@@ -155,6 +155,12 @@ journaux, commandes.
 | `/` puis Entrée | filtrer · `Échap` efface le filtre |
 | `r` · `q` | recharger l'onglet · quitter |
 
+L'affichage est celui du **socle commun** de dotlib (`lib/onglets.py`), partagé avec
+la configuration bash pour que les deux interfaces soient identiques. Tant qu'il n'a
+pas été éprouvé sur toutes les machines, ce dépôt garde sa propre interface en repli :
+elle sert si dotlib est absent, si le module manque à sa version, ou si son API n'est
+pas celle attendue — et la bascule est silencieuse.
+
 Les lignes trop longues se replient sur la largeur du terminal : rien n'est coupé.
 Les couleurs suivent le **thème du shell** (`brc theme`) en lisant les palettes
 publiées par dotlib ; sans dotlib, ou sur un terminal à moins de 256 couleurs, les

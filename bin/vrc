@@ -234,9 +234,15 @@ cmd_interface() {
   [ $# = 0 ] || { erreur "usage : vrc interface"; return 2; }
   if command -v python3 >/dev/null 2>&1 && [ -f "$REPO/bin/vrc-interface" ]; then
     VRC_REPO=$REPO python3 "$REPO/bin/vrc-interface"
-    return $?
+    code=$?
+    # 4 : pas de terminal, ou terminal trop limité pour des onglets (l'interface l'a
+    # dit sur la sortie d'erreur). On ne laisse pas l'utilisateur les mains vides :
+    # il obtient le même contenu, à la suite.
+    [ "$code" = 4 ] || return $code
+    tui_warn "affichage à la suite, sans onglets"
+  else
+    tui_warn "python3 absent : affichage à la suite, sans onglets"
   fi
-  tui_warn "python3 absent : affichage à la suite, sans onglets"
   cmd_raccourcis; cmd_etat; cmd_greffons; cmd_themes
 }
 

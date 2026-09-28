@@ -191,7 +191,7 @@ import importlib.machinery, importlib.util
 chargeur = importlib.machinery.SourceFileLoader("interface", sys.argv[1])
 module = importlib.util.module_from_spec(importlib.util.spec_from_loader("interface", chargeur))
 chargeur.exec_module(module)
-entrees = module.raccourcis_tsv()
+entrees = module.raccourcis_tsv(module.sortie)
 attendu = ["bash", "historique", "Ctrl-x", "faire quelque chose", "mode insertion"]
 if not entrees or not all(len(e) == 5 for e in entrees):
     sys.exit(1)
@@ -209,6 +209,34 @@ PYFIN
     "HOME='$TMP' VRC_REPO='$ROOT' PYTHONDONTWRITEBYTECODE=1 python3 -B '$TMP/melange.py' '$ROOT/bin/vrc-interface' seul"
   # ces tests importent un module du dépôt : ils ne doivent pas y laisser de cache
   check "aucun __pycache__ laissé dans le dépôt" sh -c "! find '$ROOT' -name __pycache__ -type d | grep -q ." 
+  # Le socle commun de dotlib est préféré quand il est là et que son API convient,
+  # sinon l'interface de ce dépôt prend le relais. On l'éprouve avec un FAUX module,
+  # pour ne dépendre ni de la présence de dotlib ni de sa version.
+  faux_module() { # faux_module <dossier> <API> <API_COMPATIBLES>
+    mkdir -p "$1/lib"
+    { printf 'API = %s\n' "$2"
+      printf 'API_COMPATIBLES = %s\n' "$3"
+      printf 'class Onglet:\n    def __init__(self, titre, produire, genre="texte", action=None):\n'
+      printf '        self.titre = titre\n'
+      printf 'def sortie(commande, cwd=None, env=None, delai=60):\n    return ["x"]\n'
+      printf 'def lancer(liste, nom=""):\n'
+      printf '    print("FAUX-MODULE %%d onglets pour %%s" %% (len(liste), nom))\n'
+      printf '    return 7\n'; } > "$1/lib/onglets.py"
+  }
+  faux_module "$TMP/dl1" 1 "(1,)"
+  faux_module "$TMP/dl2" 2 "(2,)"
+  mkdir -p "$TMP/dl3/lib"        # dotlib présent, mais SANS le module
+  check "socle d'API 1 : employé, six onglets" sh -c \
+    "DOTLIB_DIR='$TMP/dl1' VRC_REPO='$ROOT' PYTHONDONTWRITEBYTECODE=1 python3 -B '$ROOT/bin/vrc-interface' 2>/dev/null | grep -q 'FAUX-MODULE 6 onglets pour vrc'"
+  check "socle d'API 1 : son code de retour est rendu" sh -c \
+    "DOTLIB_DIR='$TMP/dl1' VRC_REPO='$ROOT' PYTHONDONTWRITEBYTECODE=1 python3 -B '$ROOT/bin/vrc-interface' >/dev/null 2>&1; [ \$? = 7 ]"
+  check "socle d'API 2 : écarté, repli local" sh -c \
+    "DOTLIB_DIR='$TMP/dl2' VRC_REPO='$ROOT' PYTHONDONTWRITEBYTECODE=1 python3 -B '$ROOT/bin/vrc-interface' 2>&1 | grep -q 'pas de terminal — '"
+  check "dotlib sans le module : repli local" sh -c \
+    "DOTLIB_DIR='$TMP/dl3' VRC_REPO='$ROOT' PYTHONDONTWRITEBYTECODE=1 python3 -B '$ROOT/bin/vrc-interface' 2>&1 | grep -q 'pas de terminal — '"
+  check "dotlib absent : repli local" sh -c \
+    "DOTLIB_DIR='$TMP/inexistant' VRC_REPO='$ROOT' PYTHONDONTWRITEBYTECODE=1 python3 -B '$ROOT/bin/vrc-interface' 2>&1 | grep -q 'pas de terminal — '"
+  check "aucun __pycache__ chez le faux dotlib"  sh -c "! find '$TMP/dl1' -name __pycache__ | grep -q ."
   if command -v script >/dev/null 2>&1 && [ "${TEST_NO_PTY:-0}" != 1 ]; then
     check "dans un terminal : s'ouvre et se ferme sur q" sh -c \
       "printf q | TERM=xterm script -q /dev/null python3 '$ROOT/bin/vrc-interface' >/dev/null 2>&1"
