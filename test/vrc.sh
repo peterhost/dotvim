@@ -150,17 +150,14 @@ if command -v python3 >/dev/null 2>&1; then
   check "python valide"                   python3 -c "import ast; ast.parse(open('$ROOT/bin/vrc-interface').read())"
   check "sans terminal : code 4"          sh -c "python3 '$ROOT/bin/vrc-interface' </dev/null >/dev/null 2>&1; [ \$? = 4 ]"
   check "sans terminal : le dit sur stderr" sh -c "python3 '$ROOT/bin/vrc-interface' </dev/null 2>&1 >/dev/null | grep -q '^vrc :'"
-  # Le premier onglet mêle les raccourcis de vim et ceux du shell. On ne dépend
-  # pas de la présence de dotbash : un faux « bindhelp » suffit à vérifier le
-  # mélange, le format à cinq colonnes et la tolérance à son absence.
+  # Frontière entre les deux outils : « vrc ui » ne montre que ce qui est vim, même
+  # quand l'aide du shell est joignable. On plante donc un faux « bindhelp » dans le
+  # PATH : s'il apparaît dans l'onglet, la frontière a été franchie.
   mkdir -p "$TMP/faux"
   printf '#!/bin/sh\nprintf "bash\\thistorique\\tCtrl-x\\tfaire quelque chose\\tmode insertion\\n"\n' \
     > "$TMP/faux/bindhelp"
   chmod +x "$TMP/faux/bindhelp"
-  cat > "$TMP/melange.py" <<'PYFIN'
-# bin/vrc-interface n'a pas de suffixe .py : on le charge par un chargeur explicite.
-# Et surtout : PAS de cache — un __pycache__ dans le dépôt serait un reste, et un
-# .pyc contient le chemin absolu de son source (donc un chemin de home nommé).
+  cat > "$TMP/frontiere.py" <<'PYFIN'
 import os
 import subprocess
 import sys
@@ -169,8 +166,7 @@ import importlib.machinery, importlib.util
 
 
 def sortie(commande, cwd=None, env=None, delai=60):
-    # l'affichage vit chez dotlib ; ce test n'éprouve que notre mélange des deux aides,
-    # il lui suffit donc d'une fonction de sortie minimale
+    # l'affichage vit chez dotlib ; ce test n'éprouve que notre producteur
     e = dict(os.environ, NO_COLOR="1")
     if env:
         e.update(env)
@@ -180,26 +176,24 @@ def sortie(commande, cwd=None, env=None, delai=60):
     except (OSError, subprocess.TimeoutExpired):
         return []
     return [l.rstrip() for l in r.stdout.decode("utf-8", "replace").splitlines()]
+
+
 chargeur = importlib.machinery.SourceFileLoader("interface", sys.argv[1])
 module = importlib.util.module_from_spec(importlib.util.spec_from_loader("interface", chargeur))
 chargeur.exec_module(module)
 entrees = module.raccourcis_tsv(sortie)
-attendu = ["bash", "historique", "Ctrl-x", "faire quelque chose", "mode insertion"]
-if not entrees or not all(len(e) == 5 for e in entrees):
-    sys.exit(1)
-if sys.argv[2] == "melange":
-    sys.exit(0 if attendu in entrees and any(e[0] == "vim" for e in entrees) else 1)
-sys.exit(0 if all(e[0] == "vim" for e in entrees) else 1)
+if not entrees:
+    sys.exit("aucune entrée")
+if not all(len(e) == 5 for e in entrees):
+    sys.exit("une entrée n'a pas cinq colonnes")
+etrangeres = [e for e in entrees if e[0] != "vim"]
+if etrangeres:
+    sys.exit("frontière franchie : %r" % (etrangeres[0],))
 PYFIN
   CHEMIN=$PATH; PATH="$TMP/faux:$PATH"
-  check "l'onglet mêle vim et le shell"  sh -c \
-    "VRC_REPO='$ROOT' PYTHONDONTWRITEBYTECODE=1 python3 -B '$TMP/melange.py' '$ROOT/bin/vrc-interface' melange"
+  check "onglet : rien que vim, même avec l'aide du shell à portée" sh -c \
+    "VRC_REPO='$ROOT' PYTHONDONTWRITEBYTECODE=1 python3 -B '$TMP/frontiere.py' '$ROOT/bin/vrc-interface'"
   PATH=$CHEMIN
-  # HOME déplacé : sinon, sur une machine qui a dotbash, ~/.bash/bin/bindhelp
-  # répondrait et le cas « aide du shell absente » ne serait pas testable.
-  check "shell absent : vim seul, sans erreur" sh -c \
-    "HOME='$TMP' VRC_REPO='$ROOT' PYTHONDONTWRITEBYTECODE=1 python3 -B '$TMP/melange.py' '$ROOT/bin/vrc-interface' seul"
-  # ces tests importent un module du dépôt : ils ne doivent pas y laisser de cache
   check "aucun __pycache__ laissé dans le dépôt" sh -c "! find '$ROOT' -name __pycache__ -type d | grep -q ." 
   # Le socle commun de dotlib est préféré quand il est là et que son API convient,
   # sinon l'interface de ce dépôt prend le relais. On l'éprouve avec un FAUX module,

@@ -54,21 +54,27 @@ def module_dotlib():
     return onglets
 
 def raccourcis_tsv(sortie):
-    """Les raccourcis de vim, et ceux du shell si sa propre aide est là."""
+    """Les raccourcis de vim, et EUX SEULS.
+
+    Décision du propriétaire (2026-09-29) : « vrc ui » ne montre que ce qui est vim,
+    « brc ui » que ce qui est bash. Ce producteur n'appelle donc pas bindhelp, et il
+    ne doit pas le rappeler par commodité : un raccourci du shell qu'il serait
+    « pratique » de voir d'ici est précisément le mélange qui a été écarté.
+
+    L'exception admise se mérite par la NATURE du raccourci : un geste qui n'a de sens
+    que parce que deux outils s'accordent appartient aux deux. Le cas est ici celui de
+    Ctrl-h/j/k/l, qui passe d'une fenêtre vim à un panneau tmux — mais il est déjà
+    dans notre propre liste, défini par nous, donc il n'y a rien à importer. Aucune
+    entrée ne traverse la frontière aujourd'hui : si l'une devait le faire un jour,
+    qu'elle soit nommée ici, avec sa raison.
+    """
     lignes = []
     for l in sortie(["sh", os.path.join(REPO, "bin", "keys"), "--tsv"], cwd=REPO):
         champs = l.split("\t")
         if len(champs) >= 5:
             lignes.append(champs[:5])
-    for outil in ("bindhelp", os.path.expanduser("~/.bash/bin/bindhelp")):
-        essai = sortie([outil, "--tsv"], cwd=REPO)
-        if essai and "\t" in "".join(essai):
-            for l in essai:
-                champs = l.split("\t")
-                if len(champs) >= 5:
-                    lignes.append(champs[:5])
-            break
     return lignes
+
 
 def construire(mod):
     """Les six onglets, bâtis avec le module qui les affichera. Les producteurs ne

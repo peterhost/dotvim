@@ -42,12 +42,13 @@ cd "$REPO" || exit 1
 
 # Ordre d'affichage des thèmes : du plus utilisé au plus rare, le reste ensuite
 # par ordre alphabétique. Socle commun avec la configuration bash.
-# « historique » ne vient pas de vim : c'est un thème de la configuration bash,
-# placé ici pour que l'onglet des raccourcis le montre au bon rang (voisin de
-# « recherche »), quand les deux aides s'affichent ensemble.
-ORDRE="fichiers buffers fenêtres onglets sessions navigation recherche
-       historique édition repliage saisie écriture langages git diff greffons
-       thèmes aide configuration système polices"
+# Ordre de référence des thèmes de VIM. « historique » y a figuré le temps où
+# l'onglet des raccourcis mêlait les deux aides ; depuis que chaque outil ne montre
+# que les siens, il n'a plus lieu d'être ici — la configuration bash tient sa propre
+# référence.
+ORDRE="fichiers buffers fenêtres onglets sessions navigation recherche édition
+       repliage saisie écriture langages git diff greffons thèmes aide
+       configuration système polices"
 
 FICHIERS="vimrc gvimrc config/options.vim config/mappings.vim config/colors.vim
           config/highlights.vim config/plugins.vim"

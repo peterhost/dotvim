@@ -140,9 +140,11 @@ et ne lance aucun processus**. La configuration bash le charge d'elle-même ;
 [ -r ~/.vim/shell/vrc.bash ] && . ~/.vim/shell/vrc.bash
 ```
 
-**`vrc ui`** (ou `vrc interface`) ouvre six onglets : raccourcis par thème — ceux de
-vim et ceux du shell quand son aide est disponible —, état, greffons, thèmes,
-journaux, commandes.
+**`vrc ui`** (ou `vrc interface`) ouvre six onglets : raccourcis par thème, état,
+greffons, thèmes, journaux, commandes. Les raccourcis montrés sont **ceux de vim, et
+eux seuls** : `brc ui` montre ceux du shell. Un raccourci ne traverse la frontière que
+s'il n'a de sens que par l'accord des deux outils, et le producteur dit alors lequel
+et pourquoi.
 
 | Touche | Effet |
 |---|---|
