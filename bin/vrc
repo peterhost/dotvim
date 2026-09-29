@@ -152,8 +152,11 @@ cmd_themes() {
   info=$(vim_dit -c 'silent echo join(my#colors#list(), " ")' \
                  -c 'silent echo get(g:, "my_current_theme", "?") . " " . &background') || return 1
   tui_title "Thèmes de couleurs"
-  tui_info "disponibles : $(printf '%s\n' "$info" | sed -n 1p)"
-  tui_info "en cours    : ${C_R_MATCH}$(printf '%s\n' "$info" | sed -n 2p)${T_RESET}"
+  # Deux étiquettes alignées de la même façon : séparées de leur valeur par au moins
+  # deux espaces, elles sont reconnues comme sujets de ligne par l'interface à onglets
+  # (une seule espace passerait pour une phrase, et l'une des deux serait peinte).
+  tui_info "disponibles  $(printf '%s\n' "$info" | sed -n 1p)"
+  tui_info "en cours     ${C_R_MATCH}$(printf '%s\n' "$info" | sed -n 2p)${T_RESET}"
   tui_info "${C_R_TEXT}dans vim : :Theme <nom> <fond> (durable), F5 bascule clair/sombre pour la session${T_RESET}"
 }
 

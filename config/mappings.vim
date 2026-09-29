@@ -164,7 +164,7 @@ nnoremap <leader><Down> :cnfile<CR>
 "= repliage | ouvrir ou fermer le pli sous le curseur (Espace), avec ses plis imbriqués (Retour arrière)
 nnoremap <Space> za
 nnoremap <BS> zA
-"= repliage | ouvrir (Maj-) ou fermer (Ctrl-) d’un niveau partout, basculer le repliage (Ctrl-Maj-)
+"= repliage | ouvrir (Maj-Retour arrière) ou fermer (Ctrl-Retour arrière) d’un niveau partout, basculer le repliage (Ctrl-Maj-Retour arrière)
 nnoremap <S-BS> zr
 nnoremap <C-BS> zm
 nnoremap <C-S-BS> zi

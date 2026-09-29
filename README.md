@@ -404,7 +404,7 @@ Dans vim : `,?` ou `:Keys`, `:Keys git` pour un thème, `:help raccourcis`.
 |---|---|
 | `,Ctrl-Espace` | replier la balise HTML courante |
 | `Espace / Retour arrière` | ouvrir ou fermer le pli sous le curseur (Espace), avec ses plis imbriqués (Retour arrière) |
-| `Maj-Retour arrière / Ctrl-Retour arrière / Ctrl-Maj-Retour arrière` | ouvrir (Maj-) ou fermer (Ctrl-) d’un niveau partout, basculer le repliage (Ctrl-Maj-) |
+| `Maj-Retour arrière / Ctrl-Retour arrière / Ctrl-Maj-Retour arrière` | ouvrir (Maj-Retour arrière) ou fermer (Ctrl-Retour arrière) d’un niveau partout, basculer le repliage (Ctrl-Maj-Retour arrière) |
 
 **saisie**
 
