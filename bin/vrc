@@ -161,7 +161,9 @@ cmd_themes() {
   # (une seule espace passerait pour une phrase, et l'une des deux serait peinte).
   tui_info "disponibles  $(printf '%s\n' "$info" | sed -n 1p)"
   tui_info "en cours     ${C_R_MATCH}$(printf '%s\n' "$info" | sed -n 2p)${T_RESET}"
-  tui_info "${C_R_TEXT}dans vim : :Theme <nom> <fond> (durable), F5 bascule clair/sombre pour la session${T_RESET}"
+  # les touches citées en prose vont entre parenthèses, comme dans les descriptions
+  # de raccourcis : c'est ce qui les fait reconnaître comme touches et non comme mots
+  tui_info "${C_R_TEXT}dans vim : :Theme <nom> <fond> pour un choix durable, (F5) pour basculer clair/sombre le temps de la session${T_RESET}"
 }
 
 # --- journal, mise à jour, nettoyage, tests -----------------------------------------------------
