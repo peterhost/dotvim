@@ -79,6 +79,10 @@ echo "== Greffons, thèmes, journal, version"
 sortie greffons
 check "greffons : au moins un installé"   grep -q 'installé' "$TMP/out"
 check "greffons : un compte final"        grep -q 'installé(s)' "$TMP/out"
+# Un greffon écarté doit dire POURQUOI, sur sa propre ligne : le pied de page donnait
+# les causes possibles sans dire laquelle s'appliquait à qui.
+check "greffons : chaque écart dit sa raison" sh -c \
+  "awk '/écarté/ && !/écarté\\(s\\)/ { if (\$0 !~ /écarté +[^ ]/) exit 1 }' '$TMP/out'"
 sortie themes
 check "thèmes : celui en cours"           grep -q 'en cours' "$TMP/out"
 check "thèmes : les disponibles"          grep -q 'disponibles' "$TMP/out"

@@ -320,6 +320,21 @@ function! s:test_plugins()
     call s:ok('plug.airline', exists(':AirlineToggle') == 2)
   endif
   call s:ok('plug.disabled_not_loaded', !exists('g:loaded_toml') || !has_key(g:my_plug_off, 'vim-toml'))
+  " Tout greffon écarté doit DIRE pourquoi : « vrc greffons » l'affiche, et une
+  " déclaration conditionnelle sans raison est un oubli, pas un choix. La raison
+  " générique de my#plug#add ne compte pas comme une raison dite.
+  let l:muets = []
+  for [l:nom, l:raison] in items(get(g:, 'my_plug_off', {}))
+    if type(l:raison) != type('') || l:raison ==# '' || l:raison =~# '^condition non remplie'
+      call add(l:muets, l:nom)
+    endif
+  endfor
+  call s:ok('plug.skipped_say_why', empty(l:muets), join(l:muets, ' '))
+  " et le rapport porte bien trois champs, dont la raison pour les écartés
+  let l:ecartes = filter(copy(my#plug#report()), 'v:val =~# "^écarté|"')
+  call s:ok('plug.report_three_fields',
+        \ empty(filter(copy(l:ecartes), 'len(split(v:val, "|", 1)) != 3 || split(v:val, "|", 1)[2] ==# ""')),
+        \ join(l:ecartes, ' '))
 endfunction
 
 function! s:autocmd_count(group)

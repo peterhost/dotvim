@@ -133,17 +133,21 @@ cmd_greffons() {
   liste=$(vim_dit -c 'silent echo join(my#plug#report(), "\n")') || return 1
   [ -n "$liste" ] || { erreur "aucun greffon déclaré (vim sans +eval ?)"; return 1; }
   tui_title "Greffons"
+  # Trois colonnes : le nom, l'état, et POURQUOI quand il est écarté. Le pied de page
+  # disait « vim ou outil manquant » sans dire lequel s'appliquait à qui — et c'était
+  # faux pour les greffons que vim rend inutiles en fournissant déjà leur syntaxe.
   printf '%s\n' "$liste" | awk -F'|' -v b="$C_R_BAD" -v d="$C_R_TEXT" -v r="$T_RESET" '
     { c = ($1 == "manquant" ? b : ($1 == "écarté" ? d : ""))
-      printf "  %s%s%s\t%s%s%s\n", c, $2, r, c, $1, r }' | tui_table
-  # La ligne de compte porte un REPÈRE en tête quand quelque chose manque (le même
-  # que tui_err / tui_ok), et non un mot en capitales : c'est le repère qui est mis
-  # en forme par l'interface à onglets, pas le vocabulaire français.
-  printf '%s\n' "$liste" | awk -F'|' -v ko="$TUI_KO" -v ok="$TUI_OK" '{ n[$1]++ } END {
-    printf "  %s %d installé(s)", (n["manquant"] ? ko : ok), n["installé"]
-    if (n["écarté"]) printf ", %d écarté(s) sur cette machine (vim ou outil manquant)", n["écarté"]
+      raison = $3
+      if ($1 == "manquant" && raison == "") raison = "à installer : vrc maj"
+      printf "  %s%s%s\t%s%s%s\t%s%s%s\n", c, $2, r, c, $1, r, d, raison, r }' | tui_table
+  printf '%s\n' "$liste" | awk -F'|' '{ n[$1]++ } END {
+    printf "  %s %d installé(s)", (n["manquant"] ? "'"$TUI_KO"'" : "'"$TUI_OK"'"), n["installé"]
+    if (n["écarté"]) printf ", %d écarté(s) sur cette machine", n["écarté"]
     if (n["manquant"]) printf ", %d manquant(s) — « vrc maj »", n["manquant"]
     printf "\n" }'
+  [ -z "$(printf '%s\n' "$liste" | awk -F'|' '$1 != "installé"')" ] \
+    || tui_info "${C_R_TEXT}la raison de chaque écart est dite ligne à ligne${T_RESET}"
 }
 
 # --- thèmes ------------------------------------------------------------------------------------
