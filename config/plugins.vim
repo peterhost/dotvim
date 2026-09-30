@@ -69,7 +69,6 @@ call s:P('mattn/vim-gist', 1)
 " --- Barre d'état ---------------------------------------------------------------------
 call s:P('vim-airline/vim-airline', v:version >= 704, s:r_74)
 call s:P('vim-airline/vim-airline-themes', v:version >= 704, s:r_74)
-call s:P('edkolev/tmuxline.vim', v:version >= 704, s:r_74)
 
 " --- Code : vérification, correction, navigation ------------------------------------------
 call s:P('dense-analysis/ale', s:full, s:r_full)

@@ -24,6 +24,15 @@ if !g:airline_powerline_fonts
   endif
 endif
 
+" Vim ne repeint PAS la barre de statut de tmux. L'extension tmuxline d'airline le
+" faisait d'office (elle est active par défaut dès que tmuxline est chargé) et
+" recouvrait, au premier vim ouvert, le thème choisi pour tmux — mesuré : un témoin
+" posé dans les options globales de tmux était remplacé par les couleurs de vim.
+" Depuis le 2026-09-30, c'est « trc theme » qui peint tmux, avec les mêmes palettes.
+" Le greffon tmuxline.vim est retiré ; ce réglage reste pour que rien ne repeigne
+" tmux si un jour il revient par une autre voie.
+let g:airline#extensions#tmuxline#enabled = 0
+
 " Le thème d'airline suit le thème de couleurs (everforest, edge, lucius…).
 let g:airline#extensions#tabline#enabled = 1
 let g:airline#extensions#tabline#show_tabs = 1

@@ -319,6 +319,10 @@ function! s:test_plugins()
     call s:ok('plug.obsession', exists(':Obsession') == 2)
     call s:ok('plug.airline', exists(':AirlineToggle') == 2)
   endif
+  " vim ne repeint pas la barre de statut de tmux : c'est « trc theme » qui la peint.
+  " L'extension d'airline le faisait d'office dès que tmuxline était chargé.
+  call s:ok('plug.tmuxline_absent', !exists(':Tmuxline'))
+  call s:ok('plug.tmuxline_extension_off', get(g:, 'airline#extensions#tmuxline#enabled', 1) == 0)
   call s:ok('plug.disabled_not_loaded', !exists('g:loaded_toml') || !has_key(g:my_plug_off, 'vim-toml'))
   " Tout greffon écarté doit DIRE pourquoi : « vrc greffons » l'affiche, et une
   " déclaration conditionnelle sans raison est un oubli, pas un choix. La raison
