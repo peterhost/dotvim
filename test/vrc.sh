@@ -53,9 +53,13 @@ check "option inconnue : code 2"          sh -c "[ \"$(code)\" = 2 ]"
 # « less » quitté avant la fin) ne doit rien faire écrire sur la sortie d'erreur.
 sortie raccourcis thèmes
 check "un thème nommé : rien sur stderr"  test ! -s "$TMP/err"
+# Ce qu'on interdit est la PLAINTE D'ÉCRITURE, pas toute sortie d'erreur : « vrc etat »
+# avertit légitimement quand la machine a des restes, et un test qui échoue sur un
+# avertissement juste finit par être ignoré.
 for CMD in "raccourcis" "raccourcis git" "etat" "greffons" "themes" "journal"; do
-  check "lecture interrompue, rien sur stderr : vrc $CMD" sh -c \
-    "$VRC $CMD 2>'$TMP/e' | head -2 >/dev/null; test ! -s '$TMP/e'"
+  check "lecture interrompue, aucune plainte d'écriture : vrc $CMD" sh -c \
+    "$VRC $CMD 2>'$TMP/e' | head -2 >/dev/null
+     ! grep -qiE 'write error|broken pipe|tuyau' '$TMP/e'"
 done
 for OPT in "" "--tsv" "--themes" "--ordre" "--commandes" "--touches"; do
   check "lecture interrompue, rien sur stderr : keys $OPT" sh -c \
@@ -111,6 +115,16 @@ sortie maj trop
 check "maj : code 2"                      sh -c "[ \"$(code)\" = 2 ]"
 sortie verifier trop
 check "verifier : code 2"                 sh -c "[ \"$(code)\" = 2 ]"
+
+# Aucun fichier temporaire ne doit survivre — ni à une exécution complète, ni à une
+# lecture interrompue. Vécu : six restes retrouvés dans $TMPDIR, parce que le nettoyage
+# était confié au shell principal alors que le fichier naissait dans un sous-shell.
+check "aucun reste après une exécution complète" sh -c \
+  "a=\$(ls '${TMPDIR:-/tmp}'/vrc.?????? 2>/dev/null | wc -l); $VRC greffons >/dev/null 2>&1
+   b=\$(ls '${TMPDIR:-/tmp}'/vrc.?????? 2>/dev/null | wc -l); [ \"\$a\" = \"\$b\" ]"
+check "aucun reste après une lecture interrompue" sh -c \
+  "a=\$(ls '${TMPDIR:-/tmp}'/vrc.?????? 2>/dev/null | wc -l); $VRC greffons 2>/dev/null | head -1 >/dev/null
+   b=\$(ls '${TMPDIR:-/tmp}'/vrc.?????? 2>/dev/null | wc -l); [ \"\$a\" = \"\$b\" ]"
 
 echo "== Couche d'affichage (shell/affichage.sh)"
 check "sourçable telle quelle"            sh -c ". '$ROOT/shell/affichage.sh'"

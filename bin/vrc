@@ -31,20 +31,27 @@ done
 REPO=$(cd "$(dirname "$cible")/.." && pwd -P)
 . "$REPO/shell/affichage.sh"
 VIM=${VRC_VIM:-vim}
-TMPD=
+# Un arrêt non trappable (SIGKILL, coupure du serveur tmux) laisse son fichier
+# temporaire : on balaie au passage ceux de plus d'un jour, qu'aucune exécution
+# vivante ne peut avoir. Mesuré : six restes retrouvés après un arrêt brutal.
+find "${TMPDIR:-/tmp}" -maxdepth 1 -name 'vrc.??????' -mtime +0 \
+  -exec rm -rf {} + 2>/dev/null
 
-nettoie() { [ -z "$TMPD" ] || rm -rf "$TMPD"; }
-trap nettoie EXIT INT TERM HUP
-tmpdir() { [ -n "$TMPD" ] || TMPD=$(mktemp -d "${TMPDIR:-/tmp}/vrc.XXXXXX"); printf '%s' "$TMPD"; }
 erreur() { printf 'vrc : %s\n' "$*" >&2; }
 a_vim() { command -v "$VIM" >/dev/null 2>&1; }
 court() { printf '%s' "$1" | sed "s|^$HOME|~|"; }
 
 # vim_dit <commande vim…> : les lignes écrites par « silent echo », en mode -es
 # (où echo ne sort pas sur stdout : il faut passer par redir).
+# Le fichier temporaire naît et meurt DANS cette fonction. Une variable posée ici ne
+# survit pas au-dehors : vim_dit est toujours appelée dans une substitution de commande,
+# donc dans un sous-shell, où les trappes du shell principal ne s'appliquent pas et où
+# ses variables ne remontent pas. Un nettoyage confié au shell principal ne nettoyait
+# donc rien — c'est l'origine des six restes.
 vim_dit() {
   a_vim || { erreur "vim introuvable dans le PATH"; return 1; }
-  d=$(tmpdir); out=$d/dit
+  out=$(mktemp "${TMPDIR:-/tmp}/vrc.XXXXXX") || return 1
+  trap 'rm -f "$out"' EXIT INT TERM HUP PIPE
   set -- "$@" -c 'redir END' -c 'qa!'
   MY_VIM_NO_AUTOUPDATE=1 "$VIM" -N -u "$REPO/vimrc" -i NONE -es \
     -c "redir! > $out" "$@" </dev/null >/dev/null 2>&1
