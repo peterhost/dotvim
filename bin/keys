@@ -199,7 +199,12 @@ extraire_brut() {
 # Les sorties parcourent les entrées plusieurs fois (une passe par thème) :
 # on n’extrait donc qu’une fois, dans un fichier temporaire effacé en sortant.
 CACHE=$(mktemp "${TMPDIR:-/tmp}/keys.XXXXXX") || exit 1
+# PAS de PIPE ici, contrairement à bin/vrc : sous ksh, la trappe s'exécute puis le
+# script REPREND, donc le cache disparaît sous les pieds des sorties suivantes —
+# mesuré, dix-neuf « cat: No such file ». EXIT suffit.
 trap 'rm -f "$CACHE"' EXIT INT TERM HUP
+# Un arrêt non trappable laisse son cache : on balaie ceux de plus d'un jour.
+find "${TMPDIR:-/tmp}" -maxdepth 1 -name 'keys.??????' -mtime +0 -exec rm -f {} + 2>/dev/null
 extraire_brut > "$CACHE"
 extraire() { cat "$CACHE"; }
 
