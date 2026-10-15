@@ -26,7 +26,36 @@ new_home() {
   (cd "$H/.vim" && git init -q && git add -A && git -c user.name=t -c user.email=t@t commit -qm base \
     && git branch -M master && git checkout -q -b refactor) || exit 1
 }
-inst() { HOME=$H USER=test MY_VIM_NO_AUTOUPDATE=1 ${TEST_SH:-sh} "$H/.vim/bin/install" "$@" </dev/null >"$TMP/out.txt" 2>&1; }
+# Faux git : ls-remote réussit ou échoue selon FAKE_HTTPS / FAKE_SSH, en tenant
+# compte de la règle de réécriture ; tout le reste va au vrai git.
+#
+# TOUS les scénarios passent par lui, réseau nominal par défaut (https et ssh
+# joignables). Sans cela, l'installeur interroge vraiment GitHub : le jour où
+# https ne répond pas et où ssh répond, il pose sa règle de réécriture dans
+# ~/.config/git/config — comportement voulu, auquel --yes dit oui — et le
+# scénario « machine vierge » échoue sur « rien d'autre créé dans $HOME ».
+# C'est arrivé. Un test d'installeur n'a pas à mesurer la connectivité : c'est
+# le travail de « bin/install --check » sur la machine, et de TEST_NETWORK=1.
+REALGIT=$(sh -c 'command -v git')
+mkdir -p "$TMP/fakegit"
+cat > "$TMP/fakegit/git" <<FAKE
+#!/bin/sh
+if [ "\$1" = ls-remote ]; then
+  url=\$2
+  case \$url in https://*)
+    "$REALGIT" config --global --get-all url.git@github.com:.insteadOf 2>/dev/null | grep -q '^https://github.com/\$' && url=ssh ;;
+  esac
+  case \$url in https://*) [ "\$FAKE_HTTPS" = 1 ] ;; *) [ "\$FAKE_SSH" = 1 ] ;; esac
+  exit \$?
+fi
+exec "$REALGIT" "\$@"
+FAKE
+chmod +x "$TMP/fakegit/git"
+
+inst() { HOME=$H USER=test PATH="$TMP/fakegit:$PATH" MY_VIM_NO_AUTOUPDATE=1 \
+  FAKE_HTTPS=${FAKE_HTTPS:-1} FAKE_SSH=${FAKE_SSH:-1} \
+  ${TEST_SH:-sh} "$H/.vim/bin/install" "$@" </dev/null >"$TMP/out.txt" 2>&1; }
+netinst() { HOME=$H PATH="$TMP/fakegit:$PATH" MY_VIM_NO_AUTOUPDATE=1 FAKE_HTTPS=$1 FAKE_SSH=$2 sh "$H/.vim/bin/install" --yes --no-plugins </dev/null >"$TMP/out.txt" 2>&1; }
 
 echo "== Installation sur une machine vierge"
 new_home fresh
@@ -156,25 +185,6 @@ touch -t 202001010000 "$H/.vim/local/last-update"
 check "--if-due-minutes : relance si plus ancienne"  sh -c "HOME='$H' VIM_BIN=true sh '$H/.vim/bin/update-plugins' --if-due-minutes 60 && test -f '$H/.vim/local/update.log'"
 
 echo "== Accès à GitHub : https ou ssh indisponible (git simulé)"
-# faux git : ls-remote réussit ou échoue selon FAKE_HTTPS / FAKE_SSH, en
-# tenant compte de la règle de réécriture ; tout le reste va au vrai git.
-REALGIT=$(sh -c 'command -v git')
-mkdir -p "$TMP/fakegit"
-cat > "$TMP/fakegit/git" <<FAKE
-#!/bin/sh
-if [ "\$1" = ls-remote ]; then
-  url=\$2
-  case \$url in https://*)
-    "$REALGIT" config --global --get-all url.git@github.com:.insteadOf 2>/dev/null | grep -q '^https://github.com/\$' && url=ssh ;;
-  esac
-  case \$url in https://*) [ "\$FAKE_HTTPS" = 1 ] ;; *) [ "\$FAKE_SSH" = 1 ] ;; esac
-  exit \$?
-fi
-exec "$REALGIT" "\$@"
-FAKE
-chmod +x "$TMP/fakegit/git"
-netinst() { HOME=$H PATH="$TMP/fakegit:$PATH" MY_VIM_NO_AUTOUPDATE=1 FAKE_HTTPS=$1 FAKE_SSH=$2 sh "$H/.vim/bin/install" --yes --no-plugins </dev/null >"$TMP/out.txt" 2>&1; }
-
 new_home nas
 check "NAS (https KO, ssh OK) : installation réussie" netinst 0 1
 check "règle https->ssh ajoutée (forme normale)"      sh -c "git config --file '$H/.config/git/config' --get-all url.git@github.com:.insteadof | grep -qx 'https://github.com/'"
