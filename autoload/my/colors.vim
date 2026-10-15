@@ -144,6 +144,7 @@ function! my#colors#apply(name, bg, save)
       continue
     endtry
     let g:my_current_theme = l:name
+    let s:fond_pose = &background
     if a:save
       call s:save(l:name, &background)
     endif
@@ -157,6 +158,58 @@ function! s:save(name, bg)
   if exists('*writefile') && isdirectory(g:my_local)
     silent! call writefile(['let g:my_state = ' . string({'theme': a:name, 'background': a:bg})], s:state_file)
   endif
+endfunction
+
+" --- Bascule tardive du fond par le terminal (t_RB, OSC 11) ------------------------------
+" Après la lecture du vimrc, vim demande au terminal sa couleur de fond et
+" applique la réponse à 'background' de lui-même. Mesuré sur un pseudo-terminal
+" répondant un fond clair alors que le fond décidé était sombre :
+"   - la décision ci-dessous est écrasée une demi-seconde après l'ouverture ;
+"   - l'écran reste mi-sombre mi-clair : vim n'efface pas l'écran après la
+"     bascule, seules les cases réécrites passent au clair ;
+"   - ni ColorScheme ni OptionSet ne déclenchent, donc my#colors#fixup() ne
+"     rejoue pas et OverLength garde sa couleur de fond sombre.
+" Deux traitements, selon que le fond repose sur une décision ou sur le défaut :
+"   décidé     -> on coupe la demande (t_RB vide) : plus rien ne bascule.
+"   non décidé -> la réponse du terminal vaut mieux que notre défaut, on la
+"                 garde ; on rejoue le thème (pour les surlignages) et on
+"                 redessine. Seul crochet qui déclenche : TermResponseAll
+"                 (vim 9.0.1594), d'où le repli silencieux en dessous.
+function! s:fond_terminal(decide)
+  if v:version < 800 || g:my_gui
+    return
+  endif
+  if empty(&t_RB)
+    return
+  endif
+  " Fond décidé — ou pas de quoi réagir proprement à la réponse : on coupe la
+  " demande. Sans crochet (vim < 9.0.1594) ni minuterie, la bascule laisserait
+  " l'écran mélangé ; garder le fond décidé ici vaut mieux qu'un écran sale.
+  if a:decide || !exists('##TermResponseAll') || !exists('*timer_start')
+    set t_RB=
+    return
+  endif
+  augroup my_colors_osc
+    autocmd!
+    autocmd TermResponseAll * call s:apres_reponse()
+  augroup END
+endfunction
+
+" TermResponseAll déclenche AVANT que vim applique le fond lu dans la réponse :
+" mesuré, &background y vaut encore l'ancien, et a basculé neuf millisecondes
+" plus tard. D'où la minuterie : on ne regarde le fond qu'une fois la réponse
+" digérée. Plusieurs réponses (version, puis couleurs) déclenchent plusieurs
+" fois ; s:fond_pose rend le traitement idempotent.
+function! s:apres_reponse()
+  call timer_start(20, function('s:rejouer'))
+endfunction
+
+function! s:rejouer(...)
+  if &background ==# get(s:, 'fond_pose', '')
+    return
+  endif
+  call my#colors#apply(get(g:, 'my_current_theme', 'default'), &background, 0)
+  redraw!
 endfunction
 
 function! my#colors#init()
@@ -189,7 +242,12 @@ function! my#colors#init()
   if g:my_tty
     let l:bg = 'dark'
   endif
+  " Le fond repose-t-il sur une décision, ou sur le défaut faute de mieux ?
+  " (voir s:fond_terminal ci-dessus)
+  let l:decide = exists('g:my_background') || has_key(l:state, 'background')
+        \ || !empty(l:shell_bg) || g:my_tty
   call my#colors#apply(l:name, l:bg, 0)
+  call s:fond_terminal(l:decide)
 endfunction
 
 " --- Commandes et raccourcis ------------------------------------------------------------------

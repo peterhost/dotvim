@@ -280,6 +280,44 @@ function! s:test_themes()
   let $DOTLIB_THEME_EFF = ''
   let $DOTLIB_PALETTE_EFF = ''
   unlet! g:my_background_forced
+  " Bascule tardive du fond par le terminal (t_RB / OSC 11, voir
+  " autoload/my/colors.vim). On arme t_RB soi-même : selon le terminal où la
+  " batterie tourne — et selon ce que le shell dit du fond, qui fait justement
+  " couper la demande — il peut être vide, et le test se saboterait tout seul.
+  if v:version >= 800 && !g:my_gui
+    let l:trb = &t_RB
+    " fond décidé par le shell -> la demande est coupée, rien ne basculera
+    let &t_RB = "\<Esc>]11;?\<Esc>\\"
+    let $DOTLIB_THEME_EFF = 'light'
+    call my#colors#init()
+    call s:ok('theme.trb_coupe_si_fond_decide', empty(&t_RB), 'la demande OSC 11 reste armée')
+    " fond non décidé : ni réglage explicite, ni état mémorisé, ni shell. La
+    " réponse du terminal vaut alors mieux que notre défaut : la demande reste
+    " armée et un crochet rattrape la bascule.
+    let $DOTLIB_THEME_EFF = ''
+    call delete(g:my_local . '/theme.vim')
+    unlet! g:my_state
+    let &t_RB = "\<Esc>]11;?\<Esc>\\"
+    " g:my_tty impose le fond sombre : sur une console Linux ou un vt100, le
+    " fond est décidé aussi, et le cas « non décidé » n'existe pas.
+    if empty(my#colors#from_shell()[0]) && !g:my_tty
+      call my#colors#init()
+      if exists('##TermResponseAll') && exists('*timer_start')
+        call s:ok('theme.trb_garde_si_fond_libre', !empty(&t_RB)
+              \ && exists('#my_colors_osc#TermResponseAll'),
+              \ 't_RB ' . (empty(&t_RB) ? 'coupé' : 'armé') . ', crochet '
+              \ . (exists('#my_colors_osc#TermResponseAll') ? 'posé' : 'absent'))
+      else
+        call s:ok('theme.trb_coupe_sans_crochet', empty(&t_RB),
+              \ 'rien ne rattraperait la bascule, la demande devrait être coupée')
+      endif
+    else
+      call s:info('fond libre non testable ici : '
+            \ . (g:my_tty ? 'terminal pauvre, fond sombre imposé'
+            \             : 'le shell décide (' . my#colors#from_shell()[0] . ')'))
+    endif
+    let &t_RB = l:trb
+  endif
   " thème inconnu : repli sans erreur
   let v:errmsg = ''
   silent Theme ne_existe_pas
